@@ -1,16 +1,20 @@
 'use strict';
 
 angular
-  .module('ngVisjsApp', [
+  .module('ngVisJsApp', [
     'ngRoute'
   ])
   .config(function ($routeProvider) {
     $routeProvider
-      .when('/', {
-        templateUrl: 'views/main.html',
-        controller: 'MainCtrl'
+      .when('/timeline', {
+        templateUrl: 'views/timeline.html',
+        controller: 'TimelineCtrl'
+      })
+      .when('/graph', {
+        templateUrl: 'views/graph.html',
+        controller: 'GraphCtrl'
       })
       .otherwise({
-        redirectTo: '/'
+        redirectTo: '/timeline'
       });
   });

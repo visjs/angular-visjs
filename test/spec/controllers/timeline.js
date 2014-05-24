@@ -1,17 +1,17 @@
 'use strict';
 
-describe('Controller: MainCtrl', function () {
+describe('Controller: TimelineCtrl', function () {
 
   // load the controller's module
-  beforeEach(module('ngVisJsApp'));
+  beforeEach(module('ngVisjsApp'));
 
-  var MainCtrl,
+  var TimelineCtrl,
     scope;
 
   // Initialize the controller and a mock scope
   beforeEach(inject(function ($controller, $rootScope) {
     scope = $rootScope.$new();
-    MainCtrl = $controller('MainCtrl', {
+    TimelineCtrl = $controller('TimelineCtrl', {
       $scope: scope
     });
   }));

@@ -1,0 +1,153 @@
+<div class="col-sm-3 col-md-2 sidebar">
+  <ul class="nav nav-sidebar">
+    <li ng-repeat="example in examples"
+        ng-class="(exampleIndex == $index + 1) && 'active'">
+      <a ng-click="setExample($index + 1)">{{example}}</a>
+    </li>
+  </ul>
+</div>
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"
+     ng-switch="exampleIndex">
+
+  <!--01. Basic usage-->
+  <section ng-switch-when="1">
+    <h1 class="page-header">01. Basic usage</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--02. Interactive-->
+  <section ng-switch-when="2">
+    <h1 class="page-header">02. Interactive</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--03. Lots of data-->
+  <section ng-switch-when="3">
+    <h1 class="page-header">03. Lots of data</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--04. HTML data-->
+  <section ng-switch-when="4">
+    <h1 class="page-header">04. HTML data</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--05. Groups-->
+  <section ng-switch-when="5">
+    <h1 class="page-header">05. Groups</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--06. Event listeners-->
+  <section ng-switch-when="6">
+    <h1 class="page-header">06. Event listeners</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--07. Custom time bar-->
+  <section ng-switch-when="7">
+    <h1 class="page-header">07. Custom time bar</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--08. Edit items-->
+  <section ng-switch-when="8">
+    <h1 class="page-header">08. Edit items</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--09. Order groups-->
+  <section ng-switch-when="9">
+    <h1 class="page-header">09. Order groups</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--10. Points-->
+  <section ng-switch-when="10">
+    <h1 class="page-header">10. Points</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--11. Custom styling-->
+  <section ng-switch-when="11">
+    <h1 class="page-header">11. Custom styling</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--12. Past and future-->
+  <section ng-switch-when="12">
+    <h1 class="page-header">12. Past and future</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--13. Lots of grouped data-->
+  <section ng-switch-when="13">
+    <h1 class="page-header">13. Lots of grouped data</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+  <!--14. Item class names-->
+  <section ng-switch-when="14">
+    <h1 class="page-header">14. Item class names</h1>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
+      </div>
+    </div>
+  </section>
+
+</div>
