@@ -35,11 +35,8 @@ angular.module('ngVis', []).
     'options',
     function (options) {
       return function (data) {
-        var result = {};
 
-        // console.log('GIVEN DATA ->', data);
-
-        var groups = new vis.DataSet();
+        var _data = {};
 
         var items = new vis.DataSet({
           convert: {
@@ -55,8 +52,13 @@ angular.module('ngVis', []).
         });
 
         if (angular.isArray(data)) {
+
           items.add(data);
+
         } else {
+
+          var groups = new vis.DataSet();
+
           var id = 0;
 
           angular.forEach(data, function (_items, _group) {
@@ -83,12 +85,12 @@ angular.module('ngVis', []).
             id++;
           });
 
-          result.groups = groups;
+          _data.groups = groups;
         }
 
-        result.items = items;
+        _data.items = items;
 
-        return result;
+        return _data;
       }
     }
   ]).
@@ -106,6 +108,11 @@ angular.module('ngVis', []).
           timeline: '='
         },
         link: function (scope, element, attrs) {
+
+          angular.element(element[0]).html('');
+
+          var _timeline = {};
+
           var callbacks = {
             onAdd: scope.timeline.slot.add,
             onMove: scope.timeline.slot.move,
@@ -115,23 +122,33 @@ angular.module('ngVis', []).
 
           angular.extend(options, callbacks);
 
-          var _timeline = new vis.Timeline(element[0]);
+          _timeline = new vis.Timeline(element[0]);
 
           _timeline.setOptions(options);
 
+
           scope.$watch('items', function (data) {
-            // process(data);
+
+            // _timeline.setItems([]);
+            // _timeline.setGroups([]);
 
             var _data = process(data);
 
-            console.log('data ->', data);
+            console.log('data ->', _data);
 
-            if (data.hasOwnProperty('groups')) {
+            console.log('timeline ->', _timeline.itemsData, _timeline.groupsData);
+
+            if (_data.hasOwnProperty('groups')) {
+              console.log('there is groups ->', _data.groups);
+
               _timeline.setGroups(_data.groups);
             }
 
+
             _timeline.setItems(_data.items);
+
           }, true);
+
 
           angular.extend(scope.timeline, {
 

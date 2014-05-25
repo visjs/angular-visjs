@@ -60,9 +60,23 @@ angular.module('ngVisJsApp')
       }
     };
 
-    $scope.loadData('grouped');
+    $scope.loadData('simple');
 
     var debug = false;
+
+    $scope.simplifyItems = function (items) {
+      var simplified = [];
+
+      angular.forEach(items, function (group, label) {
+        angular.forEach(group, function (item) {
+          item.group = label;
+
+          simplified.push(item);
+        });
+      });
+
+      return simplified;
+    };
 
     /**
      * Timeline stuff
