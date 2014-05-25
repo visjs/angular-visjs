@@ -17,4 +17,12 @@ angular
       .otherwise({
         redirectTo: '/timeline'
       });
+  })
+  .run(function ($rootScope) {
+
+    $rootScope.pages = [
+      'Timeline',
+      'Graph'
+    ];
+
   });

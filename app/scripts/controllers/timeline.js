@@ -1,7 +1,9 @@
 'use strict';
 
 angular.module('ngVisJsApp')
-  .controller('TimelineCtrl', function ($scope) {
+  .controller('TimelineCtrl', function ($rootScope, $scope) {
+
+    $rootScope.pageIndex = 1;
 
     $scope.examples = [
       '01. Basic usage',
@@ -20,10 +22,10 @@ angular.module('ngVisJsApp')
       '14. Item class names'
     ];
 
-    $scope.exampleIndex = 1;
-
     $scope.setExample = function (index) {
       $scope.exampleIndex = index;
-    }
+    };
+
+    $scope.setExample(1);
 
   });

@@ -32,8 +32,10 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-left">
-            <li><a href="#/timeline">Timeline</a></li>
-            <li><a href="#/graph">Graph</a></li>
+            <li ng-repeat="page in pages"
+                ng-class="(pageIndex == $index + 1) && 'active'">
+              <a href="#/{{page.toLowerCase()}}">{{page}}</a>
+            </li>
           </ul>
         </div>
       </div>
