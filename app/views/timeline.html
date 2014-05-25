@@ -10,8 +10,19 @@
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"
      ng-switch="exampleIndex">
 
+  <div class="btn-group pull-right">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="loadData('simple')">Simple</button>
+    <button type="button"
+            class="btn btn-default"
+            ng-click="loadData('grouped')">Grouped</button>
+  </div>
+
   <h1 class="page-header">Timeline examples</h1>
-  
+
+  <div items="items" timeline="timeline"></div>
+
   <!--01. Basic usage-->
   <section ng-switch-when="1">
     <h3 class="sub-header">01. Basic usage</h3>

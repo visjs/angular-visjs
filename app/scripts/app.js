@@ -2,7 +2,8 @@
 
 angular
   .module('ngVisJsApp', [
-    'ngRoute'
+    'ngRoute',
+    'ngVis'
   ])
   .config(function ($routeProvider) {
     $routeProvider
