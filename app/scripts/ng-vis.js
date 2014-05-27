@@ -31,27 +31,35 @@ angular.module('ngVis', []).
     groupOrder: 'content'
   }).
 
+  factory('Moment', function () { return vis.moment() }).
+
   factory('process', [
     'options',
     function (options) {
+
+      var items,
+          groups;
+
+      items = new vis.DataSet({
+        convert: {
+          start: 'Date',
+          end: 'Date'
+        }
+      });
 
       var lists = {
         items: [],
         groups: []
       };
 
+      groups = new vis.DataSet();
+
       return function (data) {
 
+        items.clear();
+        groups.clear();
+
         var _data = {};
-
-        var items = new vis.DataSet({
-          convert: {
-            start: 'Date',
-            end: 'Date'
-          }
-        });
-
-        lists.items.push(items.id);
 
         items.on('*', function (event, properties) {
           if (options.debug) {
@@ -61,21 +69,14 @@ angular.module('ngVis', []).
 
         if (angular.isArray(data)) {
 
-          // console.log('window ->', groups);
-
-          // $window.groups.clear();
-
           items.add(data);
 
         } else {
 
-          var groups = new vis.DataSet();
-
-          lists.groups.push(groups.id);
-
           var id = 0;
 
           angular.forEach(data, function (_items, _group) {
+
             groups.add({
               id: id,
               content: _group
@@ -104,10 +105,6 @@ angular.module('ngVis', []).
 
         _data.items = items;
 
-        console.log('lists ->', lists);
-
-        console.log('data ->', _data);
-
         return _data;
       }
     }
@@ -117,6 +114,7 @@ angular.module('ngVis', []).
     'options',
     'process',
     function (options, process) {
+
       return {
         restrict: 'EA',
         replace: true,
@@ -124,6 +122,11 @@ angular.module('ngVis', []).
         scope: {
           data: '=',
           timeline: '='
+        },
+        controller: function (Moment) {
+
+          // console.log('Moment ->', Moment);
+
         },
         link: function (scope, element, attrs) {
 
@@ -146,18 +149,9 @@ angular.module('ngVis', []).
 
           scope.$watch('data', function (data) {
 
-            // _timeline.setItems(process([]));
-            // _timeline.setGroups(process([]));
-
             var _data = process(data);
 
-            // console.log('data ->', _data);
-
-            // console.log('timeline ->', _timeline.itemsData, _timeline.groupsData);
-
             if (_data.hasOwnProperty('groups')) {
-              // console.log('there is groups ->', _data.groups);
-
               _timeline.setGroups(_data.groups);
             }
             else
@@ -165,7 +159,7 @@ angular.module('ngVis', []).
               _timeline.setGroups(null);
             }
 
-            console.log('timeline ->', _timeline);
+            // console.log('timeline ->', _timeline);
 
             _timeline.setItems(_data.items);
 
