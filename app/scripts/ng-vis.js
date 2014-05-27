@@ -34,6 +34,12 @@ angular.module('ngVis', []).
   factory('process', [
     'options',
     function (options) {
+
+      var lists = {
+        items: [],
+        groups: []
+      };
+
       return function (data) {
 
         var _data = {};
@@ -45,6 +51,8 @@ angular.module('ngVis', []).
           }
         });
 
+        lists.items.push(items.id);
+
         items.on('*', function (event, properties) {
           if (options.debug) {
             console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
@@ -53,11 +61,17 @@ angular.module('ngVis', []).
 
         if (angular.isArray(data)) {
 
+          // console.log('window ->', groups);
+
+          // $window.groups.clear();
+
           items.add(data);
 
         } else {
 
           var groups = new vis.DataSet();
+
+          lists.groups.push(groups.id);
 
           var id = 0;
 
@@ -90,6 +104,10 @@ angular.module('ngVis', []).
 
         _data.items = items;
 
+        console.log('lists ->', lists);
+
+        console.log('data ->', _data);
+
         return _data;
       }
     }
@@ -104,7 +122,7 @@ angular.module('ngVis', []).
         replace: true,
         transclude: true,
         scope: {
-          items: '=',
+          data: '=',
           timeline: '='
         },
         link: function (scope, element, attrs) {
@@ -126,24 +144,28 @@ angular.module('ngVis', []).
 
           _timeline.setOptions(options);
 
+          scope.$watch('data', function (data) {
 
-          scope.$watch('items', function (data) {
-
-            // _timeline.setItems([]);
-            // _timeline.setGroups([]);
+            // _timeline.setItems(process([]));
+            // _timeline.setGroups(process([]));
 
             var _data = process(data);
 
-            console.log('data ->', _data);
+            // console.log('data ->', _data);
 
-            console.log('timeline ->', _timeline.itemsData, _timeline.groupsData);
+            // console.log('timeline ->', _timeline.itemsData, _timeline.groupsData);
 
             if (_data.hasOwnProperty('groups')) {
-              console.log('there is groups ->', _data.groups);
+              // console.log('there is groups ->', _data.groups);
 
               _timeline.setGroups(_data.groups);
             }
+            else
+            {
+              _timeline.setGroups(null);
+            }
 
+            console.log('timeline ->', _timeline);
 
             _timeline.setItems(_data.items);
 

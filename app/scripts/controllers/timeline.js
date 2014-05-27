@@ -32,7 +32,7 @@ angular.module('ngVisJsApp')
     $scope.loadData = function (type) {
       switch (type) {
         case 'grouped':
-          $scope.items = {
+          $scope.data = {
             team_1: [
               {id: 1, content: 'item 1', start: '2014-04-18'},
               {id: 2, content: 'item 2', start: '2014-04-18'}
@@ -48,7 +48,7 @@ angular.module('ngVisJsApp')
           };
           break;
         case 'simple':
-          $scope.items = [
+          $scope.data = [
             {id: 1, content: 'item 1', start: '2014-04-20'},
             {id: 2, content: 'item 2', start: '2014-04-20'},
             {id: 3, content: 'item 3', start: '2014-04-18'},
@@ -81,6 +81,8 @@ angular.module('ngVisJsApp')
     /**
      * Timeline stuff
      */
+    // $scope.timeline = {};
+
     $scope.timeline = {
 
       select: function (selected) {
