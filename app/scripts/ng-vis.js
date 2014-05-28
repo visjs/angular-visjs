@@ -5,22 +5,22 @@ angular.module('ngVis', []).
   constant('options', {
 
     orientation: 'bottom',
-    direction: 'horizontal', // 'horizontal' or 'vertical'
-    autoResize: true,
-    stack: true,
+    direction:   'horizontal', // 'horizontal' or 'vertical'
+    autoResize:  true,
+    stack:       true,
 
     editable: {
-      updateTime: false,
+      updateTime:  false,
       updateGroup: false,
-      add: false,
-      remove: false
+      add:         false,
+      remove:      false
     },
 
     selectable: true,
-    snap: null, // will be specified after timeaxis is created
+    snap:       null, // will be specified after timeaxis is created
 
-    min: null,
-    max: null,
+    min:     null,
+    max:     null,
     zoomMin: 10,                                // milliseconds
     zoomMax: 1000 * 60 * 60 * 24 * 365 * 10000, // milliseconds
     // moveable: true, // TODO: option moveable
@@ -29,42 +29,42 @@ angular.module('ngVis', []).
     showMinorLabels: true,
     showMajorLabels: true,
     showCurrentTime: false,
-    showCustomTime: false,
+    showCustomTime:  false,
 
-    type: 'box',
-    align: 'center',
-    margin: {
+    type:    'box',
+    align:   'center',
+    margin:  {
       axis: 20,
       item: 10
     },
     padding: 5,
 
 
-    debug: false,
+    debug:      false,
     // align: 'center',
     // autoResize: true,
     // editable: true,
-    start: null,
-    end: null,
-    height: null,
-    width: '100%',
-//    margin: {
-//      axis: 20,
-//      item: 10
-//    },
-//    min: null,
-//    max: null,
-    maxHeight: null,
-//    orientation: 'bottom',
-//    padding: 5,
-//    selectable: true,
-//    showCurrentTime: true,
-//    showCustomTime: true,
-//    showMajorLabels: true,
-//    showMinorLabels: true,
-//    type: 'box', // dot | point
-//    zoomMin: 1000,
-//    zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
+    start:      null,
+    end:        null,
+    height:     null,
+    width:      '100%',
+    //    margin: {
+    //      axis: 20,
+    //      item: 10
+    //    },
+    //    min: null,
+    //    max: null,
+    maxHeight:  null,
+    //    orientation: 'bottom',
+    //    padding: 5,
+    //    selectable: true,
+    //    showCurrentTime: true,
+    //    showCustomTime: true,
+    //    showMajorLabels: true,
+    //    showMinorLabels: true,
+    //    type: 'box', // dot | point
+    //    zoomMin: 1000,
+    //    zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
     groupOrder: 'content'
   }).
 
@@ -77,12 +77,12 @@ angular.module('ngVis', []).
     function (options) {
 
       var items,
-        groups;
+          groups;
 
       items = new vis.DataSet({
         convert: {
           start: 'Date',
-          end: 'Date'
+          end:   'Date'
         }
       });
 
@@ -112,16 +112,16 @@ angular.module('ngVis', []).
           angular.forEach(data, function (_items, _group) {
 
             groups.add({
-              id: id,
+              id:      id,
               content: _group
             });
 
             angular.forEach(_items, function (item) {
               var _item = {
-                id: item.id,
-                group: id,
+                id:      item.id,
+                group:   id,
                 content: item.content,
-                start: item.start
+                start:   item.start
               };
 
               if (item.hasOwnProperty('end')) {
@@ -150,12 +150,12 @@ angular.module('ngVis', []).
     function (options, process) {
 
       return {
-        restrict: 'EA',
-        replace: true,
+        restrict:   'EA',
+        replace:    true,
         transclude: true,
-        scope: {
-          data: '=',
-          options: '=',
+        scope:      {
+          data:     '=',
+          options:  '=',
           timeline: '='
         },
 
@@ -166,36 +166,26 @@ angular.module('ngVis', []).
         link: function (scope, element, attrs) {
 
 
-
           angular.element(element[0]).html('');
 
 
           var _timeline = {};
 
 
-
-
-//          var callbacks = {
-//            onAdd: scope.timeline.slot.add,
-//            onMove: scope.timeline.slot.move,
-//            onUpdate: scope.timeline.slot.update,
-//            onRemove: scope.timeline.slot.remove
-//          };
-//
-//
-//
-//
-//          angular.extend(options, callbacks);
-
-
+          //          var callbacks = {
+          //            onAdd: scope.timeline.slot.add,
+          //            onMove: scope.timeline.slot.move,
+          //            onUpdate: scope.timeline.slot.update,
+          //            onRemove: scope.timeline.slot.remove
+          //          };
+          //
+          //
+          //
+          //
+          //          angular.extend(options, callbacks);
 
 
           _timeline = new vis.Timeline(element[0]);
-
-
-
-
-
 
 
           scope.$watch('data', function (data) {
@@ -218,17 +208,14 @@ angular.module('ngVis', []).
           }, true);
 
 
-
-
-
           scope.$watch('options', function (_options) {
 
             console.log('options changed!');
 
             if (_options.defaults) {
 
+              _timeline.clear({options: true});
               _timeline.setOptions(options);
-              _timeline.setOptions({orientation: 'bottom'});
               console.log('coming to defaults!');
 
             } else {
@@ -241,16 +228,6 @@ angular.module('ngVis', []).
             }
 
           });
-
-
-
-
-
-
-
-
-
-
 
 
           angular.extend(scope.timeline, {
@@ -311,29 +288,29 @@ angular.module('ngVis', []).
   directive('timeBoard', [
     function () {
       return {
-        restrict: 'E',
-        replace: false,
-        scope: {
+        restrict:   'E',
+        replace:    false,
+        scope:      {
           timeline: '='
         },
         controller: function ($scope) {
           var range = {
             apart: function (date) {
               return {
-                year: moment(date).get('year'),
-                month: {
+                year:   moment(date).get('year'),
+                month:  {
                   number: moment(date).get('month'),
-                  name: moment(date).format('MMMM')
+                  name:   moment(date).format('MMMM')
                 },
-                week: moment(date).format('w'),
-                day: {
+                week:   moment(date).format('w'),
+                day:    {
                   number: moment(date).get('date'),
-                  name: moment(date).format('dddd')
+                  name:   moment(date).format('dddd')
                 },
-                hour: moment(date).format('HH'),
+                hour:   moment(date).format('HH'),
                 minute: moment(date).format('mm'),
                 second: moment(date).format('ss'),
-                milli: moment(date).get('milliseconds')
+                milli:  moment(date).get('milliseconds')
               }
             },
 
@@ -345,25 +322,25 @@ angular.module('ngVis', []).
 
               // TODO: Choose for a more sensible name
               var info = {
-                first: '',
+                first:  '',
                 second: '',
-                third: ''
+                third:  ''
               };
 
               if (p.s.year == p.e.year) {
                 info = {
-                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
-                    p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
+                  first:  p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
+                            p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
                   second: p.s.year,
-                  third: ''
+                  third:  ''
                 };
 
                 if (p.s.month.number == p.e.month.number) {
                   info = {
-                    first: p.s.day.name + ' ' + p.s.day.number + '  -  ' +
-                      p.e.day.name + ' ' + p.e.day.number,
+                    first:  p.s.day.name + ' ' + p.s.day.number + '  -  ' +
+                              p.e.day.name + ' ' + p.e.day.number,
                     second: p.s.month.name + ' ' + p.s.year,
-                    third: 'Month number: ' + Number(p.s.month.number + 1)
+                    third:  'Month number: ' + Number(p.s.month.number + 1)
                   };
 
                   if (p.s.week == p.e.week) {
@@ -385,26 +362,26 @@ angular.module('ngVis', []).
                     }
 
                     info = {
-                      first: p.s.hour + ':' + p.s.minute + '  -  ' +
-                        p.e.hour + ':' + p.e.minute,
+                      first:  p.s.hour + ':' + p.s.minute + '  -  ' +
+                                p.e.hour + ':' + p.e.minute,
                       second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                      third: 'Week number: ' + p.s.week
+                      third:  'Week number: ' + p.s.week
                     };
 
                     if (p.s.hour == p.e.hour) {
                       info = {
-                        first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
-                          p.e.hour + ':' + p.e.minute + ':' + p.e.second,
+                        first:  p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
+                                  p.e.hour + ':' + p.e.minute + ':' + p.e.second,
                         second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                        third: 'Week number: ' + p.s.week
+                        third:  'Week number: ' + p.s.week
                       };
 
                       if (p.s.minute == p.e.minute) {
                         info = {
-                          first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
-                            p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
+                          first:  p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
+                                    p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
                           second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                          third: 'Week number: ' + p.s.week
+                          third:  'Week number: ' + p.s.week
                         };
                       }
                     }
@@ -413,11 +390,11 @@ angular.module('ngVis', []).
               }
               else {
                 info = {
-                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
-                    + '  -  ' +
-                    p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
+                  first:  p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
+                            + '  -  ' +
+                            p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
                   second: '',
-                  third: 'Years: ' + p.s.year + ' - ' + p.e.year
+                  third:  'Years: ' + p.s.year + ' - ' + p.e.year
                 };
               }
 
@@ -440,9 +417,9 @@ angular.module('ngVis', []).
   directive('timeNav', [
     function () {
       return {
-        restrict: 'E',
-        replace: false,
-        scope: {
+        restrict:   'E',
+        replace:    false,
+        scope:      {
           timeline: '='
         },
         controller: function ($scope) {
@@ -450,10 +427,10 @@ angular.module('ngVis', []).
 
           $scope.timeline.setScope = function (scope) {
             $scope.timeline.scope = {
-              day: false,
-              week: false,
-              month: false,
-              year: false,
+              day:    false,
+              week:   false,
+              month:  false,
+              year:   false,
               custom: false
             };
 
@@ -466,10 +443,10 @@ angular.module('ngVis', []).
               );
 
               $scope.timeline.setOptions({
-                min: moment().startOf(scope).valueOf(),
+                min:   moment().startOf(scope).valueOf(),
                 start: moment().startOf(scope).valueOf(),
-                max: moment().endOf(scope).valueOf(),
-                end: moment().endOf(scope).valueOf()
+                max:   moment().endOf(scope).valueOf(),
+                end:   moment().endOf(scope).valueOf()
               });
             }
             else {
@@ -497,10 +474,10 @@ angular.module('ngVis', []).
             );
 
             $scope.timeline.setOptions({
-              min: moment().add(scope, start).startOf(scope).valueOf(),
+              min:   moment().add(scope, start).startOf(scope).valueOf(),
               start: moment().add(scope, start).startOf(scope).valueOf(),
-              max: moment().add(scope, start).endOf(scope).valueOf(),
-              end: moment().add(scope, start).endOf(scope).valueOf()
+              max:   moment().add(scope, start).endOf(scope).valueOf(),
+              end:   moment().add(scope, start).endOf(scope).valueOf()
             });
           };
 
