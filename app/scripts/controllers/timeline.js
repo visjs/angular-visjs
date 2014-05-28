@@ -5,30 +5,6 @@ angular.module('ngVisJsApp')
 
     $rootScope.pageIndex = 1;
 
-    $scope.examples = [
-      '01. Basic usage',
-      '02. Interactive',
-      '03. Lots of data',
-      '04. HTML data',
-      '05. Groups',
-      '06. Event listeners',
-      '07. Custom time bar',
-      '08. Edit items',
-      '09. Order groups',
-      '10. Points',
-      '11. Custom styling',
-      '12. Past and future',
-      '13. Lots of grouped data',
-      '14. Item class names'
-    ];
-
-    $scope.setExample = function (index) {
-      $scope.exampleIndex = index;
-    };
-
-    $scope.setExample(1);
-
-
     $scope.loadData = function (type) {
       switch (type) {
         case 'grouped':
@@ -60,6 +36,74 @@ angular.module('ngVisJsApp')
       }
     };
 
+    $scope.examples = [
+      '01. Basic usage',
+      '02. Interactive',
+      '03. Lots of data',
+      '04. HTML data',
+      '05. Groups',
+      '06. Event listeners',
+      '07. Custom time bar',
+      '08. Edit items',
+      '09. Order groups',
+      '10. Points',
+      '11. Custom styling',
+      '12. Past and future',
+      '13. Lots of grouped data',
+      '14. Item class names'
+    ];
+
+    $scope.setExample = function (index) {
+      $scope.exampleIndex = index;
+
+      switch (index) {
+        case 1:
+          $scope.options = {
+            defaults: true
+          };
+
+          $scope.data = [
+            {id: 1, content: 'item 1', start: '2014-04-20'},
+            {id: 2, content: 'item 2', start: '2014-04-14'},
+            {id: 3, content: 'item 3', start: '2014-04-18'},
+            {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
+            {id: 5, content: 'item 5', start: '2014-04-25'},
+            {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
+          ];
+          break;
+
+        case 2:
+          $scope.options = {
+            start: '2014-01-10',
+            end: '2014-02-10',
+            orientation: 'top',
+            height: '300px',
+            editable: true,
+            /* alternatively, enable/disable individual actions:
+             editable: {
+             add: true,
+             updateTime: true,
+             updateGroup: true,
+             remove: true
+             },
+             */
+            showCurrentTime: true
+          };
+
+          $scope.data = [
+            {id: 1, content: 'item 1<br>start', start: '2014-01-23'},
+            {id: 2, content: 'item 2', start: '2014-01-18'},
+            {id: 3, content: 'item 3', start: '2014-01-21'},
+            {id: 4, content: 'item 4', start: '2014-01-19', end: '2014-01-24'},
+            {id: 5, content: 'item 5', start: '2014-01-28', type:'point'},
+            {id: 6, content: 'item 6', start: '2014-01-26'}
+          ];
+          break;
+      }
+    };
+
+    $scope.setExample(1);
+
     $scope.loadData('simple');
 
     var debug = false;
@@ -81,8 +125,6 @@ angular.module('ngVisJsApp')
     /**
      * Timeline stuff
      */
-    // $scope.timeline = {};
-
     $scope.timeline = {
 
       select: function (selected) {

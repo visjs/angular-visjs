@@ -3,42 +3,81 @@
 angular.module('ngVis', []).
 
   constant('options', {
-    debug: false,
-    align: 'center',
+
+    orientation: 'bottom',
+    direction: 'horizontal', // 'horizontal' or 'vertical'
     autoResize: true,
-    editable: true,
-    start: null,
-    end: null,
-    height: null,
-    width: '100%',
+    stack: true,
+
+    editable: {
+      updateTime: false,
+      updateGroup: false,
+      add: false,
+      remove: false
+    },
+
+    selectable: true,
+    snap: null, // will be specified after timeaxis is created
+
+    min: null,
+    max: null,
+    zoomMin: 10,                                // milliseconds
+    zoomMax: 1000 * 60 * 60 * 24 * 365 * 10000, // milliseconds
+    // moveable: true, // TODO: option moveable
+    // zoomable: true, // TODO: option zoomable
+
+    showMinorLabels: true,
+    showMajorLabels: true,
+    showCurrentTime: false,
+    showCustomTime: false,
+
+    type: 'box',
+    align: 'center',
     margin: {
       axis: 20,
       item: 10
     },
-    min: null,
-    max: null,
-    maxHeight: null,
-    orientation: 'top',
     padding: 5,
-    selectable: true,
-    showCurrentTime: true,
-    showCustomTime: true,
-    showMajorLabels: true,
-    showMinorLabels: true,
-    type: 'box', // dot | point
-    zoomMin: 1000,
-    zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
+
+
+    debug: false,
+    // align: 'center',
+    // autoResize: true,
+    // editable: true,
+    start: null,
+    end: null,
+    height: null,
+    width: '100%',
+//    margin: {
+//      axis: 20,
+//      item: 10
+//    },
+//    min: null,
+//    max: null,
+    maxHeight: null,
+//    orientation: 'bottom',
+//    padding: 5,
+//    selectable: true,
+//    showCurrentTime: true,
+//    showCustomTime: true,
+//    showMajorLabels: true,
+//    showMinorLabels: true,
+//    type: 'box', // dot | point
+//    zoomMin: 1000,
+//    zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
     groupOrder: 'content'
   }).
 
-  factory('Moment', function () { return vis.moment() }).
+  factory('Moment', function () {
+    return vis.moment()
+  }).
 
   factory('process', [
     'options',
     function (options) {
 
       var items,
-          groups;
+        groups;
 
       items = new vis.DataSet({
         convert: {
@@ -46,11 +85,6 @@ angular.module('ngVis', []).
           end: 'Date'
         }
       });
-
-      var lists = {
-        items: [],
-        groups: []
-      };
 
       groups = new vis.DataSet();
 
@@ -121,57 +155,114 @@ angular.module('ngVis', []).
         transclude: true,
         scope: {
           data: '=',
+          options: '=',
           timeline: '='
         },
+
         controller: function (Moment) {
-
           // console.log('Moment ->', Moment);
-
         },
+
         link: function (scope, element, attrs) {
+
+
 
           angular.element(element[0]).html('');
 
+
           var _timeline = {};
 
-          var callbacks = {
-            onAdd: scope.timeline.slot.add,
-            onMove: scope.timeline.slot.move,
-            onUpdate: scope.timeline.slot.update,
-            onRemove: scope.timeline.slot.remove
-          };
 
-          angular.extend(options, callbacks);
+
+
+//          var callbacks = {
+//            onAdd: scope.timeline.slot.add,
+//            onMove: scope.timeline.slot.move,
+//            onUpdate: scope.timeline.slot.update,
+//            onRemove: scope.timeline.slot.remove
+//          };
+//
+//
+//
+//
+//          angular.extend(options, callbacks);
+
+
+
 
           _timeline = new vis.Timeline(element[0]);
 
-          _timeline.setOptions(options);
+
+
+
+
+
 
           scope.$watch('data', function (data) {
+
+            console.log('data changed!');
 
             var _data = process(data);
 
             if (_data.hasOwnProperty('groups')) {
               _timeline.setGroups(_data.groups);
             }
-            else
-            {
+            else {
               _timeline.setGroups(null);
             }
 
-            // console.log('timeline ->', _timeline);
-
             _timeline.setItems(_data.items);
 
+            // console.log('timeline ->', _timeline);
+
           }, true);
+
+
+
+
+
+          scope.$watch('options', function (_options) {
+
+            console.log('options changed!');
+
+            if (_options.defaults) {
+
+              _timeline.setOptions(options);
+              _timeline.setOptions({orientation: 'bottom'});
+              console.log('coming to defaults!');
+
+            } else {
+
+              // var opts = angular.extend(angular.extend({}, _options), options);
+              _timeline.setOptions(_options);
+              // _timeline.setWindow(_options.start, _options.end);
+              console.log('setting custom options!');
+
+            }
+
+          });
+
+
+
+
+
+
+
+
+
+
 
 
           angular.extend(scope.timeline, {
 
             customDate: _timeline.getCustomTime(),
 
+            setOptions: function (options) {
+              _timeline.setOptions(options);
+            },
+
             getSelection: function () {
-              return _timeline.getSelection();
+              return _timeline.getSelection()
             },
 
             setSelection: function (selection) {
@@ -194,29 +285,21 @@ angular.module('ngVis', []).
               _timeline.setCustomTime(time);
 
               this.customDate = _timeline.getCustomTime();
-            },
-
-            setOptions: function (options) {
-              _timeline.setOptions(options);
             }
           });
 
           _timeline.on('rangechange', function (period) {
             scope.timeline.rangeChange(period);
           });
-
           _timeline.on('rangechanged', function (period) {
             scope.timeline.rangeChanged(period);
           });
-
           _timeline.on('select', function (selected) {
             scope.timeline.select(selected);
           });
-
           _timeline.on('timechange', function (period) {
             scope.timeline.timeChange(period);
           });
-
           _timeline.on('timechanged', function (period) {
             scope.timeline.timeChanged(period);
           });
