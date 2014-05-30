@@ -1,25 +1,33 @@
 'use strict';
 
 angular
-  .module('ngVisJsApp', [
+  .module(
+  'ngVisJsApp', [
     'ngRoute',
     'ngVis'
   ])
-  .config(function ($routeProvider) {
+  .config(
+  function ($routeProvider)
+  {
     $routeProvider
-      .when('/timeline', {
+      .when(
+      '/timeline', {
         templateUrl: 'views/timeline.html',
         controller: 'TimelineCtrl'
       })
-      .when('/graph', {
+      .when(
+      '/graph', {
         templateUrl: 'views/graph.html',
         controller: 'GraphCtrl'
       })
-      .otherwise({
+      .otherwise(
+      {
         redirectTo: '/timeline'
       });
   })
-  .run(function ($rootScope) {
+  .run(
+  function ($rootScope)
+  {
 
     $rootScope.pages = [
       'Timeline',

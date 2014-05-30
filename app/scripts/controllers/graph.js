@@ -1,7 +1,9 @@
 'use strict';
 
 angular.module('ngVisJsApp')
-  .controller('GraphCtrl', function ($rootScope, $scope) {
+  .controller(
+  'GraphCtrl', function ($rootScope, $scope)
+  {
 
     $rootScope.pageIndex = 2;
 
@@ -34,7 +36,8 @@ angular.module('ngVisJsApp')
       '26. Graphviz gallery'
     ];
 
-    $scope.setExample = function (index) {
+    $scope.setExample = function (index)
+    {
       $scope.exampleIndex = index;
     };
 

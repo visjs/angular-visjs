@@ -1,12 +1,16 @@
 'use strict';
 
 angular.module('ngVisJsApp')
-  .controller('TimelineCtrl', function ($rootScope, $scope) {
+  .controller(
+  'TimelineCtrl', function ($rootScope, $scope)
+  {
 
     $rootScope.pageIndex = 1;
 
-    $scope.loadData = function (type) {
-      switch (type) {
+    $scope.loadData = function (type)
+    {
+      switch (type)
+      {
         case 'grouped':
           $scope.data = {
             team_1: [
@@ -53,10 +57,12 @@ angular.module('ngVisJsApp')
       '14. Item class names'
     ];
 
-    $scope.setExample = function (index) {
+    $scope.setExample = function (index)
+    {
       $scope.exampleIndex = index;
 
-      switch (index) {
+      switch (index)
+      {
         case 1:
           $scope.options = {
             defaults: true
@@ -95,7 +101,7 @@ angular.module('ngVisJsApp')
             {id: 2, content: 'item 2', start: '2014-01-18'},
             {id: 3, content: 'item 3', start: '2014-01-21'},
             {id: 4, content: 'item 4', start: '2014-01-19', end: '2014-01-24'},
-            {id: 5, content: 'item 5', start: '2014-01-28', type:'point'},
+            {id: 5, content: 'item 5', start: '2014-01-28', type: 'point'},
             {id: 6, content: 'item 6', start: '2014-01-26'}
           ];
           break;
@@ -108,16 +114,21 @@ angular.module('ngVisJsApp')
 
     var debug = false;
 
-    $scope.simplifyItems = function (items) {
+    $scope.simplifyItems = function (items)
+    {
       var simplified = [];
 
-      angular.forEach(items, function (group, label) {
-        angular.forEach(group, function (item) {
-          item.group = label;
+      angular.forEach(
+        items, function (group, label)
+        {
+          angular.forEach(
+            group, function (item)
+            {
+              item.group = label;
 
-          simplified.push(item);
+              simplified.push(item);
+            });
         });
-      });
 
       return simplified;
     };
@@ -127,8 +138,10 @@ angular.module('ngVisJsApp')
      */
     $scope.timeline = {
 
-      select: function (selected) {
-        if (debug) {
+      select: function (selected)
+      {
+        if (debug)
+        {
           console.log('selected items: ', selected.items);
         }
 
@@ -136,8 +149,11 @@ angular.module('ngVisJsApp')
 
         var format = 'YYYY-MM-DDTHH:mm';
 
-        angular.forEach(items, function (item) {
-            if (item.id == selected.items[0]) {
+        angular.forEach(
+          items, function (item)
+          {
+            if (item.id == selected.items[0])
+            {
               $scope.slot = {
                 id: item.id,
                 start: moment(item.start).format(format),
@@ -153,116 +169,138 @@ angular.module('ngVisJsApp')
 
       range: {},
 
-      rangeChange: function (period) {
+      rangeChange: function (period)
+      {
         this.range = $scope.timeline.getWindow();
 
-        if (!$scope.$$phase) {
+        if (! $scope.$$phase)
+        {
           $scope.$apply();
         }
 
-        if (debug) {
+        if (debug)
+        {
           console.log('rangeChange: start-> ', period.start, ' end-> ', period.end);
         }
       },
 
-      rangeChanged: function (period) {
-        if (debug) {
+      rangeChanged: function (period)
+      {
+        if (debug)
+        {
           console.log('rangeChange(d): start-> ', period.start, ' end-> ', period.end);
         }
       },
 
       customTime: null,
 
-      timeChange: function (period) {
-        if (debug) {
+      timeChange: function (period)
+      {
+        if (debug)
+        {
           console.log('timeChange: ', period.time);
         }
 
         $scope.$apply(
-          function () {
+          function ()
+          {
             $scope.timeline.customTime = period.time;
           }
         );
       },
 
-      timeChanged: function (period) {
-        if (debug) {
+      timeChanged: function (period)
+      {
+        if (debug)
+        {
           console.log('timeChange(d): ', period.time);
         }
       },
 
       slot: {
-        add: function (item, callback) {
+        add: function (item, callback)
+        {
           item.content = prompt('Enter text content for new item:', item.content);
 
-          if (item.content != null) {
+          if (item.content != null)
+          {
             callback(item); // send back adjusted new item
           }
-          else {
+          else
+          {
             callback(null); // cancel item creation
           }
         },
 
-        move: function (item, callback) {
+        move: function (item, callback)
+        {
           if (confirm(
               'Do you really want to move the item to\n' +
               'start: ' + item.start + '\n' +
-              'end: ' + item.end + '?')) {
+              'end: ' + item.end + '?'))
+          {
             callback(item); // send back item as confirmation (can be changed
           }
-          else {
+          else
+          {
             callback(null); // cancel editing item
           }
         },
 
-        update: function (item, callback) {
+        update: function (item, callback)
+        {
           item.content = prompt('Edit items text:', item.content);
 
-          if (item.content != null) {
+          if (item.content != null)
+          {
             callback(item); // send back adjusted item
           }
-          else {
+          else
+          {
             callback(null); // cancel updating the item
           }
         },
 
-        remove: function (item, callback) {
-          if (confirm('Remove item ' + item.content + '?')) {
+        remove: function (item, callback)
+        {
+          if (confirm('Remove item ' + item.content + '?'))
+          {
             callback(item); // confirm deletion
           }
-          else {
+          else
+          {
             callback(null); // cancel deletion
           }
         }
       }
     };
 
-//    $scope.getCustomTime = function () {
-//      $scope.gotCustomDate = $scope.timeline.getCustomTime();
-//    };
-//
-//    $scope.getSelection = function () {
-//      $scope.gotSelection = $scope.timeline.getSelection();
-//    };
-//
-//    $scope.setSelection = function (selection) {
-//      selection = (angular.isArray(selection)) ? selection : [].concat(selection);
-//
-//      $scope.timeline.setSelection(selection);
-//    };
-//
-//    $scope.getWindow = function () {
-//      $scope.gotWindow = $scope.timeline.getWindow();
-//    };
-//
-//    $scope.setWindow = function (start, end) {
-//      $scope.timeline.setScope('custom');
-//
-//      $scope.timeline.setWindow(start, end);
-//    };
+    //    $scope.getCustomTime = function () {
+    //      $scope.gotCustomDate = $scope.timeline.getCustomTime();
+    //    };
+    //
+    //    $scope.getSelection = function () {
+    //      $scope.gotSelection = $scope.timeline.getSelection();
+    //    };
+    //
+    //    $scope.setSelection = function (selection) {
+    //      selection = (angular.isArray(selection)) ? selection : [].concat(selection);
+    //
+    //      $scope.timeline.setSelection(selection);
+    //    };
+    //
+    //    $scope.getWindow = function () {
+    //      $scope.gotWindow = $scope.timeline.getWindow();
+    //    };
+    //
+    //    $scope.setWindow = function (start, end) {
+    //      $scope.timeline.setScope('custom');
+    //
+    //      $scope.timeline.setWindow(start, end);
+    //    };
 
-//    $scope.setOptions = function (options) {
-//      $scope.timeline.setOptions(options);
-//    };
+    //    $scope.setOptions = function (options) {
+    //      $scope.timeline.setOptions(options);
+    //    };
 
   });

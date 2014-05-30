@@ -1,26 +1,34 @@
 'use strict';
 
+// 1. Make filters from range indicators
+// 2. Implement a controller for directive
+// 3. Take data processing functions into the controller
+// 4. Implement $destroy event catchers for directive element and scope
+// 5. Supply callbacks via their own functions
+// 6. Give an object back which holds information about timeline itself
+
 angular.module('ngVis', []).
 
-  constant('options', {
+  constant(
+  'options', {
 
     orientation: 'bottom',
-    direction:   'horizontal', // 'horizontal' or 'vertical'
-    autoResize:  true,
-    stack:       true,
+    direction: 'horizontal', // 'horizontal' or 'vertical'
+    autoResize: true,
+    stack: true,
 
     editable: {
-      updateTime:  false,
+      updateTime: false,
       updateGroup: false,
-      add:         false,
-      remove:      false
+      add: false,
+      remove: false
     },
 
     selectable: true,
-    snap:       null, // will be specified after timeaxis is created
+    snap: null, // will be specified after timeaxis is created
 
-    min:     null,
-    max:     null,
+    min: null,
+    max: null,
     zoomMin: 10,                                // milliseconds
     zoomMax: 1000 * 60 * 60 * 24 * 365 * 10000, // milliseconds
     // moveable: true, // TODO: option moveable
@@ -29,32 +37,32 @@ angular.module('ngVis', []).
     showMinorLabels: true,
     showMajorLabels: true,
     showCurrentTime: false,
-    showCustomTime:  false,
+    showCustomTime: false,
 
-    type:    'box',
-    align:   'center',
-    margin:  {
+    type: 'box',
+    align: 'center',
+    margin: {
       axis: 20,
       item: 10
     },
     padding: 5,
 
 
-    debug:      false,
+    debug: false,
     // align: 'center',
     // autoResize: true,
     // editable: true,
-    start:      null,
-    end:        null,
-    height:     null,
-    width:      '100%',
+    start: null,
+    end: null,
+    height: null,
+    width: '100%',
     //    margin: {
     //      axis: 20,
     //      item: 10
     //    },
     //    min: null,
     //    max: null,
-    maxHeight:  null,
+    maxHeight: null,
     //    orientation: 'bottom',
     //    padding: 5,
     //    selectable: true,
@@ -68,71 +76,89 @@ angular.module('ngVis', []).
     groupOrder: 'content'
   }).
 
-  factory('Moment', function () {
+  factory(
+  'Moment', function ()
+  {
     return vis.moment()
   }).
 
-  factory('process', [
+  factory(
+  'process', [
     'options',
-    function (options) {
+    function (options)
+    {
 
       var items,
           groups;
 
-      items = new vis.DataSet({
-        convert: {
-          start: 'Date',
-          end:   'Date'
-        }
-      });
+      items = new vis.DataSet(
+        {
+          convert: {
+            start: 'Date',
+            end: 'Date'
+          }
+        });
 
       groups = new vis.DataSet();
 
-      return function (data) {
+      return function (data)
+      {
 
         items.clear();
         groups.clear();
 
         var _data = {};
 
-        items.on('*', function (event, properties) {
-          if (options.debug) {
-            console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
-          }
-        });
+        items.on(
+          '*', function (event, properties)
+          {
+            if (options.debug)
+            {
+              console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
+            }
+          });
 
-        if (angular.isArray(data)) {
+        if (angular.isArray(data))
+        {
 
           items.add(data);
 
-        } else {
+        }
+        else
+        {
 
           var id = 0;
 
-          angular.forEach(data, function (_items, _group) {
+          angular.forEach(
+            data, function (_items, _group)
+            {
 
-            groups.add({
-              id:      id,
-              content: _group
+              groups.add(
+                {
+                  id: id,
+                  content: _group
+                });
+
+              angular.forEach(
+                _items, function (item)
+                {
+                  var _item = {
+                    id: item.id,
+                    group: id,
+                    content: item.content,
+                    start: item.start
+                  };
+
+                  if (item.hasOwnProperty('end'))
+                  {
+                    _item.end = item.end;
+                  }
+
+                  items.add(_item);
+                });
+
+              id ++;
             });
-
-            angular.forEach(_items, function (item) {
-              var _item = {
-                id:      item.id,
-                group:   id,
-                content: item.content,
-                start:   item.start
-              };
-
-              if (item.hasOwnProperty('end')) {
-                _item.end = item.end;
-              }
-
-              items.add(_item);
-            });
-
-            id++;
-          });
 
           _data.groups = groups;
         }
@@ -144,26 +170,30 @@ angular.module('ngVis', []).
     }
   ]).
 
-  directive('timeline', [
+  directive(
+  'timeline', [
     'options',
     'process',
-    function (options, process) {
+    function (options, process)
+    {
 
       return {
-        restrict:   'EA',
-        replace:    true,
+        restrict: 'EA',
+        replace: true,
         transclude: true,
-        scope:      {
-          data:     '=',
-          options:  '=',
+        scope: {
+          data: '=',
+          options: '=',
           timeline: '='
         },
 
-        controller: function (Moment) {
+        controller: function (Moment)
+        {
           // console.log('Moment ->', Moment);
         },
 
-        link: function (scope, element, attrs) {
+        link: function (scope, element, attrs)
+        {
 
 
           angular.element(element[0]).html('');
@@ -188,133 +218,170 @@ angular.module('ngVis', []).
           _timeline = new vis.Timeline(element[0]);
 
 
-          scope.$watch('data', function (data) {
+          scope.$watch(
+            'data', function (data)
+            {
 
-            console.log('data changed!');
+              console.log('data changed!');
 
-            var _data = process(data);
+              _timeline.clear();
 
-            if (_data.hasOwnProperty('groups')) {
-              _timeline.setGroups(_data.groups);
-            }
-            else {
-              _timeline.setGroups(null);
-            }
+              var _data = process(data);
 
-            _timeline.setItems(_data.items);
+              if (_data.hasOwnProperty('groups'))
+              {
+                _timeline.setGroups(_data.groups);
+              }
+              else
+              {
+                _timeline.setGroups(null);
+              }
 
-            // console.log('timeline ->', _timeline);
+              _timeline.setItems(_data.items);
 
-          }, true);
+              // console.log('timeline ->', _timeline);
 
-
-          scope.$watch('options', function (_options) {
-
-            console.log('options changed!');
-
-            if (_options.defaults) {
-
-              _timeline.clear({options: true});
-              _timeline.setOptions(options);
-              console.log('coming to defaults!');
-
-            } else {
-
-              // var opts = angular.extend(angular.extend({}, _options), options);
-              _timeline.setOptions(_options);
-              // _timeline.setWindow(_options.start, _options.end);
-              console.log('setting custom options!');
-
-            }
-
-          });
+            }, true);
 
 
-          angular.extend(scope.timeline, {
+          scope.$watch(
+            'options', function (_options)
+            {
 
-            customDate: _timeline.getCustomTime(),
+              console.log('options changed!');
 
-            setOptions: function (options) {
-              _timeline.setOptions(options);
-            },
+              if (_options.defaults)
+              {
 
-            getSelection: function () {
-              return _timeline.getSelection()
-            },
+                _timeline.clear({options: true});
 
-            setSelection: function (selection) {
-              return _timeline.setSelection(selection);
-            },
+                // _timeline.setOptions(options);
+                // _timeline.setOptions({start: null, end: null});
 
-            getWindow: function () {
-              return _timeline.getWindow();
-            },
+                console.log('coming to defaults!');
 
-            setWindow: function (start, end) {
-              return _timeline.setWindow(start, end);
-            },
+              }
+              else
+              {
 
-            getCustomTime: function () {
-              return _timeline.getCustomTime();
-            },
+                // var opts = angular.extend(angular.extend({}, _options), options);
+                _timeline.setOptions(_options);
+                // _timeline.setWindow(_options.start, _options.end);
+                console.log('setting custom options!');
 
-            setCustomTime: function (time) {
-              _timeline.setCustomTime(time);
+              }
 
-              this.customDate = _timeline.getCustomTime();
-            }
-          });
+            });
 
-          _timeline.on('rangechange', function (period) {
-            scope.timeline.rangeChange(period);
-          });
-          _timeline.on('rangechanged', function (period) {
-            scope.timeline.rangeChanged(period);
-          });
-          _timeline.on('select', function (selected) {
-            scope.timeline.select(selected);
-          });
-          _timeline.on('timechange', function (period) {
-            scope.timeline.timeChange(period);
-          });
-          _timeline.on('timechanged', function (period) {
-            scope.timeline.timeChanged(period);
-          });
+
+          angular.extend(
+            scope.timeline, {
+
+              customDate: _timeline.getCustomTime(),
+
+              setOptions: function (options)
+              {
+                _timeline.setOptions(options);
+              },
+
+              getSelection: function ()
+              {
+                return _timeline.getSelection()
+              },
+
+              setSelection: function (selection)
+              {
+                return _timeline.setSelection(selection);
+              },
+
+              getWindow: function ()
+              {
+                return _timeline.getWindow();
+              },
+
+              setWindow: function (start, end)
+              {
+                return _timeline.setWindow(start, end);
+              },
+
+              getCustomTime: function ()
+              {
+                return _timeline.getCustomTime();
+              },
+
+              setCustomTime: function (time)
+              {
+                _timeline.setCustomTime(time);
+
+                this.customDate = _timeline.getCustomTime();
+              }
+            });
+
+          _timeline.on(
+            'rangechange', function (period)
+            {
+              scope.timeline.rangeChange(period);
+            });
+          _timeline.on(
+            'rangechanged', function (period)
+            {
+              scope.timeline.rangeChanged(period);
+            });
+          _timeline.on(
+            'select', function (selected)
+            {
+              scope.timeline.select(selected);
+            });
+          _timeline.on(
+            'timechange', function (period)
+            {
+              scope.timeline.timeChange(period);
+            });
+          _timeline.on(
+            'timechanged', function (period)
+            {
+              scope.timeline.timeChanged(period);
+            });
         }
       }
     }
   ]).
 
-  directive('timeBoard', [
-    function () {
+  directive(
+  'timeBoard', [
+    function ()
+    {
       return {
-        restrict:   'E',
-        replace:    false,
-        scope:      {
+        restrict: 'E',
+        replace: false,
+        scope: {
           timeline: '='
         },
-        controller: function ($scope) {
+        controller: function ($scope)
+        {
           var range = {
-            apart: function (date) {
+            apart: function (date)
+            {
               return {
-                year:   moment(date).get('year'),
-                month:  {
+                year: moment(date).get('year'),
+                month: {
                   number: moment(date).get('month'),
-                  name:   moment(date).format('MMMM')
+                  name: moment(date).format('MMMM')
                 },
-                week:   moment(date).format('w'),
-                day:    {
+                week: moment(date).format('w'),
+                day: {
                   number: moment(date).get('date'),
-                  name:   moment(date).format('dddd')
+                  name: moment(date).format('dddd')
                 },
-                hour:   moment(date).format('HH'),
+                hour: moment(date).format('HH'),
                 minute: moment(date).format('mm'),
                 second: moment(date).format('ss'),
-                milli:  moment(date).get('milliseconds')
+                milli: moment(date).get('milliseconds')
               }
             },
 
-            analyse: function (period) {
+            analyse: function (period)
+            {
               var p = {
                 s: this.apart(period.start),
                 e: this.apart(period.end)
@@ -322,39 +389,45 @@ angular.module('ngVis', []).
 
               // TODO: Choose for a more sensible name
               var info = {
-                first:  '',
+                first: '',
                 second: '',
-                third:  ''
+                third: ''
               };
 
-              if (p.s.year == p.e.year) {
+              if (p.s.year == p.e.year)
+              {
                 info = {
-                  first:  p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
-                            p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
+                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
+                         p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
                   second: p.s.year,
-                  third:  ''
+                  third: ''
                 };
 
-                if (p.s.month.number == p.e.month.number) {
+                if (p.s.month.number == p.e.month.number)
+                {
                   info = {
-                    first:  p.s.day.name + ' ' + p.s.day.number + '  -  ' +
-                              p.e.day.name + ' ' + p.e.day.number,
+                    first: p.s.day.name + ' ' + p.s.day.number + '  -  ' +
+                           p.e.day.name + ' ' + p.e.day.number,
                     second: p.s.month.name + ' ' + p.s.year,
-                    third:  'Month number: ' + Number(p.s.month.number + 1)
+                    third: 'Month number: ' + Number(p.s.month.number + 1)
                   };
 
-                  if (p.s.week == p.e.week) {
+                  if (p.s.week == p.e.week)
+                  {
                     info.third += ', Week number: ' + p.s.week;
                   }
-                  else {
+                  else
+                  {
                     info.third += ', Week numbers: ' + p.s.week + ' - ' + p.e.week;
                   }
 
-                  if (p.s.day.number == p.e.day.number) {
+                  if (p.s.day.number == p.e.day.number)
+                  {
                     if (p.e.hour == 23 &&
-                      p.e.minute == 59 &&
-                      p.e.second == 59 &&
-                      p.e.milli == 999) {
+                        p.e.minute == 59 &&
+                        p.e.second == 59 &&
+                        p.e.milli == 999)
+                    {
                       p.e.hour = 24;
                       p.e.minute = '00';
                       p.e.second = '00';
@@ -362,98 +435,112 @@ angular.module('ngVis', []).
                     }
 
                     info = {
-                      first:  p.s.hour + ':' + p.s.minute + '  -  ' +
-                                p.e.hour + ':' + p.e.minute,
+                      first: p.s.hour + ':' + p.s.minute + '  -  ' +
+                             p.e.hour + ':' + p.e.minute,
                       second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                      third:  'Week number: ' + p.s.week
+                      third: 'Week number: ' + p.s.week
                     };
 
-                    if (p.s.hour == p.e.hour) {
+                    if (p.s.hour == p.e.hour)
+                    {
                       info = {
-                        first:  p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
-                                  p.e.hour + ':' + p.e.minute + ':' + p.e.second,
+                        first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
+                               p.e.hour + ':' + p.e.minute + ':' + p.e.second,
                         second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                        third:  'Week number: ' + p.s.week
+                        third: 'Week number: ' + p.s.week
                       };
 
-                      if (p.s.minute == p.e.minute) {
+                      if (p.s.minute == p.e.minute)
+                      {
                         info = {
-                          first:  p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
-                                    p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
+                          first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
+                                 p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
                           second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                          third:  'Week number: ' + p.s.week
+                          third: 'Week number: ' + p.s.week
                         };
                       }
                     }
                   }
                 }
               }
-              else {
+              else
+              {
                 info = {
-                  first:  p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
-                            + '  -  ' +
-                            p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
+                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
+                           + '  -  ' +
+                         p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
                   second: '',
-                  third:  'Years: ' + p.s.year + ' - ' + p.e.year
+                  third: 'Years: ' + p.s.year + ' - ' + p.e.year
                 };
               }
 
               return info;
             },
 
-            indicate: function (period) {
+            indicate: function (period)
+            {
               return this.analyse(period);
             }
           };
 
-          $scope.$watch('timeline.range', function (period) {
-            $scope.timeline.info = range.indicate(period);
-          });
+          $scope.$watch(
+            'timeline.range', function (period)
+            {
+              $scope.timeline.info = range.indicate(period);
+            });
         }
       }
     }
   ]).
 
-  directive('timeNav', [
-    function () {
+  directive(
+  'timeNav', [
+    function ()
+    {
       return {
-        restrict:   'E',
-        replace:    false,
-        scope:      {
+        restrict: 'E',
+        replace: false,
+        scope: {
           timeline: '='
         },
-        controller: function ($scope) {
+        controller: function ($scope)
+        {
           var start = 0;
 
-          $scope.timeline.setScope = function (scope) {
+          $scope.timeline.setScope = function (scope)
+          {
             $scope.timeline.scope = {
-              day:    false,
-              week:   false,
-              month:  false,
-              year:   false,
+              day: false,
+              week: false,
+              month: false,
+              year: false,
               custom: false
             };
 
             $scope.timeline.scope[scope] = true;
 
-            if (scope != 'custom') {
+            if (scope != 'custom')
+            {
               $scope.timeline.setWindow(
                 moment().startOf(scope),
                 moment().endOf(scope)
               );
 
-              $scope.timeline.setOptions({
-                min:   moment().startOf(scope).valueOf(),
-                start: moment().startOf(scope).valueOf(),
-                max:   moment().endOf(scope).valueOf(),
-                end:   moment().endOf(scope).valueOf()
-              });
+              $scope.timeline.setOptions(
+                {
+                  min: moment().startOf(scope).valueOf(),
+                  start: moment().startOf(scope).valueOf(),
+                  max: moment().endOf(scope).valueOf(),
+                  end: moment().endOf(scope).valueOf()
+                });
             }
-            else {
-              $scope.timeline.setOptions({
-                min: null,
-                max: null
-              });
+            else
+            {
+              $scope.timeline.setOptions(
+                {
+                  min: null,
+                  max: null
+                });
             }
 
             start = 0;
@@ -461,29 +548,35 @@ angular.module('ngVis', []).
 
           var scope;
 
-          $scope.timeline.stepScope = function (direction) {
+          $scope.timeline.stepScope = function (direction)
+          {
             start = start + direction;
 
-            angular.forEach($scope.timeline.scope, function (active, _scope) {
-              if (active) scope = _scope;
-            });
+            angular.forEach(
+              $scope.timeline.scope, function (active, _scope)
+              {
+                if (active) scope = _scope;
+              });
 
             $scope.timeline.setWindow(
               moment().add(scope, start).startOf(scope),
               moment().add(scope, start).endOf(scope)
             );
 
-            $scope.timeline.setOptions({
-              min:   moment().add(scope, start).startOf(scope).valueOf(),
-              start: moment().add(scope, start).startOf(scope).valueOf(),
-              max:   moment().add(scope, start).endOf(scope).valueOf(),
-              end:   moment().add(scope, start).endOf(scope).valueOf()
-            });
+            $scope.timeline.setOptions(
+              {
+                min: moment().add(scope, start).startOf(scope).valueOf(),
+                start: moment().add(scope, start).startOf(scope).valueOf(),
+                max: moment().add(scope, start).endOf(scope).valueOf(),
+                end: moment().add(scope, start).endOf(scope).valueOf()
+              });
           };
 
-          setTimeout(function () {
-            $scope.timeline.setScope('month');
-          }, 25);
+          setTimeout(
+            function ()
+            {
+              $scope.timeline.setScope('month');
+            }, 25);
         }
       }
     }
