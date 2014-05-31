@@ -9,6 +9,7 @@
 
 angular.module('ngVis', []).
 
+
   constant(
   'options', {
 
@@ -76,18 +77,21 @@ angular.module('ngVis', []).
     groupOrder: 'content'
   }).
 
+
   factory(
-  'Moment', function ()
+  'Moment',
+  function ()
   {
     return vis.moment()
   }).
 
+
   factory(
-  'process', [
+  'process',
+  [
     'options',
     function (options)
     {
-
       var items,
           groups;
 
@@ -97,50 +101,51 @@ angular.module('ngVis', []).
             start: 'Date',
             end: 'Date'
           }
-        });
+        }
+      );
 
       groups = new vis.DataSet();
 
       return function (data)
       {
-
         items.clear();
         groups.clear();
 
         var _data = {};
 
         items.on(
-          '*', function (event, properties)
+          '*',
+          function (event, properties)
           {
             if (options.debug)
             {
               console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
             }
-          });
+          }
+        );
 
         if (angular.isArray(data))
         {
-
           items.add(data);
-
         }
         else
         {
-
           var id = 0;
 
           angular.forEach(
-            data, function (_items, _group)
+            data,
+            function (_items, _group)
             {
-
               groups.add(
                 {
                   id: id,
                   content: _group
-                });
+                }
+              );
 
               angular.forEach(
-                _items, function (item)
+                _items,
+                function (item)
                 {
                   var _item = {
                     id: item.id,
@@ -155,10 +160,12 @@ angular.module('ngVis', []).
                   }
 
                   items.add(_item);
-                });
+                }
+              );
 
               id ++;
-            });
+            }
+          );
 
           _data.groups = groups;
         }
@@ -170,22 +177,23 @@ angular.module('ngVis', []).
     }
   ]).
 
+
   directive(
-  'timeline', [
+  'timeline',
+  [
     'options',
     'process',
     function (options, process)
     {
-
       return {
         restrict: 'EA',
         replace: true,
         transclude: true,
-        scope: {
-          data: '=',
-          options: '=',
-          timeline: '='
-        },
+//        scope: {
+//          data: '=',
+//          options: '=',
+//          timeline: '='
+//        },
 
         controller: function (Moment)
         {
@@ -194,13 +202,9 @@ angular.module('ngVis', []).
 
         link: function (scope, element, attrs)
         {
-
-
           angular.element(element[0]).html('');
 
-
           var _timeline = {};
-
 
           //          var callbacks = {
           //            onAdd: scope.timeline.slot.add,
@@ -209,20 +213,15 @@ angular.module('ngVis', []).
           //            onRemove: scope.timeline.slot.remove
           //          };
           //
-          //
-          //
-          //
           //          angular.extend(options, callbacks);
-
 
           _timeline = new vis.Timeline(element[0]);
 
-
           scope.$watch(
-            'data', function (data)
+            'data',
+            function (data)
             {
-
-              console.log('data changed!');
+              // console.log('data changed!');
 
               _timeline.clear();
 
@@ -243,71 +242,47 @@ angular.module('ngVis', []).
 
             }, true);
 
-
           scope.$watch(
-            'options', function (_options)
+            'options',
+            function (_options)
             {
-
-              console.log('options changed!');
+              // console.log('options changed!');
 
               if (_options.defaults)
               {
-
                 _timeline.clear({options: true});
 
                 // _timeline.setOptions(options);
                 // _timeline.setOptions({start: null, end: null});
 
-                console.log('coming to defaults!');
-
+                // console.log('coming to defaults!');
               }
               else
               {
-
                 // var opts = angular.extend(angular.extend({}, _options), options);
                 _timeline.setOptions(_options);
                 // _timeline.setWindow(_options.start, _options.end);
-                console.log('setting custom options!');
-
+                // console.log('setting custom options!');
               }
-
-            });
-
+            }
+          );
 
           angular.extend(
-            scope.timeline, {
-
+            scope.timeline,
+            {
               customDate: _timeline.getCustomTime(),
 
-              setOptions: function (options)
-              {
-                _timeline.setOptions(options);
-              },
+              setOptions: function (options) { _timeline.setOptions(options) },
 
-              getSelection: function ()
-              {
-                return _timeline.getSelection()
-              },
+              getSelection: function () { return _timeline.getSelection() },
 
-              setSelection: function (selection)
-              {
-                return _timeline.setSelection(selection);
-              },
+              setSelection: function (selection) { return _timeline.setSelection(selection) },
 
-              getWindow: function ()
-              {
-                return _timeline.getWindow();
-              },
+              getWindow: function () { return _timeline.getWindow() },
 
-              setWindow: function (start, end)
-              {
-                return _timeline.setWindow(start, end);
-              },
+              setWindow: function (start, end) { return _timeline.setWindow(start, end) },
 
-              getCustomTime: function ()
-              {
-                return _timeline.getCustomTime();
-              },
+              getCustomTime: function () { return _timeline.getCustomTime() },
 
               setCustomTime: function (time)
               {
@@ -317,181 +292,16 @@ angular.module('ngVis', []).
               }
             });
 
-          _timeline.on(
-            'rangechange', function (period)
-            {
-              scope.timeline.rangeChange(period);
-            });
-          _timeline.on(
-            'rangechanged', function (period)
-            {
-              scope.timeline.rangeChanged(period);
-            });
-          _timeline.on(
-            'select', function (selected)
-            {
-              scope.timeline.select(selected);
-            });
-          _timeline.on(
-            'timechange', function (period)
-            {
-              scope.timeline.timeChange(period);
-            });
-          _timeline.on(
-            'timechanged', function (period)
-            {
-              scope.timeline.timeChanged(period);
-            });
+          _timeline.on('rangechange', function (period) { scope.timeline.rangeChange(period) });
+          _timeline.on('rangechanged', function (period) { scope.timeline.rangeChanged(period) });
+          _timeline.on('select', function (selected) { scope.timeline.select(selected) });
+          _timeline.on('timechange', function (period) { scope.timeline.timeChange(period) });
+          _timeline.on('timechanged', function (period) { scope.timeline.timeChanged(period) });
         }
       }
     }
   ]).
 
-  directive(
-  'timeBoard', [
-    function ()
-    {
-      return {
-        restrict: 'E',
-        replace: false,
-        scope: {
-          timeline: '='
-        },
-        controller: function ($scope)
-        {
-          var range = {
-            apart: function (date)
-            {
-              return {
-                year: moment(date).get('year'),
-                month: {
-                  number: moment(date).get('month'),
-                  name: moment(date).format('MMMM')
-                },
-                week: moment(date).format('w'),
-                day: {
-                  number: moment(date).get('date'),
-                  name: moment(date).format('dddd')
-                },
-                hour: moment(date).format('HH'),
-                minute: moment(date).format('mm'),
-                second: moment(date).format('ss'),
-                milli: moment(date).get('milliseconds')
-              }
-            },
-
-            analyse: function (period)
-            {
-              var p = {
-                s: this.apart(period.start),
-                e: this.apart(period.end)
-              };
-
-              // TODO: Choose for a more sensible name
-              var info = {
-                first: '',
-                second: '',
-                third: ''
-              };
-
-              if (p.s.year == p.e.year)
-              {
-                info = {
-                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
-                         p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
-                  second: p.s.year,
-                  third: ''
-                };
-
-                if (p.s.month.number == p.e.month.number)
-                {
-                  info = {
-                    first: p.s.day.name + ' ' + p.s.day.number + '  -  ' +
-                           p.e.day.name + ' ' + p.e.day.number,
-                    second: p.s.month.name + ' ' + p.s.year,
-                    third: 'Month number: ' + Number(p.s.month.number + 1)
-                  };
-
-                  if (p.s.week == p.e.week)
-                  {
-                    info.third += ', Week number: ' + p.s.week;
-                  }
-                  else
-                  {
-                    info.third += ', Week numbers: ' + p.s.week + ' - ' + p.e.week;
-                  }
-
-                  if (p.s.day.number == p.e.day.number)
-                  {
-                    if (p.e.hour == 23 &&
-                        p.e.minute == 59 &&
-                        p.e.second == 59 &&
-                        p.e.milli == 999)
-                    {
-                      p.e.hour = 24;
-                      p.e.minute = '00';
-                      p.e.second = '00';
-                      p.e.milli = '00';
-                    }
-
-                    info = {
-                      first: p.s.hour + ':' + p.s.minute + '  -  ' +
-                             p.e.hour + ':' + p.e.minute,
-                      second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                      third: 'Week number: ' + p.s.week
-                    };
-
-                    if (p.s.hour == p.e.hour)
-                    {
-                      info = {
-                        first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
-                               p.e.hour + ':' + p.e.minute + ':' + p.e.second,
-                        second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                        third: 'Week number: ' + p.s.week
-                      };
-
-                      if (p.s.minute == p.e.minute)
-                      {
-                        info = {
-                          first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
-                                 p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
-                          second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
-                          third: 'Week number: ' + p.s.week
-                        };
-                      }
-                    }
-                  }
-                }
-              }
-              else
-              {
-                info = {
-                  first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
-                           + '  -  ' +
-                         p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
-                  second: '',
-                  third: 'Years: ' + p.s.year + ' - ' + p.e.year
-                };
-              }
-
-              return info;
-            },
-
-            indicate: function (period)
-            {
-              return this.analyse(period);
-            }
-          };
-
-          $scope.$watch(
-            'timeline.range', function (period)
-            {
-              $scope.timeline.info = range.indicate(period);
-            });
-        }
-      }
-    }
-  ]).
 
   directive(
   'timeNav', [
@@ -500,9 +310,9 @@ angular.module('ngVis', []).
       return {
         restrict: 'E',
         replace: false,
-        scope: {
-          timeline: '='
-        },
+//        scope: {
+//          timeline: '='
+//        },
         controller: function ($scope)
         {
           var start = 0;
@@ -522,16 +332,16 @@ angular.module('ngVis', []).
             if (scope != 'custom')
             {
               $scope.timeline.setWindow(
-                moment().startOf(scope),
-                moment().endOf(scope)
+                vis.moment().startOf(scope),
+                vis.moment().endOf(scope)
               );
 
               $scope.timeline.setOptions(
                 {
-                  min: moment().startOf(scope).valueOf(),
-                  start: moment().startOf(scope).valueOf(),
-                  max: moment().endOf(scope).valueOf(),
-                  end: moment().endOf(scope).valueOf()
+                  min: vis.moment().startOf(scope).valueOf(),
+                  start: vis.moment().startOf(scope).valueOf(),
+                  max: vis.moment().endOf(scope).valueOf(),
+                  end: vis.moment().endOf(scope).valueOf()
                 });
             }
             else
@@ -559,25 +369,156 @@ angular.module('ngVis', []).
               });
 
             $scope.timeline.setWindow(
-              moment().add(scope, start).startOf(scope),
-              moment().add(scope, start).endOf(scope)
+              vis.moment().add(scope, start).startOf(scope),
+              vis.moment().add(scope, start).endOf(scope)
             );
 
             $scope.timeline.setOptions(
               {
-                min: moment().add(scope, start).startOf(scope).valueOf(),
-                start: moment().add(scope, start).startOf(scope).valueOf(),
-                max: moment().add(scope, start).endOf(scope).valueOf(),
-                end: moment().add(scope, start).endOf(scope).valueOf()
+                min: vis.moment().add(scope, start).startOf(scope).valueOf(),
+                start: vis.moment().add(scope, start).startOf(scope).valueOf(),
+                max: vis.moment().add(scope, start).endOf(scope).valueOf(),
+                end: vis.moment().add(scope, start).endOf(scope).valueOf()
               });
           };
 
-          setTimeout(
-            function ()
-            {
-              $scope.timeline.setScope('month');
-            }, 25);
+//          setTimeout(
+//            function () { $scope.timeline.setScope('month') },
+//            25
+//          );
         }
       }
     }
-  ]);
+  ]).
+
+
+  filter(
+  'parseRange', [
+    function ()
+    {
+      return function (period)
+      {
+        var range = {
+          apart: function (date)
+          {
+            return {
+              year: vis.moment(date).get('year'),
+              month: {
+                number: vis.moment(date).get('month'),
+                name: vis.moment(date).format('MMMM')
+              },
+              week: vis.moment(date).format('w'),
+              day: {
+                number: vis.moment(date).get('date'),
+                name: vis.moment(date).format('dddd')
+              },
+              hour: vis.moment(date).format('HH'),
+              minute: vis.moment(date).format('mm'),
+              second: vis.moment(date).format('ss'),
+              milli: vis.moment(date).get('milliseconds')
+            }
+          },
+
+          analyse: function (period)
+          {
+            var p = {
+              s: this.apart(period.start),
+              e: this.apart(period.end)
+            };
+
+            // TODO: Choose for a more sensible name
+            var info = {
+              first: '',
+              second: '',
+              third: ''
+            };
+
+            if (p.s.year == p.e.year)
+            {
+              info = {
+                first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' +
+                       p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
+                second: p.s.year,
+                third: ''
+              };
+
+              if (p.s.month.number == p.e.month.number)
+              {
+                info = {
+                  first: p.s.day.name + ' ' + p.s.day.number + '  -  ' +
+                         p.e.day.name + ' ' + p.e.day.number,
+                  second: p.s.month.name + ' ' + p.s.year,
+                  third: 'Month number: ' + Number(p.s.month.number + 1)
+                };
+
+                if (p.s.week == p.e.week)
+                {
+                  info.third += ', Week number: ' + p.s.week;
+                }
+                else
+                {
+                  info.third += ', Week numbers: ' + p.s.week + ' - ' + p.e.week;
+                }
+
+                if (p.s.day.number == p.e.day.number)
+                {
+                  if (p.e.hour == 23 &&
+                      p.e.minute == 59 &&
+                      p.e.second == 59 &&
+                      p.e.milli == 999)
+                  {
+                    p.e.hour = 24;
+                    p.e.minute = '00';
+                    p.e.second = '00';
+                    p.e.milli = '00';
+                  }
+
+                  info = {
+                    first: p.s.hour + ':' + p.s.minute + '  -  ' +
+                           p.e.hour + ':' + p.e.minute,
+                    second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                    third: 'Week number: ' + p.s.week
+                  };
+
+                  if (p.s.hour == p.e.hour)
+                  {
+                    info = {
+                      first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' +
+                             p.e.hour + ':' + p.e.minute + ':' + p.e.second,
+                      second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                      third: 'Week number: ' + p.s.week
+                    };
+
+                    if (p.s.minute == p.e.minute)
+                    {
+                      info = {
+                        first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' +
+                               p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
+                        second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                        third: 'Week number: ' + p.s.week
+                      };
+                    }
+                  }
+                }
+              }
+            }
+            else
+            {
+              info = {
+                first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year
+                         + '  -  ' +
+                       p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
+                second: '',
+                third: 'Years: ' + p.s.year + ' - ' + p.e.year
+              };
+            }
+
+            return info.first + ', ' + info.second + ', ' + info.third;
+          }
+        };
+
+        return range.analyse(period);
+      }
+    }
+  ]
+);

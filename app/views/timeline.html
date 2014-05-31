@@ -21,15 +21,37 @@
 
   <h1 class="page-header">Timeline examples</h1>
 
+  <h5 class="pull-right text-right">
+    <em>{{timeline.range | parseRange}}</em>
+  </h5>
+
+
+  <time-nav class="pull-left">
+    <div ng-show="timeline.scope.custom" class="btn-group pull-right">
+      <button disabled="disabled" class="btn btn-default"><</button>
+      <button disabled="disabled" class="btn btn-default">></button>
+    </div>
+    <div ng-hide="timeline.scope.custom" class="btn-group pull-right">
+      <button ng-click="timeline.stepScope(-1)" class="btn btn-default"><</button>
+      <button ng-click="timeline.stepScope(1)" class="btn btn-default">></button>
+    </div>
+    <div style="margin-right: 15px" class="btn-group pull-right">
+      <button ng-click="timeline.setScope(&quot;day&quot;)" class="btn btn-default {{(timeline.scope.day) &amp;&amp; &quot;active&quot;}}">Day</button>
+      <button ng-click="timeline.setScope(&quot;week&quot;)" class="btn btn-default {{(timeline.scope.week) &amp;&amp; &quot;active&quot;}}">Week</button>
+      <button ng-click="timeline.setScope(&quot;month&quot;)" class="btn btn-default {{(timeline.scope.month) &amp;&amp; &quot;active&quot;}}">Month</button>
+      <button ng-click="timeline.setScope(&quot;year&quot;)" class="btn btn-default {{(timeline.scope.year) &amp;&amp; &quot;active&quot;}}">Year</button>
+      <button ng-click="timeline.setScope(&quot;custom&quot;)" class="btn btn-default {{(timeline.scope.custom) &amp;&amp; &quot;active&quot;}}">Custom</button>
+    </div>
+  </time-nav>
+
+  <br/>
+  <br/>
+  <hr/>
 
 
   <div data="data"
        options="options"
        timeline="timeline"></div>
-
-
-
-  <!--<time-line items="items" timeline="timeline"></time-line>-->
   <hr/>
 
   <!--01. Basic usage-->
