@@ -79,7 +79,19 @@
     <h3 class="sub-header">03. Lots of data</h3>
     <div class="row">
       <div class="col-md-12">
-        <p>Some content</p>
+        <h1>
+          Test with a lot of data
+        </h1>
+        <p>
+          <label for="drawLotsOfDataValue">Number of items</label>
+          <input id="drawLotsOfDataValue"
+                 ng-model="drawLotsOfDataValue">
+          <input id="draw"
+                 class="btn btn-default"
+                 type="button"
+                 ng-click="drawLotsOfData()"
+                 value="Draw items">
+        </p>
       </div>
     </div>
   </section>
@@ -99,7 +111,11 @@
     <h3 class="sub-header">05. Groups</h3>
     <div class="row">
       <div class="col-md-12">
-        <p>Some content</p>
+        <p>
+          This example demonstrate using groups. Note that a DataSet is used for both
+          items and groups, allowing to dynamically add, update or remove both items
+          and groups via the DataSet.
+        </p>
       </div>
     </div>
   </section>

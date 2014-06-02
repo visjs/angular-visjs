@@ -32,8 +32,8 @@ angular.module('ngVis', []).
     max: null,
     zoomMin: 10,                                // milliseconds
     zoomMax: 1000 * 60 * 60 * 24 * 365 * 10000, // milliseconds
-    // moveable: true, // TODO: option moveable
-    // zoomable: true, // TODO: option zoomable
+    // moveable: true, // TODO: option movable
+    // zoomable: true, // TODO: option zoom-able
 
     showMinorLabels: true,
     showMajorLabels: true,
@@ -342,7 +342,8 @@ angular.module('ngVis', []).
                   start: vis.moment().startOf(scope).valueOf(),
                   max: vis.moment().endOf(scope).valueOf(),
                   end: vis.moment().endOf(scope).valueOf()
-                });
+                }
+              );
             }
             else
             {
@@ -350,7 +351,8 @@ angular.module('ngVis', []).
                 {
                   min: null,
                   max: null
-                });
+                }
+              );
             }
 
             start = 0;
