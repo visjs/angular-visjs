@@ -1,3 +1,74 @@
+<!-- Docs master nav -->
+<header class="navbar navbar-fixed-top bs-docs-nav" id="top" role="banner">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="" ng-click="setPage('Timeline')" class="navbar-brand">AngularJS-VisJS</a>
+    </div>
+    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+      <ul class="nav navbar-nav">
+
+        <li>
+          <a href="" ng-click="setPage('Timeline')">Timeline</a>
+        </li>
+
+        <li class="active">
+          <a href="" ng-click="setPage('Graph')">Graph</a>
+        </li>
+
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <!--<li>-->
+          <!--<a scrollto="" href="#gettingStarted">Getting Started</a>-->
+        <!--</li>-->
+        <li class="dropdown">
+          <a class="dropdown-toggle" href="" data-toggle="dropdown">
+            Examples
+            <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a scrollto="" ng-href="#graph01">01. Basic usage</a></li>
+            <li><a scrollto="" ng-href="#graph02">02. Random nodes</a></li>
+            <li><a scrollto="" ng-href="#graph03">03. Images</a></li>
+            <li><a scrollto="" ng-href="#graph04">04. Shapes</a></li>
+            <li><a scrollto="" ng-href="#graph05">05. Social network</a></li>
+            <li><a scrollto="" ng-href="#graph06">06. Groups</a></li>
+            <li><a scrollto="" ng-href="#graph07">07. Selections</a></li>
+            <li><a scrollto="" ng-href="#graph08">08. Mobile friendly</a></li>
+            <li><a scrollto="" ng-href="#graph09">09. Sizing</a></li>
+            <li><a scrollto="" ng-href="#graph10">10. Multiline text</a></li>
+            <li><a scrollto="" ng-href="#graph11">11. Custom style</a></li>
+            <li><a scrollto="" ng-href="#graph12">12. Scalable images</a></li>
+            <li><a scrollto="" ng-href="#graph13">13. Dashed lines</a></li>
+            <li><a scrollto="" ng-href="#graph14">14. Dot language</a></li>
+            <li><a scrollto="" ng-href="#graph15">15. Playground</a></li>
+            <li><a scrollto="" ng-href="#graph16">16. Dynamic data</a></li>
+            <li><a scrollto="" ng-href="#graph17">17. Network info</a></li>
+            <li><a scrollto="" ng-href="#graph18">18. Fully random nodes clustering</a></li>
+            <li><a scrollto="" ng-href="#graph19">19. Scale free graph clustering</a></li>
+            <li><a scrollto="" ng-href="#graph20">20. Navigation</a></li>
+            <li><a scrollto="" ng-href="#graph21">21. Data manipulation</a></li>
+            <li><a scrollto="" ng-href="#graph22">22. Les miserables</a></li>
+            <li><a scrollto="" ng-href="#graph23">23. Hierarchical layout</a></li>
+            <li><a scrollto="" ng-href="#graph24">24. Hierarchical layout predefined</a></li>
+            <li><a scrollto="" ng-href="#graph25">25. Physics configuration</a></li>
+            <li><a scrollto="" ng-href="#graph26">26. Graphviz gallery</a></li>
+          </ul>
+        </li>
+        <!--<li>-->
+        <!--<a scrollto="" href="#api">API</a>-->
+        <!--</li>-->
+      </ul>
+    </nav>
+  </div>
+</header>
+
 <main class="bs-docs-masthead" id="content" role="main">
   <div class="container-fluid">
     <span class="bs-docs-booticon bs-docs-booticon-lg bs-docs-booticon-outline glyphicon glyphicon-stats"></span>
@@ -18,6 +89,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">01. Basic usage</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -35,6 +107,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">02. Random nodes</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -52,6 +125,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">03. Images</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -69,6 +143,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">04. Shapes</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -84,17 +159,19 @@
 <div class="bs-docs-featurette" id="graph05">
   <div class="container-fluid">
     <div class="row">
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
+      <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
+        with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
+
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">05. Social network</h2>
-          favorites.</p>
-        <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
-      </div>
+        favorites.
+      </p>
+      <hr class="half-rule">
+      <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
+      <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
     </div>
   </div>
+</div>
 </div>
 
 
@@ -103,9 +180,10 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
+
         <h2 class="bs-docs-featurette-title">06. Groups</h2>
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
+        with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
+        favorites.</p>
         <hr class="half-rule">
         <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
         <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
@@ -120,6 +198,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">07. Selections</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -137,6 +216,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">08. Mobile friendly</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -154,6 +234,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">09. Sizing</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -171,6 +252,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">10. Multiline text</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -188,6 +270,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">11. Custom style</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -205,6 +288,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">12. Scalable images</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -222,6 +306,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">13. Dashed lines</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -239,6 +324,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">14. Dot language</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -256,6 +342,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">15. Playground</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -273,6 +360,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">16. Dynamic data</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -290,6 +378,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">17. Network info</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -307,6 +396,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">18. Fully random nodes clustering</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -324,6 +414,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">19. Scale free graph clustering</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -341,6 +432,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">20. Navigation</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -358,6 +450,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">21. Data manipulation</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -375,6 +468,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">22. Les miserables</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -392,6 +486,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">23. Hierarchical layout</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -409,6 +504,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">24. Hierarchical layout predefined</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -426,6 +522,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">25. Physics configuration 26. Graphviz gallery</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
@@ -443,6 +540,7 @@
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">First</h2>
+
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
