@@ -44,6 +44,8 @@
 
 <body class="bs-docs-home" ng-app="ngVisJsApp">
 
+
+
 <!-- Docs master nav -->
 <header class="navbar navbar-fixed-top bs-docs-nav" id="top" role="banner">
   <div class="container-fluid">
@@ -58,10 +60,11 @@
     </div>
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
       <ul class="nav navbar-nav">
-        <li ng-repeat="page in pages"
-            ng-class="(pageIndex == $index + 1) && 'active'">
-          <a href="#/{{page.toLowerCase()}}">{{page}}</a>
+
+        <li ng-repeat="(section, examples) in pages" ng-class="(page.section == section) && 'active'">
+          <a href="" ng-click="setPage(section)">{{section}}</a>
         </li>
+
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
@@ -74,9 +77,11 @@
             <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a scroll-to="" href="#first">Basic</a></li>
-            <li><a scroll-to="" href="#second">Column Definitions</a></li>
-            <li><a scroll-to="" href="#third">Grouping</a></li>
+
+            <li ng-repeat="(anchor, example) in page.examples">
+              <a scrollto="" ng-href="#{{anchor}}">{{example}}</a>
+            </li>
+
           </ul>
         </li>
         <!--<li>-->
@@ -88,96 +93,11 @@
 </header>
 
 
-<!--<div class="container-fluid">-->
-<!--<div class="row" ng-view=""></div>-->
-<!--</div>-->
 
-
-<main class="bs-docs-masthead" id="content" role="main">
-  <div class="container-fluid">
-    <span class="bs-docs-booticon bs-docs-booticon-lg bs-docs-booticon-outline glyphicon glyphicon-time"></span>
-
-    <p class="lead">Timeline component.</p>
-
-    <!--<p class="lead">-->
-      <!--<a href="#" class="btn btn-outline-inverse btn-lg">Download AngularJS-VisJS</a>-->
-    <!--</p>-->
-
-    <!--<p class="version">Currently v3.2.0</p>-->
-  </div>
-</main>
-
-
-
-<div class="bs-docs-featurette">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-12">
-        <h2 class="bs-docs-featurette-title">Built with Bootstrap.</h2>
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
-        <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
-      </div>
-    </div>
-  </div>
+<div class="container-fluid">
+  <div class="row" ng-view=""></div>
 </div>
 
-
-
-<div class="bs-docs-featurette" id="first">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-12">
-        <h2 class="bs-docs-featurette-title">First!</h2>
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
-        <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<div class="bs-docs-featurette" id="second">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-12">
-        <h2 class="bs-docs-featurette-title">Second!</h2>
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
-        <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<div class="bs-docs-featurette" id="third">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-12 col-md-12 col-lg-12">
-        <h2 class="bs-docs-featurette-title">Third!</h2>
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
-        <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 
@@ -185,7 +105,6 @@
 ================================================== -->
 <footer class="bs-docs-footer" role="contentinfo">
   <div class="container-fluid">
-
     <p>Designed and built with all the love in the world by.</p>
   </div>
 </footer>
@@ -219,8 +138,8 @@
 
 <!-- build:js({.tmp,app}) scripts/scripts.js -->
 <script src="scripts/app.js"></script>
-<!--<script src="scripts/controllers/graph.js"></script>-->
-<!--<script src="scripts/controllers/timeline.js"></script>-->
+<script src="scripts/graphCtrl.js"></script>
+<script src="scripts/timelineCtrl.js"></script>
 <!-- endbuild -->
 
 
