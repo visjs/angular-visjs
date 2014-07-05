@@ -3,8 +3,9 @@
 angular
   .module(
   'ngVisJsApp', [
-    'ngRoute',
-    'ngVis'
+    'ngRoute'
+    //    ,
+    //    'ngVis'
   ])
   .config(
   function ($routeProvider)
@@ -13,12 +14,12 @@ angular
       .when(
       '/timeline', {
         templateUrl: 'views/timeline.html',
-        controller: 'TimelineCtrl'
+        controller: 'timeline'
       })
       .when(
       '/graph', {
         templateUrl: 'views/graph.html',
-        controller: 'GraphCtrl'
+        controller: 'graph'
       })
       .otherwise(
       {
@@ -34,4 +35,32 @@ angular
       'Graph'
     ];
 
-  });
+  })
+  .directive(
+  'scrollTo', [
+    function ()
+    {
+      return function (scope, elm, attrs)
+      {
+        elm.bind(
+          'click', function (e)
+          {
+            e.preventDefault();
+
+            if (attrs.href)
+            {
+              attrs.scrollto = attrs.href;
+            }
+
+            var top = $(attrs.scrollto).offset().top - 25;
+
+            $(jQuery.browser.webkit ? 'body' : 'html')
+              .animate(
+              {
+                scrollTop: top
+              }, 800);
+          }
+        );
+      };
+    }
+  ]);
