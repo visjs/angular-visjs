@@ -15,27 +15,27 @@ angular.module('ngVisJsApp')
         case 'grouped':
           $scope.data = {
             team_1: [
-              {id: 1, content: 'item 1', start: '2014-04-18'},
-              {id: 2, content: 'item 2', start: '2014-04-18'}
+              {id: 1, content: 'item 1', start: '2014-06-18'},
+              {id: 2, content: 'item 2', start: '2014-06-18'}
             ],
             team_2: [
-              {id: 3, content: 'item 3', start: '2014-04-16'},
-              {id: 4, content: 'item 4', start: '2014-04-14', end: '2014-04-17'}
+              {id: 3, content: 'item 3', start: '2014-06-16'},
+              {id: 4, content: 'item 4', start: '2014-06-14', end: '2014-06-17'}
             ],
             team_3: [
-              {id: 5, content: 'item 5', start: '2014-04-23'},
-              {id: 6, content: 'item 6', start: '2014-04-25'}
+              {id: 5, content: 'item 5', start: '2014-06-23'},
+              {id: 6, content: 'item 6', start: '2014-06-25'}
             ]
           };
           break;
         case 'simple':
           $scope.data = [
-            {id: 1, content: 'item 1', start: '2014-04-20'},
-            {id: 2, content: 'item 2', start: '2014-04-20'},
-            {id: 3, content: 'item 3', start: '2014-04-18'},
-            {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
-            {id: 5, content: 'item 5', start: '2014-04-25'},
-            {id: 6, content: 'item 6', start: '2014-04-27'}
+            {id: 1, content: 'item 1', start: '2014-06-20'},
+            {id: 2, content: 'item 2', start: '2014-06-20'},
+            {id: 3, content: 'item 3', start: '2014-06-18'},
+            {id: 4, content: 'item 4', start: '2014-06-16', end: '2014-06-19'},
+            {id: 5, content: 'item 5', start: '2014-06-25'},
+            {id: 6, content: 'item 6', start: '2014-06-27'}
           ];
           break;
       }
@@ -45,7 +45,7 @@ angular.module('ngVisJsApp')
       '01. Basic usage',
       '02. Interactive',
       '03. Lots of data',
-      '04. HTML data',
+      '06. HTML data',
       '05. Groups',
       '06. Event listeners',
       '07. Custom time bar',
@@ -74,12 +74,12 @@ angular.module('ngVisJsApp')
       {
         case 1:
           data = [
-            {id: 1, content: 'item 1', start: '2014-04-20'},
-            {id: 2, content: 'item 2', start: '2014-04-14'},
-            {id: 3, content: 'item 3', start: '2014-04-18'},
-            {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
-            {id: 5, content: 'item 5', start: '2014-04-25'},
-            {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
+            {id: 1, content: 'item 1', start: '2014-06-20'},
+            {id: 2, content: 'item 2', start: '2014-06-14'},
+            {id: 3, content: 'item 3', start: '2014-06-18'},
+            {id: 4, content: 'item 4', start: '2014-06-16', end: '2014-06-19'},
+            {id: 5, content: 'item 5', start: '2014-06-25'},
+            {id: 6, content: 'item 6', start: '2014-06-27', type: 'point'}
           ];
           break;
 
@@ -177,13 +177,13 @@ angular.module('ngVisJsApp')
           var item7 = 'item7<br><a href="http://visjs.org" target="_blank">click here</a>';
 
           data = [
-            {id: 1, content: item1, start: '2013-04-20'},
-            {id: 2, content: item2, start: '2013-04-14'},
-            {id: 3, content: item3, start: '2013-04-18'},
-            {id: 4, content: item4, start: '2013-04-16', end: '2013-04-19'},
-            {id: 5, content: item5, start: '2013-04-25'},
-            {id: 6, content: item6, start: '2013-04-27'},
-            {id: 7, content: item7, start: '2013-04-21'}
+            {id: 1, content: item1, start: '2013-06-20'},
+            {id: 2, content: item2, start: '2013-06-14'},
+            {id: 3, content: item3, start: '2013-06-18'},
+            {id: 4, content: item4, start: '2013-06-16', end: '2013-06-19'},
+            {id: 5, content: item5, start: '2013-06-25'},
+            {id: 6, content: item6, start: '2013-06-27'},
+            {id: 7, content: item7, start: '2013-06-21'}
           ];
           break;
 
@@ -194,16 +194,16 @@ angular.module('ngVisJsApp')
 
           data = {
             John: [
-              {id: 1, content: 'item 1', start: '2014-04-18'},
-              {id: 2, content: 'item 2', start: '2014-04-18'}
+              {id: 1, content: 'item 1', start: '2014-06-18'},
+              {id: 2, content: 'item 2', start: '2014-06-18'}
             ],
             Alston: [
-              {id: 3, content: 'item 3', start: '2014-04-16'},
-              {id: 4, content: 'item 4', start: '2014-04-14', end: '2014-04-17'}
+              {id: 3, content: 'item 3', start: '2014-06-16'},
+              {id: 4, content: 'item 4', start: '2014-06-14', end: '2014-06-17'}
             ],
             Lee: [
-              {id: 5, content: 'item 5', start: '2014-04-23'},
-              {id: 6, content: 'item 6', start: '2014-04-25'}
+              {id: 5, content: 'item 5', start: '2014-06-23'},
+              {id: 6, content: 'item 6', start: '2014-06-25'}
             ]
           };
           break;
