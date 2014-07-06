@@ -26,29 +26,29 @@
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
-        <!--<li>-->
-          <!--<a scrollto="" href="#gettingStarted">Getting Started</a>-->
-        <!--</li>-->
+        <li>
+          <a href="" ng-click="setView('introduction')">Getting Started</a>
+        </li>
         <li class="dropdown">
           <a class="dropdown-toggle" href="" data-toggle="dropdown">
             Examples
             <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a scrollto="" ng-href="#timeline01">01. Basic usage</a></li>
-            <li><a scrollto="" ng-href="#timeline02">02. Interactive</a></li>
-            <li><a scrollto="" ng-href="#timeline03">03. Lots of data</a></li>
-            <li><a scrollto="" ng-href="#timeline04">04. HTML data</a></li>
-            <li><a scrollto="" ng-href="#timeline05">05. Groups</a></li>
-            <li><a scrollto="" ng-href="#timeline06">06. Event listeners</a></li>
-            <li><a scrollto="" ng-href="#timeline07">07. Custom time bar</a></li>
-            <li><a scrollto="" ng-href="#timeline08">08. Edit items</a></li>
-            <li><a scrollto="" ng-href="#timeline09">09. Order groups</a></li>
-            <li><a scrollto="" ng-href="#timeline10">10. Points</a></li>
-            <li><a scrollto="" ng-href="#timeline11">11. Custom styling</a></li>
-            <li><a scrollto="" ng-href="#timeline12">12. Past and future</a></li>
-            <li><a scrollto="" ng-href="#timeline13">13. Lots of grouped data</a></li>
-            <li><a scrollto="" ng-href="#timeline14">14. Item class names</a></li>
+            <li><a href="" ng-click="setView('examples', 1)">01. Basic usage</a></li>
+            <li><a href="" ng-click="setView('examples', 2)">02. Interactive</a></li>
+            <li><a href="" ng-click="setView('examples', 3)">03. Lots of data</a></li>
+            <li><a href="" ng-click="setView('examples', 4)">04. HTML data</a></li>
+            <li><a href="" ng-click="setView('examples', 5)">05. Groups</a></li>
+            <li><a href="" ng-click="setView('examples', 6)">06. Event listeners</a></li>
+            <li><a href="" ng-click="setView('examples', 7)">07. Custom time bar</a></li>
+            <li><a href="" ng-click="setView('examples', 8)">08. Edit items</a></li>
+            <li><a href="" ng-click="setView('examples', 9)">09. Order groups</a></li>
+            <li><a href="" ng-click="setView('examples', 10)">10. Points</a></li>
+            <li><a href="" ng-click="setView('examples', 11)">11. Custom styling</a></li>
+            <li><a href="" ng-click="setView('examples', 12)">12. Past and future</a></li>
+            <li><a href="" ng-click="setView('examples', 13)">13. Lots of grouped data</a></li>
+            <li><a href="" ng-click="setView('examples', 14)">14. Item class names</a></li>
           </ul>
         </li>
         <!--<li>-->
@@ -60,21 +60,234 @@
 </header>
 
 
-<main class="bs-docs-masthead" id="content" role="main">
-  <div class="container-fluid">
-    <span class="bs-docs-booticon bs-docs-booticon-lg bs-docs-booticon-outline glyphicon glyphicon-time"></span>
+<section ng-show="view.introduction">
 
-    <p class="lead">Timeline component.</p>
 
-    <!--<p class="lead">-->
-    <!--<a href="#" class="btn btn-outline-inverse btn-lg">Download AngularJS-VisJS</a>-->
-    <!--</p>-->
+  <main class="bs-docs-masthead" id="content" role="main">
+    <div class="container-fluid">
+      <span class="bs-docs-booticon bs-docs-booticon-lg bs-docs-booticon-outline glyphicon glyphicon-time"></span>
 
-    <!--<p class="version">Currently v3.2.0</p>-->
+      <p class="lead">Timeline component.</p>
+
+      <!--<p class="lead">-->
+      <!--<a href="#" class="btn btn-outline-inverse btn-lg">Download AngularJS-VisJS</a>-->
+      <!--</p>-->
+
+      <!--<p class="version">Currently v3.2.0</p>-->
+    </div>
+  </main>
+
+</section>
+
+
+<section class="examples" ng-show="view.examples">
+
+
+  <div class="col-sm-3 col-md-2 sidebar">
+    <ul class="nav nav-sidebar">
+      <li ng-repeat="example in examples"
+          ng-class="(exampleIndex == $index + 1) && 'active'">
+        <a ng-click="setView('examples', $index + 1)">{{example}}</a>
+      </li>
+    </ul>
   </div>
-</main>
+
+  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"
+       ng-switch="exampleIndex">
+
+    <div class="btn-group pull-right">
+      <button type="button"
+              class="btn btn-default"
+              ng-click="loadData('simple')">Simple
+      </button>
+      <button type="button"
+              class="btn btn-default"
+              ng-click="loadData('grouped')">Grouped
+      </button>
+    </div>
+
+    <h1 class="page-header">Timeline examples</h1>
+
+    <br/>
+    <br/>
+    <hr/>
 
 
+    <!--<div data="data"-->
+    <!--options="options"-->
+    <!--timeline="timeline"></div>-->
+    <hr/>
+
+    <!--01. Basic usage-->
+    <section ng-switch-when="1">
+      <h3 class="sub-header">01. Basic usage</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--02. Interactive-->
+    <section ng-switch-when="2">
+      <h3 class="sub-header">02. Interactive</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Drag items around, create new items, and remove items.</p>
+        </div>
+      </div>
+    </section>
+
+    <!--03. Lots of data-->
+    <section ng-switch-when="3">
+      <h3 class="sub-header">03. Lots of data</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <h1>
+            Test with a lot of data
+          </h1>
+
+          <p>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!--04. HTML data-->
+    <section ng-switch-when="4">
+      <h3 class="sub-header">04. HTML data</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--05. Groups-->
+    <section ng-switch-when="5">
+      <h3 class="sub-header">05. Groups</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>
+            This example demonstrate using groups. Note that a DataSet is used for both
+            items and groups, allowing to dynamically add, update or remove both items
+            and groups via the DataSet.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!--06. Event listeners-->
+    <section ng-switch-when="6">
+      <h3 class="sub-header">06. Event listeners</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--07. Custom time bar-->
+    <section ng-switch-when="7">
+      <h3 class="sub-header">07. Custom time bar</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--08. Edit items-->
+    <section ng-switch-when="8">
+      <h3 class="sub-header">08. Edit items</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--09. Order groups-->
+    <section ng-switch-when="9">
+      <h3 class="sub-header">09. Order groups</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--10. Points-->
+    <section ng-switch-when="10">
+      <h3 class="sub-header">10. Points</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--11. Custom styling-->
+    <section ng-switch-when="11">
+      <h3 class="sub-header">11. Custom styling</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--12. Past and future-->
+    <section ng-switch-when="12">
+      <h3 class="sub-header">12. Past and future</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--13. Lots of grouped data-->
+    <section ng-switch-when="13">
+      <h3 class="sub-header">13. Lots of grouped data</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+    <!--14. Item class names-->
+    <section ng-switch-when="14">
+      <h3 class="sub-header">14. Item class names</h3>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p>Some content</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+
+</section>
+
+
+<section ng-show="view.examplesss">
 
 
 <div class="bs-docs-featurette" id="timeline01" ng-controller="timeline01Ctrl">
@@ -102,8 +315,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline02" ng-controller="timeline02Ctrl">
   <div class="container-fluid">
     <div class="row">
@@ -123,8 +334,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline03" ng-controller="timeline03Ctrl">
@@ -160,8 +369,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline04">
   <div class="container-fluid">
     <div class="row">
@@ -176,7 +383,7 @@
 
         <div class="row">
           <div class="col-md-offset-1 col-md-10">
-            <timeline data="data4" options="options4"></timeline>
+            <!--<timeline data="data4" options="options4"></timeline>-->
           </div>
         </div>
 
@@ -184,8 +391,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline05">
@@ -206,8 +411,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline06">
   <div class="container-fluid">
     <div class="row">
@@ -224,8 +427,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline07">
@@ -246,8 +447,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline08">
   <div class="container-fluid">
     <div class="row">
@@ -264,8 +463,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline09">
@@ -286,8 +483,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline10">
   <div class="container-fluid">
     <div class="row">
@@ -304,8 +499,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline11">
@@ -326,8 +519,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline12">
   <div class="container-fluid">
     <div class="row">
@@ -344,8 +535,6 @@
     </div>
   </div>
 </div>
-
-
 
 
 <div class="bs-docs-featurette" id="timeline13">
@@ -366,8 +555,6 @@
 </div>
 
 
-
-
 <div class="bs-docs-featurette" id="timeline14">
   <div class="container-fluid">
     <div class="row">
@@ -384,3 +571,6 @@
     </div>
   </div>
 </div>
+
+
+</section>
