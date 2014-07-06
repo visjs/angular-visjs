@@ -75,58 +75,91 @@
 </main>
 
 
-<div class="bs-docs-featurette" id="timeline01">
+
+
+<div class="bs-docs-featurette" id="timeline01" ng-controller="timeline01Ctrl">
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">01. Basic usage</h2>
 
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
         <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
+
+        <button ng-click="loadData('simple')" class="btn btn-outline btn-lg">Single data</button>
+        <button ng-click="loadData('grouped')" class="btn btn-outline btn-lg">Grouped data</button>
+
+        <hr class="half-rule">
+
+        <div class="row">
+          <div class="col-md-offset-1 col-md-10">
+            <!--<timeline data="data1" options="options1"></timeline>-->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
 
 
-<div class="bs-docs-featurette" id="timeline02">
+
+
+<div class="bs-docs-featurette" id="timeline02" ng-controller="timeline02Ctrl">
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">02. Interactive</h2>
 
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
+        <p class="lead">Drag items around, create new items, and remove items.</p>
         <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
+
+        <div class="row">
+          <div class="col-md-offset-1 col-md-10">
+            <!--<timeline data="data2" options="options2"></timeline>-->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
 
 
-<div class="bs-docs-featurette" id="timeline03">
+
+
+<div class="bs-docs-featurette" id="timeline03" ng-controller="timeline03Ctrl">
   <div class="container-fluid">
     <div class="row">
       <div class="col-sm-12 col-md-12 col-lg-12">
         <h2 class="bs-docs-featurette-title">03. Lots of data</h2>
 
-        <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
-          with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
-          favorites.</p>
+        <p class="lead">You can try adding some any fair amount of blocks.</p>
+
+        <p>
+          <label for="drawLotsOfDataValue">Number of items</label>
+          <input id="drawLotsOfDataValue"
+                 ng-model="drawLotsOfDataValue">
+          <input id="draw"
+                 class="btn btn-default"
+                 type="button"
+                 ng-click="drawLotsOfData(100)"
+                 value="Draw items">
+        </p>
+
         <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
+
+        <div class="row">
+          <div class="col-md-offset-1 col-md-10">
+            <!--<timeline data="data3" options="options3"></timeline>-->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline04">
@@ -138,13 +171,21 @@
         <p class="lead">Millions of amazing sites across the web are being built with Bootstrap. Get started on your own
           with our growing <a href="../getting-started/#examples">collection of examples</a> or by exploring some of our
           favorites.</p>
+
         <hr class="half-rule">
-        <p class="lead">We showcase dozens of inspiring projects built with Bootstrap on the Bootstrap Expo.</p>
-        <a href="http://expo.getbootstrap.com" class="btn btn-outline btn-lg">Explore the Expo</a>
+
+        <div class="row">
+          <div class="col-md-offset-1 col-md-10">
+            <timeline data="data4" options="options4"></timeline>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline05">
@@ -165,6 +206,8 @@
 </div>
 
 
+
+
 <div class="bs-docs-featurette" id="timeline06">
   <div class="container-fluid">
     <div class="row">
@@ -181,6 +224,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline07">
@@ -201,6 +246,8 @@
 </div>
 
 
+
+
 <div class="bs-docs-featurette" id="timeline08">
   <div class="container-fluid">
     <div class="row">
@@ -217,6 +264,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline09">
@@ -237,6 +286,8 @@
 </div>
 
 
+
+
 <div class="bs-docs-featurette" id="timeline10">
   <div class="container-fluid">
     <div class="row">
@@ -253,6 +304,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline11">
@@ -273,6 +326,8 @@
 </div>
 
 
+
+
 <div class="bs-docs-featurette" id="timeline12">
   <div class="container-fluid">
     <div class="row">
@@ -291,6 +346,8 @@
 </div>
 
 
+
+
 <div class="bs-docs-featurette" id="timeline13">
   <div class="container-fluid">
     <div class="row">
@@ -307,6 +364,8 @@
     </div>
   </div>
 </div>
+
+
 
 
 <div class="bs-docs-featurette" id="timeline14">
