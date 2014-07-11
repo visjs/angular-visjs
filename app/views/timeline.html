@@ -83,205 +83,227 @@
 <section class="examples" ng-show="view.examples">
 
 
-  <div class="col-sm-3 col-md-2 sidebar">
-    <ul class="nav nav-sidebar">
-      <li ng-repeat="example in examples"
-          ng-class="(exampleIndex == $index + 1) && 'active'">
-        <a ng-click="setView('examples', $index + 1)">{{example}}</a>
-      </li>
-    </ul>
-  </div>
+<div class="col-sm-3 col-md-2 sidebar">
+  <ul class="nav nav-sidebar">
+    <li ng-repeat="example in examples"
+        ng-class="(exampleIndex == $index + 1) && 'active'">
+      <a ng-click="setView('examples', $index + 1)">{{example}}</a>
+    </li>
+  </ul>
+</div>
 
-  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"
-       ng-switch="exampleIndex">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"
+     ng-switch="exampleIndex">
 
-    <div class="btn-group pull-right">
-      <button type="button"
-              class="btn btn-default"
-              ng-click="loadData('simple')">Simple
-      </button>
-      <button type="button"
-              class="btn btn-default"
-              ng-click="loadData('grouped')">Grouped
-      </button>
+  <!--<div class="btn-group pull-right">-->
+  <!--<button type="button"-->
+  <!--class="btn btn-default"-->
+  <!--ng-click="loadData('simple')">Simple-->
+  <!--</button>-->
+  <!--<button type="button"-->
+  <!--class="btn btn-default"-->
+  <!--ng-click="loadData('grouped')">Grouped-->
+  <!--</button>-->
+  <!--</div>-->
+
+
+
+  <timeline data="data" options="options"></timeline>
+  <hr/>
+
+  <!--01. Basic usage-->
+  <section ng-switch-when="1">
+
+    <h1 class="page-header">01. Basic usage</h1>
+    <hr/>
+
+  </section>
+
+
+  <!--02. Interactive-->
+  <section ng-switch-when="2">
+
+    <h1 class="page-header">02. Interactive</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Drag items around, create new items, and remove items.</p>
+      </div>
     </div>
+  </section>
 
-    <h1 class="page-header">Timeline examples</h1>
 
-    <br/>
-    <br/>
+  <!--03. Lots of data-->
+  <section ng-switch-when="3">
+    <h1 class="page-header">03. Lots of data</h1>
     <hr/>
 
+    <div class="row">
+      <div class="col-md-12">
 
-    <!--<div data="data"-->
-    <!--options="options"-->
-    <!--timeline="timeline"></div>-->
+        <p>You can try adding some any fair amount of blocks.</p>
+
+        <p>
+          <label for="drawLotsOfDataValue">Number of items</label>
+          <input ng-model="drawLotsOfDataValue">
+          <input class="btn btn-default"
+                 type="button"
+                 ng-click="drawLotsOfData(100)"
+                 value="Draw items">
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+  <!--04. HTML data-->
+  <section ng-switch-when="4">
+    <h1 class="page-header">04. HTML data</h1>
     <hr/>
 
-    <!--01. Basic usage-->
-    <section ng-switch-when="1">
-      <h3 class="sub-header">01. Basic usage</h3>
-
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--02. Interactive-->
-    <section ng-switch-when="2">
-      <h3 class="sub-header">02. Interactive</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Drag items around, create new items, and remove items.</p>
-        </div>
+  <!--05. Groups-->
+  <section ng-switch-when="5">
+    <h1 class="page-header">05. Groups</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>
+          This example demonstrate using groups. Note that a DataSet is used for both
+          items and groups, allowing to dynamically add, update or remove both items
+          and groups via the DataSet.
+        </p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--03. Lots of data-->
-    <section ng-switch-when="3">
-      <h3 class="sub-header">03. Lots of data</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <h1>
-            Test with a lot of data
-          </h1>
+  <!--06. Event listeners-->
+  <section ng-switch-when="6">
+    <h1 class="page-header">06. Event listeners</h1>
+    <hr/>
 
-          <p>
-          </p>
-        </div>
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--04. HTML data-->
-    <section ng-switch-when="4">
-      <h3 class="sub-header">04. HTML data</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--07. Custom time bar-->
+  <section ng-switch-when="7">
+    <h1 class="page-header">07. Custom time bar</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--05. Groups-->
-    <section ng-switch-when="5">
-      <h3 class="sub-header">05. Groups</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>
-            This example demonstrate using groups. Note that a DataSet is used for both
-            items and groups, allowing to dynamically add, update or remove both items
-            and groups via the DataSet.
-          </p>
-        </div>
+  <!--08. Edit items-->
+  <section ng-switch-when="8">
+    <h1 class="page-header">08. Edit items</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--06. Event listeners-->
-    <section ng-switch-when="6">
-      <h3 class="sub-header">06. Event listeners</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--09. Order groups-->
+  <section ng-switch-when="9">
+    <h1 class="page-header">09. Order groups</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--07. Custom time bar-->
-    <section ng-switch-when="7">
-      <h3 class="sub-header">07. Custom time bar</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--10. Points-->
+  <section ng-switch-when="10">
+    <h1 class="page-header">10. Points</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--08. Edit items-->
-    <section ng-switch-when="8">
-      <h3 class="sub-header">08. Edit items</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--11. Custom styling-->
+  <section ng-switch-when="11">
+    <h1 class="page-header">11. Custom styling</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--09. Order groups-->
-    <section ng-switch-when="9">
-      <h3 class="sub-header">09. Order groups</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--12. Past and future-->
+  <section ng-switch-when="12">
+    <h1 class="page-header">12. Past and future</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--10. Points-->
-    <section ng-switch-when="10">
-      <h3 class="sub-header">10. Points</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--13. Lots of grouped data-->
+  <section ng-switch-when="13">
+    <h1 class="page-header">13. Lots of grouped data</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--11. Custom styling-->
-    <section ng-switch-when="11">
-      <h3 class="sub-header">11. Custom styling</h3>
 
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
+  <!--14. Item class names-->
+  <section ng-switch-when="14">
+    <h1 class="page-header">14. Item class names</h1>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-12">
+        <p>Some content</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!--12. Past and future-->
-    <section ng-switch-when="12">
-      <h3 class="sub-header">12. Past and future</h3>
-
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
-      </div>
-    </section>
-
-    <!--13. Lots of grouped data-->
-    <section ng-switch-when="13">
-      <h3 class="sub-header">13. Lots of grouped data</h3>
-
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
-      </div>
-    </section>
-
-    <!--14. Item class names-->
-    <section ng-switch-when="14">
-      <h3 class="sub-header">14. Item class names</h3>
-
-      <div class="row">
-        <div class="col-md-12">
-          <p>Some content</p>
-        </div>
-      </div>
-    </section>
-
-  </div>
+</div>
 
 
 </section>
@@ -305,7 +327,9 @@
 
         <div class="row">
           <div class="col-md-offset-1 col-md-10">
-            <!--<timeline data="data1" options="options1"></timeline>-->
+
+            <timeline data="data1"></timeline>
+
           </div>
         </div>
 
