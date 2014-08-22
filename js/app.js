@@ -3,7 +3,11 @@
 var ngVisApp = angular.module('ngVisApp', ['ngVis']);
 
 ngVisApp.controller('appController', function ($scope) {
+  $scope.example = 'basicUsage';
 
+  $scope.setExample = function (example) {
+    $scope.example = example;
+  };
 });
 
 ngVisApp.controller('basicUsage', function ($scope) {
