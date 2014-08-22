@@ -4,10 +4,10 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AngularVis</title>
-  <link rel="stylesheet" href="css/foundation.css"/>
-  <link rel="stylesheet" href="bower_components/vis/dist/vis.css"/>
+  <link rel="stylesheet" href="bower_components/foundation/css/foundation.css"/>
+  <link rel="stylesheet" href="bower_components/vis/dist/vis.min.css"/>
 </head>
-<body>
+<body ng-controller="appController">
 
 <nav class="top-bar" data-topbar="">
   <ul class="title-area">
@@ -21,62 +21,62 @@
 
 <br/><br/>
 
-<div class="row" ng-controller="timeline">
-  <div class="large-12 columns">
+<div class="row">
 
-    <div data="data" options="options" vis-time-line></div>
+  <div class="large-3 medium-4 columns">
+    <div class="hide-for-small">
+      <div class="sidebar">
+        <h5>Examples</h5>
+
+        <nav>
+          <ul class="side-nav">
+            <li class="heading">Timeline</li>
+
+            <li><a ng-click="setExample('basic_usage')">basic usage</a></li>
+            <li><a ng-click="setExample('interactive')">interactive</a></li>
+            <li><a ng-click="setExample('a_lot_of_data')">a lot of data</a></li>
+            <li><a ng-click="setExample('html_data')">html data</a></li>
+            <li><a ng-click="setExample('groups')">groups</a></li>
+            <li><a ng-click="setExample('event_listeners')">event listeners</a></li>
+            <li><a ng-click="setExample('custom_time_bar')">custom time bar</a></li>
+            <li><a ng-click="setExample('edit_items')">edit items</a></li>
+            <li><a ng-click="setExample('order_groups')">order groups</a></li>
+            <li><a ng-click="setExample('limit_move_and_zoom')">limit move and zoom</a></li>
+            <li><a ng-click="setExample('points')">points</a></li>
+            <li><a ng-click="setExample('custom_styling')">custom styling</a></li>
+            <li><a ng-click="setExample('past_and_future')">past and future</a></li>
+            <li><a ng-click="setExample('a_lot_of_grouped_data')">a lot of grouped data</a></li>
+            <li><a ng-click="setExample('item_class_names')">item class names</a></li>
+            <li><a ng-click="setExample('navigation_menu')">navigation menu</a></li>
+            <li><a ng-click="setExample('data_serialization')">data serialization</a></li>
+
+            <!--<li class="divider"></li>-->
+            <!--<li class="heading">Structure</li>-->
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="large-9 medium-8 columns">
+
+    <article ng-controller="basicUsage">
+      <h2>Basic Usage</h2>
+      <div data="data" options="options" vis-time-line></div>
+    </article>
 
   </div>
 </div>
 
-<script src="js/vendor/jquery.js"></script>
-<script src="js/foundation.min.js"></script>
-<script src="bower_components/vis/dist/vis.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/foundation/js/foundation.min.js"></script>
+<script src="bower_components/vis/dist/vis.min.js"></script>
 <script src="bower_components/angular/angular.min.js"></script>
+<script src="js/angular-vis.js"></script>
+<script src="js/app.js"></script>
 <script>
   $(document).foundation();
-
-  var ngVis = angular.module('ngVis', []);
-
-  ngVis.directive(
-    'visTimeLine', [
-      function () {
-        return {
-          element: 'EA',
-          replace: true,
-          scope: {
-            data: '=',
-            options: '='
-          },
-          link: function (scope, element, attr) {
-            scope.$watch('data', function (data)
-            {
-              render(data);
-            });
-
-            function render (data) {
-              new vis.Timeline(element[0], data, scope.options);
-            }
-          }
-        }
-      }
-    ]
-  );
-
-  var ngVisApp = angular.module('ngVisApp', ['ngVis']);
-
-  ngVisApp.controller('timeline', function ($scope) {
-    $scope.data = [
-      {id: 1, content: 'item 1', start: '2013-04-20'},
-      {id: 2, content: 'item 2', start: '2013-04-14'},
-      {id: 3, content: 'item 3', start: '2013-04-18'},
-      {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
-      {id: 5, content: 'item 5', start: '2013-04-25'},
-      {id: 6, content: 'item 6', start: '2013-04-27'}
-    ];
-    $scope.options = {};
-  });
-
 </script>
 </body>
 </html>
