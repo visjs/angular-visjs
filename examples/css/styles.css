@@ -2,3 +2,50 @@
     width: 100%;
     max-width: 100%;
 }
+
+.vis.timeline .item.green {
+    background-color: green;
+    border-color: green;
+}
+
+.vis.timeline .item.red {
+    background-color: red;
+    border-color: red;
+}
+
+.vis.timeline .item.dot.red {
+    border-radius: 5px;
+    border-width: 5px;
+}
+
+.vis.timeline .item.line.red {
+    border-width: 5px;
+}
+
+.vis.timeline .item.box.red {
+    border-radius: 0;
+    border-width: 2px;
+    font-size: 24pt;
+    font-weight: bold;
+}
+
+.vis.timeline .item.orange {
+    background-color: orange;
+    border-color: orange;
+}
+.vis.timeline .item.orange.selected {
+    background-color: orange;
+    border-color: orangered;
+}
+
+.vis.timeline .item.magenta {
+    background-color: magenta;
+    border-color: magenta;
+}
+
+.vis.timeline .item.selected {
+    background-color: white;
+    border-color: black;
+    color: black;
+    box-shadow: 0 0 10px gray;
+}

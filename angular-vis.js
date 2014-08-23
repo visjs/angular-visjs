@@ -24,6 +24,12 @@ ngVis.directive('visTimeLine', function () {
         render(data);
       });
 
+      scope.$watch('events', function (events) {
+        if (events.timechange) {
+          timeline.on('timechange', events.timechange);
+        }
+      });
+
       function render(data) {
         timeline.setItems(data);
       }
@@ -51,6 +57,15 @@ ngVis.directive('visTimeLine', function () {
       scope.methods = {
         getCustomTime: function () {
           return timeline.getCustomTime();
+        },
+        setCustomTime: function (time) {
+          timeline.setCustomTime(time);
+        },
+        getWindow: function () {
+          return timeline.getWindow();
+        },
+        setWindow: function (start, end) {
+          timeline.setWindow(start, end);
         }
       };
 
