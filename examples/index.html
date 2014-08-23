@@ -48,10 +48,10 @@
               <a ng-click="setExample('groups')">groups</a>
             </li>
             <li class="{{(example == 'eventListeners') && 'active'}}">
-              <a ng-click="setExample('eventListeners')">event listeners</a>
+              <a ng-click="setExample('eventListeners')">event listeners +</a>
             </li>
             <li class="{{(example == 'customTimeBar') && 'active'}}">
-              <a ng-click="setExample('customTimeBar')">custom time bar</a>
+              <a ng-click="setExample('customTimeBar')">custom time bar +</a>
             </li>
             <li class="{{(example == 'editItems') && 'active'}}">
               <a ng-click="setExample('editItems')">edit items</a>
@@ -95,9 +95,8 @@
 
     <div data="data"
          options="options"
-         rangechange="rangechange"
-         rangechanged="rangechanged"
-         select="select"
+         events="timeline.events"
+         methods="timeline.methods"
          vis-time-line></div>
     <hr/>
 
@@ -133,18 +132,34 @@
 
     <article ng-switch-when="eventListeners">
       <h2>Event listeners</h2>
-      <h3>Range change</h3>
-      <pre>{{logged.rangechange | json}}</pre>
-      <h3>Range changed</h3>
-      <pre>{{logged.rangechanged | json}}</pre>
-      <h3>Select</h3>
-      <pre>{{logged.select | json}}</pre>
-      <h3>Items *</h3>
-      <pre>{{logged.items | json}}</pre>
+      <dl>
+        <dt>Range change</dt>
+          <dd>{{logged.rangechange | json}}</dd>
+        <dt>Range changed</dt>
+          <dd>{{logged.rangechanged | json}}</dd>
+        <dt>Select</dt>
+          <dd>{{logged.select | json}}</dd>
+        <dt>Items *</dt>
+          <dd>{{logged.items | json}}</dd>
+      </dl>
     </article>
 
     <article ng-switch-when="customTimeBar">
       <h2>Custom time bar</h2>
+      <p>
+        <input type="text" id="setTime" value="2014-02-07" />
+        <input type="button" class="button" value="Set custom time" />
+      </p>
+      <p>
+        <input type="button" class="button" value="Get custom time" ng-click="printCustomTime()" />
+        {{logged.customTime | json}}
+      </p>
+      <dl>
+        <dt>Time change</dt>
+          <dd>{{logged.timechange | json}}</dd>
+        <dt>Time changed</dt>
+          <dd>{{logged.timechanged | json}}</dd>
+      </dl>
     </article>
 
     <article ng-switch-when="editItems">

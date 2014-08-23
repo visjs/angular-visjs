@@ -6,6 +6,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
 
   $scope.count = 10000;
 
+  $scope.logged = {};
+
   var now = moment().minutes(0).seconds(0).milliseconds(0);
 
   var items = new vis.DataSet({
@@ -159,26 +161,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           editable: true
         };
 
-        $scope.logged = {};
-
-        $scope.rangechange = function (properties) {
-          $timeout(function () {
-            $scope.logged.rangechange = properties;
-          });
-        };
-
-        $scope.rangechanged = function (properties) {
-          $timeout(function () {
-            $scope.logged.rangechanged = properties;
-          });
-        };
-
-        $scope.select = function (properties) {
-          $timeout(function () {
-            $scope.logged.select = properties;
-          });
-        };
-
         items.on('*', function (event, properties) {
           $timeout(function () {
             $scope.logged.items = {
@@ -187,7 +169,23 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             };
           });
         });
+        break;
 
+      case 'customTimeBar':
+        items.clear();
+        items.add([]);
+        $scope.data = items;
+
+        $scope.options = {
+          showCurrentTime: true,
+          showCustomTime: true,
+          start: new Date(Date.now() - 1000 * 60 * 60 * 24),
+          end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6)
+        };
+
+        $scope.printCustomTime = function () {
+          $scope.logged.customTime = $scope.timeline.methods.getCustomTime();
+        };
         break;
     }
   };
@@ -199,4 +197,36 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
   $scope.drawData = function () {
     $scope.data = createData($scope.count);
   };
+
+  // $scope.methods = {}
+
+  $scope.timeline = {
+    events: {
+      rangechange: function (properties) {
+        $timeout(function () {
+          $scope.logged.rangechange = properties;
+        });
+      },
+      rangechanged: function (properties) {
+        $timeout(function () {
+          $scope.logged.rangechanged = properties;
+        });
+      },
+      select: function (properties) {
+        $timeout(function () {
+          $scope.logged.select = properties;
+        });
+      },
+      timechange: function (properties) {
+        $timeout(function () {
+          $scope.logged.timechange = properties;
+        });
+      },
+      timechanged: function (properties) {
+        $timeout(function () {
+          $scope.logged.timechanged = properties;
+        });
+      }
+    }
+  }
 });

@@ -9,9 +9,8 @@ ngVis.directive('visTimeLine', function () {
     scope: {
       data: '=',
       options: '=',
-      rangechange: '=',
-      rangechanged: '=',
-      select: '='
+      events: '=',
+      methods: '='
     },
     link: function (scope, element, attr) {
       var timeline = new vis.Timeline(element[0]);
@@ -29,17 +28,33 @@ ngVis.directive('visTimeLine', function () {
         timeline.setItems(data);
       }
 
-      if (scope.rangechange) {
-        timeline.on('rangechange', scope.rangechange);
+      if (scope.events.rangechange) {
+        timeline.on('rangechange', scope.events.rangechange);
       }
 
-      if (scope.rangechanged) {
-        timeline.on('rangechanged', scope.rangechanged);
+      if (scope.events.rangechanged) {
+        timeline.on('rangechanged', scope.events.rangechanged);
       }
 
-      if (scope.select) {
-        timeline.on('select', scope.select);
+      if (scope.events.select) {
+        timeline.on('select', scope.events.select);
       }
+
+      if (scope.events.timechange) {
+        timeline.on('timechange', scope.events.timechange);
+      }
+
+      if (scope.events.timechanged) {
+        timeline.on('timechanged', scope.events.timechanged);
+      }
+
+      scope.methods = {
+        getCustomTime: function () {
+          return timeline.getCustomTime();
+        }
+      };
+
+      scope.getCustomTime = timeline.getCustomTime;
     }
   }
 });
