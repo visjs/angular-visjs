@@ -1,0 +1,183 @@
+<!doctype html>
+<html class="no-js" lang="en" ng-app="ngVisApp">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AngularVis</title>
+  <link rel="stylesheet" href="bower_components/foundation/css/foundation.css"/>
+  <link rel="stylesheet" href="bower_components/vis/dist/vis.min.css"/>
+</head>
+<body ng-controller="appController">
+
+<nav class="top-bar" data-topbar="">
+  <ul class="title-area">
+    <li class="name">
+      <h1>
+        <a href="#">AngularVis</a>
+      </h1>
+    </li>
+  </ul>
+</nav>
+
+<br/><br/>
+
+<div class="row">
+
+  <div class="large-3 medium-4 columns">
+    <div class="hide-for-small">
+      <div class="sidebar">
+        <h5>Examples</h5>
+
+        <nav>
+          <ul class="side-nav">
+            <li class="heading">Timeline</li>
+
+            <li class="{{(example == 'basicUsage') && 'active'}}">
+              <a ng-click="setExample('basicUsage')">basic usage</a>
+            </li>
+            <li class="{{(example == 'interactive') && 'active'}}">
+              <a ng-click="setExample('interactive')">interactive</a>
+            </li>
+            <li class="{{(example == 'aLotOfData') && 'active'}}">
+              <a ng-click="setExample('aLotOfData')">a lot of data</a>
+            </li>
+            <li class="{{(example == 'htmlData') && 'active'}}">
+              <a ng-click="setExample('htmlData')">html data</a>
+            </li>
+            <li class="{{(example == 'groups') && 'active'}}">
+              <a ng-click="setExample('groups')">groups</a>
+            </li>
+            <li class="{{(example == 'eventListeners') && 'active'}}">
+              <a ng-click="setExample('eventListeners')">event listeners</a>
+            </li>
+            <li class="{{(example == 'customTimeBar') && 'active'}}">
+              <a ng-click="setExample('customTimeBar')">custom time bar</a>
+            </li>
+            <li class="{{(example == 'editItems') && 'active'}}">
+              <a ng-click="setExample('editItems')">edit items</a>
+            </li>
+            <li class="{{(example == 'orderGroups') && 'active'}}">
+              <a ng-click="setExample('orderGroups')">order groups</a>
+            </li>
+            <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
+              <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom</a>
+            </li>
+            <li class="{{(example == 'points') && 'active'}}">
+              <a ng-click="setExample('points')">points</a>
+            </li>
+            <li class="{{(example == 'customStyling') && 'active'}}">
+              <a ng-click="setExample('customStyling')">custom styling</a>
+            </li>
+            <li class="{{(example == 'pastAndFuture') && 'active'}}">
+              <a ng-click="setExample('pastAndFuture')">past and future</a>
+            </li>
+            <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
+              <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
+            </li>
+            <li class="{{(example == 'itemClassNames') && 'active'}}">
+              <a ng-click="setExample('itemClassNames')">item class names</a>
+            </li>
+            <li class="{{(example == 'navigationMenu') && 'active'}}">
+              <a ng-click="setExample('navigationMenu')">navigation menu</a>
+            </li>
+            <li class="{{(example == 'dataSerialization') && 'active'}}">
+              <a ng-click="setExample('dataSerialization')">data serialization</a>
+            </li>
+
+            <!--<li class="divider"></li>-->
+            <!--<li class="heading">Structure</li>-->
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="large-9 medium-8 columns" ng-switch="example">
+
+    <article ng-switch-when="basicUsage" ng-controller="basicUsage">
+      <h2>Basic Usage</h2>
+      <div data="data" options="options" vis-time-line></div>
+    </article>
+
+    <article ng-switch-when="interactive" ng-controller="interactive">
+      <h2>Interactive</h2>
+      <p>Drag items around, create new items, and remove items.</p>
+      <div data="data" options="options" vis-time-line></div>
+    </article>
+
+    <article ng-switch-when="aLotOfData">
+      <h2>Test with a lot of data</h2>
+    </article>
+
+    <article ng-switch-when="htmlData">
+      <h2>HTML data</h2>
+    </article>
+
+    <article ng-switch-when="groups">
+      <h2>Groups</h2>
+    </article>
+
+    <article ng-switch-when="eventListeners">
+      <h2>Event listeners</h2>
+    </article>
+
+    <article ng-switch-when="customTimeBar">
+      <h2>Custom time bar</h2>
+    </article>
+
+    <article ng-switch-when="editItems">
+      <h2>Edit items</h2>
+    </article>
+
+    <article ng-switch-when="orderGroups">
+      <h2>Order groups</h2>
+    </article>
+
+    <article ng-switch-when="limitMoveAndZoom">
+      <h2>Limit move and zoom</h2>
+    </article>
+
+    <article ng-switch-when="points">
+      <h2>Points</h2>
+    </article>
+
+    <article ng-switch-when="customStyling">
+      <h2>Custom styling</h2>
+    </article>
+
+    <article ng-switch-when="pastAndFuture">
+      <h2>Past and future</h2>
+    </article>
+
+    <article ng-switch-when="aLotOfGroupedData">
+      <h2>A lot of grouped data</h2>
+    </article>
+
+    <article ng-switch-when="itemClassNames">
+      <h2>Item class names</h2>
+    </article>
+
+    <article ng-switch-when="navigationMenu">
+      <h2>Navigation menu</h2>
+    </article>
+
+    <article ng-switch-when="dataSerialization">
+      <h2>Data serialization</h2>
+    </article>
+
+  </div>
+</div>
+
+<script src="bower_components/moment/min/moment.min.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/foundation/js/foundation.min.js"></script>
+<script src="bower_components/vis/dist/vis.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="../angular-vis.js"></script>
+<script src="js/app.js"></script>
+<script>
+  $(document).foundation();
+</script>
+</body>
+</html>
