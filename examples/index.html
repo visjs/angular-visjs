@@ -6,6 +6,7 @@
   <title>AngularVis</title>
   <link rel="stylesheet" href="bower_components/foundation/css/foundation.css"/>
   <link rel="stylesheet" href="bower_components/vis/dist/vis.min.css"/>
+  <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body ng-controller="appController">
 
@@ -21,28 +22,27 @@
 
 <br/><br/>
 
-<div class="row">
+<div class="row fluid">
 
   <div class="large-3 medium-4 columns">
     <div class="hide-for-small">
       <div class="sidebar">
         <h5>Examples</h5>
-
         <nav>
           <ul class="side-nav">
             <li class="heading">Timeline</li>
 
             <li class="{{(example == 'basicUsage') && 'active'}}">
-              <a ng-click="setExample('basicUsage')">basic usage</a>
+              <a ng-click="setExample('basicUsage')">basic usage +</a>
             </li>
             <li class="{{(example == 'interactive') && 'active'}}">
-              <a ng-click="setExample('interactive')">interactive</a>
+              <a ng-click="setExample('interactive')">interactive +</a>
             </li>
             <li class="{{(example == 'aLotOfData') && 'active'}}">
-              <a ng-click="setExample('aLotOfData')">a lot of data</a>
+              <a ng-click="setExample('aLotOfData')">a lot of data +</a>
             </li>
             <li class="{{(example == 'htmlData') && 'active'}}">
-              <a ng-click="setExample('htmlData')">html data</a>
+              <a ng-click="setExample('htmlData')">html data +</a>
             </li>
             <li class="{{(example == 'groups') && 'active'}}">
               <a ng-click="setExample('groups')">groups</a>
@@ -83,35 +83,48 @@
             <li class="{{(example == 'dataSerialization') && 'active'}}">
               <a ng-click="setExample('dataSerialization')">data serialization</a>
             </li>
-
             <!--<li class="divider"></li>-->
             <!--<li class="heading">Structure</li>-->
           </ul>
         </nav>
-
       </div>
     </div>
   </div>
 
   <div class="large-9 medium-8 columns" ng-switch="example">
 
-    <article ng-switch-when="basicUsage" ng-controller="basicUsage">
+    <div data="data"
+         options="options"
+         rangechange="rangechange"
+         rangechanged="rangechanged"
+         select="select"
+         vis-time-line></div>
+    <hr/>
+
+    <article ng-switch-when="basicUsage">
       <h2>Basic Usage</h2>
-      <div data="data" options="options" vis-time-line></div>
     </article>
 
-    <article ng-switch-when="interactive" ng-controller="interactive">
+    <article ng-switch-when="interactive">
       <h2>Interactive</h2>
+
       <p>Drag items around, create new items, and remove items.</p>
-      <div data="data" options="options" vis-time-line></div>
     </article>
 
     <article ng-switch-when="aLotOfData">
       <h2>Test with a lot of data</h2>
+
+      <p>
+        <label for="count">Number of items</label>
+        <input id="count" ng-model="count">
+        <input type="button" value="draw" ng-click="drawData()">
+      </p>
     </article>
 
     <article ng-switch-when="htmlData">
       <h2>HTML data</h2>
+
+      <p>Load HTML contents in the Timeline</p>
     </article>
 
     <article ng-switch-when="groups">
@@ -120,6 +133,14 @@
 
     <article ng-switch-when="eventListeners">
       <h2>Event listeners</h2>
+      <h3>Range change</h3>
+      <pre>{{logged.rangechange | json}}</pre>
+      <h3>Range changed</h3>
+      <pre>{{logged.rangechanged | json}}</pre>
+      <h3>Select</h3>
+      <pre>{{logged.select | json}}</pre>
+      <h3>Items *</h3>
+      <pre>{{logged.items | json}}</pre>
     </article>
 
     <article ng-switch-when="customTimeBar">
@@ -172,7 +193,7 @@
 <script src="bower_components/moment/min/moment.min.js"></script>
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/foundation/js/foundation.min.js"></script>
-<script src="bower_components/vis/dist/vis.min.js"></script>
+<script src="bower_components/vis/dist/vis.js"></script>
 <script src="bower_components/angular/angular.min.js"></script>
 <script src="../angular-vis.js"></script>
 <script src="js/app.js"></script>

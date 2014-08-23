@@ -2,44 +2,44 @@
 
 var ngVis = angular.module('ngVis', []);
 
-ngVis.factory('visDataSet', function () {
-
-  var prepareData = function (data) {
-    var items = new vis.DataSet({
-      type: { start: 'ISODate', end: 'ISODate' }
-    });
-
-    items.add(data);
-
-    return items;
-  };
-
-  return function (data) {
-    return prepareData(data);
-  }
-});
-
-ngVis.directive('visTimeLine', ['visDataSet', function (visDataSet) {
+ngVis.directive('visTimeLine', function () {
   return {
     element: 'EA',
     transclude: true,
     scope: {
       data: '=',
-      options: '='
-    },
-    controller: function () {
-
+      options: '=',
+      rangechange: '=',
+      rangechanged: '=',
+      select: '='
     },
     link: function (scope, element, attr) {
+      var timeline = new vis.Timeline(element[0]);
+
+      scope.$watch('options', function (options) {
+        if (options == {}) timeline.clear({options: true});
+        timeline.setOptions(options);
+      });
+
       scope.$watch('data', function (data) {
         render(data);
       });
 
       function render(data) {
-        data = visDataSet(data);
+        timeline.setItems(data);
+      }
 
-        new vis.Timeline(element[0], data, scope.options);
+      if (scope.rangechange) {
+        timeline.on('rangechange', scope.rangechange);
+      }
+
+      if (scope.rangechanged) {
+        timeline.on('rangechanged', scope.rangechanged);
+      }
+
+      if (scope.select) {
+        timeline.on('select', scope.select);
       }
     }
   }
-}]);
+});
