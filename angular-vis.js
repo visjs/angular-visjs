@@ -2,6 +2,13 @@
 
 var ngVis = angular.module('ngVis', []);
 
+ngVis.factory('visDataSet', function () {
+
+  return {
+
+  }
+});
+
 ngVis.directive('visTimeLine', function () {
     return {
       restrict: 'EA',
@@ -41,10 +48,10 @@ ngVis.directive('visTimeLine', function () {
             timeline.setItems(scope.data);
           } else if (angular.isObject(scope.data) && scope.data.hasOwnProperty('groups')) {
             groups.clear();
-            groups.add(scope.data.groups);
-            timeline.setGroups(scope.data.groups);
             items.clear();
+            groups.add(scope.data.groups);
             items.add(scope.data.items);
+            timeline.setGroups(scope.data.groups);
             timeline.setItems(scope.data.items);
           }
         });

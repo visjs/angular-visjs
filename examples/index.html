@@ -57,7 +57,7 @@
                 <a ng-click="setExample('htmlData')">html data +</a>
               </li>
               <li class="{{(example == 'groups') && 'active'}}">
-                <a ng-click="setExample('groups')">groups</a>
+                <a ng-click="setExample('groups')">groups +</a>
               </li>
               <li class="{{(example == 'eventListeners') && 'active'}}">
                 <a ng-click="setExample('eventListeners')">event listeners +</a>
@@ -69,7 +69,7 @@
                 <a ng-click="setExample('editItems')">edit items +</a>
               </li>
               <li class="{{(example == 'orderGroups') && 'active'}}">
-                <a ng-click="setExample('orderGroups')">order groups</a>
+                <a ng-click="setExample('orderGroups')">order groups +</a>
               </li>
               <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
                 <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom +</a>
@@ -81,7 +81,7 @@
                 <a ng-click="setExample('pastAndFuture')">past and future -</a>
               </li>
               <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
-                <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
+                <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data +</a>
               </li>
               <li class="{{(example == 'itemClassNames') && 'active'}}">
                 <a ng-click="setExample('itemClassNames')">item class names +</a>
@@ -206,7 +206,18 @@
       </article>
 
       <article ng-switch-when="aLotOfGroupedData">
-        <h2>A lot of grouped data</h2>
+        <h2>Timeline grouping performance</h2>
+        <p>
+          Choose a number of items:
+          <a ng-click="groupCount(10)">10</a>,
+          <a ng-click="groupCount(100)">100</a>,
+          <a ng-click="groupCount(1000)">1000</a>,
+          <a ng-click="groupCount(10000)">10000</a>,
+          <a ng-click="groupCount(100000)">100000</a>
+        <p>
+        <p>
+          Current number of items: {{groupCountValue}}
+        </p>
       </article>
 
       <article ng-switch-when="itemClassNames">

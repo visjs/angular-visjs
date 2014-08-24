@@ -12,6 +12,19 @@
     background-color: #ffffff;
 }
 
+.vis.timeline .item {
+    background-color: #008CBA;
+    border-color: #008CBA;
+    color: #ffffff;
+    font-family: 'Helvetica Neue', Helvetica, Helvetica, Arial, sans-serif;
+    font-kerning: auto;
+    font-size: 13px;
+    font-style: normal;
+    font-variant: normal;
+    font-variant-ligatures: normal;
+    font-weight: normal;
+}
+
 .vis.timeline .item.green {
     background-color: green;
     border-color: green;
