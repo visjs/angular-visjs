@@ -4,8 +4,51 @@ var ngVis = angular.module('ngVis', []);
 
 ngVis.factory('visDataSet', function () {
 
-  return {
+  var items = new vis.DataSet({
+    type: {
+      start: 'ISODate',
+      end: 'ISODate'
+    }
+  });
 
+  var groups = new vis.DataSet();
+
+  // var count = items.get().length;
+  /*
+   if (count > 0) {
+   items.update(data);
+   } else {
+   items.add(data);
+   }
+   */
+
+  return function (data) {
+    var processed;
+
+    if (angular.isArray(data)) {
+      items.clear();
+      items.add(data);
+
+      processed = {
+        load: items,
+        single: true
+      };
+    } else if (angular.isObject(data) && data.hasOwnProperty('groups')) {
+      groups.clear();
+      items.clear();
+      groups.add(data.groups);
+      items.add(data.items);
+
+      processed = {
+        load: {
+          groups: groups,
+          items: items
+        },
+        single: false
+      };
+    }
+
+    return processed;
   }
 });
 
@@ -22,37 +65,13 @@ ngVis.directive('visTimeLine', function () {
       link: function (scope, element, attr) {
         var timeline = new vis.Timeline(element[0]);
 
-        var items = new vis.DataSet({
-          type: {
-            start: 'ISODate',
-            end: 'ISODate'
-          }
-        });
-
-        var groups = new vis.DataSet();
-
-        // var count = items.get().length;
-        /*
-         if (count > 0) {
-         items.update(data);
-         } else {
-         items.add(data);
-         }
-         */
-
         scope.$watch('data', function () {
-          if (angular.isArray(scope.data)) {
+          if (scope.data.single) {
             timeline.clear({groups: true});
-            items.clear();
-            items.add(scope.data);
-            timeline.setItems(scope.data);
-          } else if (angular.isObject(scope.data) && scope.data.hasOwnProperty('groups')) {
-            groups.clear();
-            items.clear();
-            groups.add(scope.data.groups);
-            items.add(scope.data.items);
-            timeline.setGroups(scope.data.groups);
-            timeline.setItems(scope.data.items);
+            timeline.setItems(scope.data.load);
+          } else {
+            timeline.setGroups(scope.data.load.groups);
+            timeline.setItems(scope.data.load.items);
           }
         });
 
@@ -62,11 +81,6 @@ ngVis.directive('visTimeLine', function () {
           timeline.fit();
         });
 
-
-        // ***********************************************************************************************************
-
-
-        // TODO: Investigate!
         scope.$watch('events', function (events) {
           if (events.timechange) {
             timeline.on('timechange', events.timechange);

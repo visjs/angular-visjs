@@ -42,55 +42,58 @@
         <div class="sidebar">
           <nav>
             <ul class="side-nav">
-              <li class="heading">Timeline examples</li>
+              <li class="heading">Data</li>
 
               <li class="{{(example == 'basicUsage') && 'active'}}">
-                <a ng-click="setExample('basicUsage')">basic usage +</a>
-              </li>
-              <li class="{{(example == 'interactive') && 'active'}}">
-                <a ng-click="setExample('interactive')">interactive +</a>
+                <a ng-click="setExample('basicUsage')">basic usage</a>
               </li>
               <li class="{{(example == 'aLotOfData') && 'active'}}">
-                <a ng-click="setExample('aLotOfData')">a lot of data +</a>
+                <a ng-click="setExample('aLotOfData')">a lot of data (*)</a>
               </li>
               <li class="{{(example == 'htmlData') && 'active'}}">
-                <a ng-click="setExample('htmlData')">html data +</a>
+                <a ng-click="setExample('htmlData')">html data</a>
               </li>
               <li class="{{(example == 'groups') && 'active'}}">
-                <a ng-click="setExample('groups')">groups +</a>
-              </li>
-              <li class="{{(example == 'eventListeners') && 'active'}}">
-                <a ng-click="setExample('eventListeners')">event listeners +</a>
-              </li>
-              <li class="{{(example == 'customTimeBar') && 'active'}}">
-                <a ng-click="setExample('customTimeBar')">custom time bar +</a>
-              </li>
-              <li class="{{(example == 'editItems') && 'active'}}">
-                <a ng-click="setExample('editItems')">edit items +</a>
+                <a ng-click="setExample('groups')">groups</a>
               </li>
               <li class="{{(example == 'orderGroups') && 'active'}}">
-                <a ng-click="setExample('orderGroups')">order groups +</a>
-              </li>
-              <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
-                <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom +</a>
+                <a ng-click="setExample('orderGroups')">order groups</a>
               </li>
               <li class="{{(example == 'points') && 'active'}}">
-                <a ng-click="setExample('points')">points +</a>
-              </li>
-              <li class="{{(example == 'pastAndFuture') && 'active'}}">
-                <a ng-click="setExample('pastAndFuture')">past and future -</a>
+                <a ng-click="setExample('points')">points</a>
               </li>
               <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
-                <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data +</a>
+                <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
               </li>
               <li class="{{(example == 'itemClassNames') && 'active'}}">
-                <a ng-click="setExample('itemClassNames')">item class names +</a>
+                <a ng-click="setExample('itemClassNames')">item class names</a>
+              </li>
+
+              <li class="heading">Usage</li>
+
+              <li class="{{(example == 'interactive') && 'active'}}">
+                <a ng-click="setExample('interactive')">interactive</a>
+              </li>
+              <li class="{{(example == 'eventListeners') && 'active'}}">
+                <a ng-click="setExample('eventListeners')">event listeners</a>
+              </li>
+              <li class="{{(example == 'customTimeBar') && 'active'}}">
+                <a ng-click="setExample('customTimeBar')">custom time bar (*)</a>
+              </li>
+              <li class="{{(example == 'editItems') && 'active'}}">
+                <a ng-click="setExample('editItems')">edit items</a>
+              </li>
+              <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
+                <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom</a>
+              </li>
+              <li class="{{(example == 'pastAndFuture') && 'active'}}">
+                <a ng-click="setExample('pastAndFuture')">past and future (*)</a>
               </li>
               <li class="{{(example == 'navigationMenu') && 'active'}}">
-                <a ng-click="setExample('navigationMenu')">navigation menu +</a>
+                <a ng-click="setExample('navigationMenu')">navigation menu (*)</a>
               </li>
               <li class="{{(example == 'dataSerialization') && 'active'}}">
-                <a ng-click="setExample('dataSerialization')">data serialization</a>
+                <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
               </li>
             </ul>
           </nav>
