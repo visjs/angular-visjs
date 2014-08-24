@@ -40,14 +40,15 @@ angular.module('ngVis', []).
     groupOrder: 'content'
   }).
 
-  factory('Moment', function () { return vis.moment() }).
+  factory('Moment', function () {
+    return vis.moment()
+  }).
 
   factory(
   'process',
   [
     'options',
-    function (options)
-    {
+    function (options) {
       var items,
         groups;
 
@@ -62,64 +63,47 @@ angular.module('ngVis', []).
 
       groups = new vis.DataSet();
 
-      return function (data)
-      {
+      return function (data) {
         items.clear();
         groups.clear();
 
         var _data = {};
 
-        items.on(
-          '*',
-          function (event, properties)
-          {
-            if (options.debug)
-            {
-              console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
-            }
+        items.on('*', function (event, properties) {
+          if (options.debug) {
+            console.log('event=' + angular.toJson(event) + ', ' + 'properties=' + angular.toJson(properties));
           }
-        );
+        });
 
-        if (angular.isArray(data))
-        {
+        if (angular.isArray(data)) {
           items.add(data);
-        }
-        else
-        {
+        } else {
           var id = 0;
 
           angular.forEach(
             data,
-            function (_items, _group)
-            {
-              groups.add(
-                {
-                  id: id,
-                  content: _group
+            function (_items, _group) {
+              groups.add({
+                id: id,
+                content: _group
+              });
+
+              angular.forEach(_items, function (item) {
+                var _item = {
+                  id: item.id,
+                  group: id,
+                  content: item.content,
+                  start: item.start
+                };
+
+                if (item.hasOwnProperty('end')) {
+                  _item.end = item.end;
                 }
-              );
 
-              angular.forEach(
-                _items,
-                function (item)
-                {
-                  var _item = {
-                    id: item.id,
-                    group: id,
-                    content: item.content,
-                    start: item.start
-                  };
+                items.add(_item);
+              });
 
-                  if (item.hasOwnProperty('end'))
-                  {
-                    _item.end = item.end;
-                  }
-
-                  items.add(_item);
-                }
-              );
-
-              id ++;
+              id++;
             }
           );
 
@@ -139,8 +123,7 @@ angular.module('ngVis', []).
   [
     'options',
     'process',
-    function (options, process)
-    {
+    function (options, process) {
       return {
         restrict: 'EA',
         replace: true,
@@ -151,13 +134,11 @@ angular.module('ngVis', []).
           // timeline: '='
         },
 
-        controller: function (Moment)
-        {
+        controller: function (Moment) {
           // console.log('Moment ->', Moment);
         },
 
-        link: function (scope, element, attrs)
-        {
+        link: function (scope, element, attrs) {
           angular.element(element[0]).html('');
 
           var _timeline = {};
@@ -175,20 +156,17 @@ angular.module('ngVis', []).
 
           scope.$watch(
             'data',
-            function (data)
-            {
+            function (data) {
               // console.log('data changed!');
 
               _timeline.clear();
 
               var _data = process(data);
 
-              if (_data.hasOwnProperty('groups'))
-              {
+              if (_data.hasOwnProperty('groups')) {
                 _timeline.setGroups(_data.groups);
               }
-              else
-              {
+              else {
                 _timeline.setGroups(null);
               }
 
@@ -200,12 +178,10 @@ angular.module('ngVis', []).
 
           scope.$watch(
             'options',
-            function (_options)
-            {
+            function (_options) {
               // console.log('options changed!');
 
-              if (_options.defaults)
-              {
+              if (_options.defaults) {
                 _timeline.clear({options: true});
 
                 // _timeline.setOptions(options);
@@ -213,8 +189,7 @@ angular.module('ngVis', []).
 
                 // console.log('coming to defaults!');
               }
-              else
-              {
+              else {
                 // var opts = angular.extend(angular.extend({}, _options), options);
                 _timeline.setOptions(_options);
                 // _timeline.setWindow(_options.start, _options.end);
