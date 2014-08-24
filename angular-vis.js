@@ -7,7 +7,6 @@ ngVis.directive('visTimeLine', function () {
     restrict: 'EA',
     transclude: true,
     scope: {
-      timeline: '=',
       items: '=',
       options: '=',
       events: '=',
