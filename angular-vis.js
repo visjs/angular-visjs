@@ -7,7 +7,7 @@ ngVis.directive('visTimeLine', function () {
     restrict: 'EA',
     transclude: true,
     scope: {
-      items: '=',
+      data: '=',
       options: '=',
       events: '=',
       methods: '='
@@ -15,8 +15,39 @@ ngVis.directive('visTimeLine', function () {
     link: function (scope, element, attr) {
       var timeline = new vis.Timeline(element[0]);
 
-      scope.$watch('items', function (items) {
-        render(items);
+      var items = new vis.DataSet({
+        type: {
+          start: 'ISODate',
+          end: 'ISODate'
+        }
+      });
+
+      var groups = new vis.DataSet();
+
+      // var count = items.get().length;
+      /*
+       if (count > 0) {
+       items.update(data);
+       } else {
+       items.add(data);
+       }
+       */
+
+      scope.$watch('data', function () {
+        // console.log('groups ->', angular.isDefined(scope.groups), scope.groups);
+
+        // if (angular.isDefined(scope.groups))
+        // groups.clear();
+
+        items.clear();
+
+        // if (angular.isDefined(scope.data.groups)) groups.add(scope.data.groups);
+
+        items.add(scope.data);
+
+        // if (angular.isDefined(scope.data.groups)) timeline.setGroups(scope.data.groups);
+
+        timeline.setItems(scope.data);
       });
 
       scope.$watch('options', function (options) {
@@ -25,16 +56,16 @@ ngVis.directive('visTimeLine', function () {
         timeline.fit();
       });
 
+
+      // ***********************************************************************************************************
+
+
       // TODO: Investigate!
       scope.$watch('events', function (events) {
         if (events.timechange) {
           timeline.on('timechange', events.timechange);
         }
       });
-
-      function render(items) {
-        timeline.setItems(items);
-      }
 
       if (scope.events.rangechange)   timeline.on('rangechange', scope.events.rangechange);
       if (scope.events.rangechanged)  timeline.on('rangechanged', scope.events.rangechanged);

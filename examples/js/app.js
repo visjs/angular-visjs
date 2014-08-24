@@ -25,18 +25,14 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
 
   var now = moment().minutes(0).seconds(0).milliseconds(0);
 
-  var items = new vis.DataSet({
-    type: {start: 'ISODate', end: 'ISODate' }
-  });
-
-  items.on('*', function (event, properties) {
-    $timeout(function () {
-      $scope.logged.items = {
-        event: event,
-        properties: properties
-      };
-    });
-  });
+//  items.on('*', function (event, properties) {
+//    $timeout(function () {
+//      $scope.logged.items = {
+//        event: event,
+//        properties: properties
+//      };
+//    });
+//  });
 
   $scope.drawData = function () {
     $scope.data = createData($scope.count);
@@ -120,7 +116,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
     }
   };
 
-  var data, options;
+  var data,
+    options;
 
   $scope.setExample = function (example) {
     $scope.example = example;
@@ -136,7 +133,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-04-25'},
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ];
-
         options = {};
         break;
 
@@ -149,7 +145,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-01-28', type: 'point'},
           {id: 6, content: 'item 6', start: '2014-01-26'}
         ];
-
         options = {
           start: '2014-01-10',
           end: '2014-02-10',
@@ -170,7 +165,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
 
       case 'aLotOfData':
         data = createData();
-
         options = {
           editable: true,
           start: now.clone().add('days', -3),
@@ -222,7 +216,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             start: '2013-04-21'
           }
         ];
-
         options = {};
         break;
 
@@ -235,7 +228,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2013-04-25'},
           {id: 6, content: 'item 6', start: '2013-04-27'}
         ];
-
         options = {
           editable: true
         };
@@ -243,7 +235,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
 
       case 'customTimeBar':
         data = [];
-
         options = {
           showCurrentTime: true,
           showCustomTime: true,
@@ -261,7 +252,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: new Date(2013, 3, 25)},
           {id: 6, content: 'item 6', start: new Date(2013, 3, 27)}
         ];
-
         options = {
           editable: true,
 
@@ -314,7 +304,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {'start': new Date(2012, 4, 25), 'content': 'First'},
           {'start': new Date(2012, 4, 26), 'content': 'Last'}
         ];
-
         options = {
           height: '300px',
           min: new Date(2012, 0, 1),                // lower limit of visible range
@@ -347,7 +336,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {start: new Date(1945, 3, 1), content: 'US Invasion of Okinawa'},
           {start: new Date(1945, 3, 16), content: 'Battle of Berlin - End of the Third Reich'}
         ];
-
         options = {
           // Set global item type. Type can also be specified for items individually
           // Available types: 'box' (default), 'point', 'range', 'rangeoverflow'
@@ -365,7 +353,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             content: 'Dynamic event'
           }
         ];
-
         options = {
           showCurrentTime: true,
           showCustomTime: true
@@ -409,6 +396,36 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
         });
         break;
 
+      case 'aLotOfGroupedData':
+        data = {
+          groups: [
+            {id: 0, content: 'First', value: 1},
+            {id: 1, content: 'Third', value: 3},
+            {id: 2, content: 'Second', value: 2}
+          ],
+          items: [
+            {id: 0, group: 0, content: 'item 0', start: new Date(2014, 3, 17), end: new Date(2014, 3, 21)},
+            {id: 1, group: 0, content: 'item 1', start: new Date(2014, 3, 19), end: new Date(2014, 3, 20)},
+            {id: 2, group: 1, content: 'item 2', start: new Date(2014, 3, 16), end: new Date(2014, 3, 24)},
+            {id: 3, group: 1, content: 'item 3', start: new Date(2014, 3, 23), end: new Date(2014, 3, 24)},
+            {id: 4, group: 1, content: 'item 4', start: new Date(2014, 3, 22), end: new Date(2014, 3, 26)},
+            {id: 5, group: 2, content: 'item 5', start: new Date(2014, 3, 24), end: new Date(2014, 3, 27)}
+          ]
+        };
+
+        options = {
+          // option groupOrder can be a property name or a sort function
+          // the sort function must compare two groups and return a value
+          //     > 0 when a > b
+          //     < 0 when a < b
+          //       0 when a == b
+          groupOrder: function (a, b) {
+            return a.value - b.value;
+          },
+          editable: true
+        };
+        break;
+
       case 'itemClassNames':
         data = [
           {
@@ -437,7 +454,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             'className': 'magenta'
           }
         ];
-
         options = {
           editable: true
         };
@@ -452,78 +468,60 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-04-25'},
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ];
-
         options = {};
         break;
 
       case 'dataSerialization':
-        $scope.serialized = [
-          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
-          {"id": 2, "content": "item 2", "start": "2014-01-18"},
-          {"id": 3, "content": "item 3", "start": "2014-01-21"},
-          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
-          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
-          {"id": 6, "content": "item 6", "start": "2014-01-26"}
-        ];
-
-        items.clear();
-        items.add($scope.serialized);
-        // $scope.data = items;
-
-        $scope.options = {
-          editable: true
-        };
-
-        $scope.loadData = function () {
-          var data = items.get({
-            type: {
-              start: 'ISODate',
-              end: 'ISODate'
-            }
-          });
-
-          $scope.serialized = JSON.stringify(data, null, 2);
-        };
-
-        $scope.saveData = function () {
-          var txtData = document.getElementById('data');
-          var data = JSON.parse(txtData.value);
-
-          items.clear();
-          items.update(data);
-
-          // adjust the timeline window such that we see the loaded data
-          // timeline.fit();
-
-          // items.clear();
-          // items.add($scope.serialized);
-          // $scope.data = items;
-        };
-
-        // $scope.loadData();
+//        $scope.serialized = [
+//          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
+//          {"id": 2, "content": "item 2", "start": "2014-01-18"},
+//          {"id": 3, "content": "item 3", "start": "2014-01-21"},
+//          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
+//          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
+//          {"id": 6, "content": "item 6", "start": "2014-01-26"}
+//        ];
+//
+//        items.clear();
+//        items.add($scope.serialized);
+//        // $scope.data = items;
+//
+//        $scope.options = {
+//          editable: true
+//        };
+//
+//        $scope.loadData = function () {
+//          var data = items.get({
+//            type: {
+//              start: 'ISODate',
+//              end: 'ISODate'
+//            }
+//          });
+//
+//          $scope.serialized = JSON.stringify(data, null, 2);
+//        };
+//
+//        $scope.saveData = function () {
+//          var txtData = document.getElementById('data');
+//          var data = JSON.parse(txtData.value);
+//
+//          items.clear();
+//          items.update(data);
+//
+//          // adjust the timeline window such that we see the loaded data
+//          // timeline.fit();
+//
+//          // items.clear();
+//          // items.add($scope.serialized);
+//          // $scope.data = items;
+//        };
+//
+//        // $scope.loadData();
         break;
     }
 
-
-    items.clear();
-    // var count = items.get().length;
-
-    /*
-    if (count > 0) {
-      items.update(data);
-    } else {
-      items.add(data);
-    }
-    */
-    items.add(data);
-
-    $scope.items = items;
+    $scope.data = data;
     $scope.options = options;
   };
 
   $scope.setExample($location.hash() || 'basicUsage');
-
-//  $timeout(function () {
-//    console.log('visTimeline ->', $scope.timeline);
-//  }, 500);
 });
