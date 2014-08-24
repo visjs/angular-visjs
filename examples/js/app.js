@@ -54,6 +54,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
     $scope.timeline.methods.setWindow(periods.start, periods.end);
   };
 
+//  function fit () {
+//    $scope.timeline.methods.fit();
+//  }
+
   function zoom(percentage) {
     var range = $scope.timeline.methods.getWindow();
     var interval = range.end - range.start;
@@ -135,9 +139,11 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-04-25'},
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
-        $scope.data = items;
+        $scope.items = items;
 
         $scope.options = {};
+
+        // fit();
         break;
 
       case 'interactive':
@@ -150,7 +156,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-01-28', type: 'point'},
           {id: 6, content: 'item 6', start: '2014-01-26'}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           start: '2014-01-10',
@@ -173,7 +179,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
       case 'aLotOfData':
         items.clear();
         items.add(createData());
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           editable: true,
@@ -227,7 +233,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             start: '2013-04-21'
           }
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {};
         break;
@@ -242,7 +248,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2013-04-25'},
           {id: 6, content: 'item 6', start: '2013-04-27'}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           editable: true
@@ -252,7 +258,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
       case 'customTimeBar':
         items.clear();
         items.add([]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           showCurrentTime: true,
@@ -272,7 +278,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: new Date(2013, 3, 25)},
           {id: 6, content: 'item 6', start: new Date(2013, 3, 27)}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           editable: true,
@@ -327,7 +333,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {'start': new Date(2012, 4, 25), 'content': 'First'},
           {'start': new Date(2012, 4, 26), 'content': 'Last'}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           height: '300px',
@@ -362,7 +368,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {start: new Date(1945, 3, 1), content: 'US Invasion of Okinawa'},
           {start: new Date(1945, 3, 16), content: 'Battle of Berlin - End of the Third Reich'}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           // Set global item type. Type can also be specified for items individually
@@ -382,7 +388,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             content: 'Dynamic event'
           }
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           showCurrentTime: true,
@@ -424,7 +430,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             start: new Date((new Date()).getTime() - 2 * 60 * 1000),
             end: new Date((new Date()).getTime() + 3 * 60 * 1000)
           });
-        })
+        });
         break;
 
       case 'itemClassNames':
@@ -456,7 +462,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
             'className': 'magenta'
           }
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {
           editable: true
@@ -473,9 +479,56 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout) {
           {id: 5, content: 'item 5', start: '2014-04-25'},
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
-        $scope.data = items;
+        // $scope.data = items;
 
         $scope.options = {};
+        break;
+
+      case 'dataSerialization':
+        $scope.serialized = [
+          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
+          {"id": 2, "content": "item 2", "start": "2014-01-18"},
+          {"id": 3, "content": "item 3", "start": "2014-01-21"},
+          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
+          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
+          {"id": 6, "content": "item 6", "start": "2014-01-26"}
+        ];
+
+        items.clear();
+        items.add($scope.serialized);
+        // $scope.data = items;
+
+        $scope.options = {
+          editable: true
+        };
+
+        $scope.loadData = function () {
+          var data = items.get({
+            type: {
+              start: 'ISODate',
+              end: 'ISODate'
+            }
+          });
+
+          $scope.serialized = JSON.stringify(data, null, 2);
+        };
+
+        $scope.saveData = function () {
+          var txtData = document.getElementById('data');
+          var data = JSON.parse(txtData.value);
+
+          items.clear();
+          items.update(data);
+
+          // adjust the timeline window such that we see the loaded data
+          // timeline.fit();
+
+          // items.clear();
+          // items.add($scope.serialized);
+          // $scope.data = items;
+        };
+
+        // $scope.loadData();
         break;
     }
   };
