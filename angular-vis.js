@@ -56,8 +56,10 @@ ngVis.directive('vis', function () {
   return {
     restrict: 'E',
     transclude: true,
-    scope: {},
     controller: function ($scope) {
+      this.setTimeline = function (timeline) {
+        $scope.timed = timeline;
+      };
     },
     link: function (scope, element, attr) {
     }
@@ -73,7 +75,8 @@ ngVis.directive('timeLine', function () {
       data: '=',
       options: '=',
       events: '=',
-      methods: '='
+      methods: '=',
+      timed: '='
     },
     link: function (scope, element, attr, visCtrl) {
       var timeline = new vis.Timeline(element[0]);
@@ -126,6 +129,8 @@ ngVis.directive('timeLine', function () {
 
       // TODO: ???
       scope.getCustomTime = timeline.getCustomTime;
+
+      visCtrl.setTimeline(timeline);
     }
   }
 });

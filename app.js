@@ -7,6 +7,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
   // a lot of data
   // $scope.count = 100;
 
+  // $scope._timed = {};
+
   $scope.logged = {};
 
   var now = moment().minutes(0).seconds(0).milliseconds(0);
@@ -65,6 +67,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         $scope.data = data;
 
         $scope.options = {};
+
+        $timeout(function () { console.log('timeline ->', $scope.timed) });
         break;
 
 
