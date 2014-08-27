@@ -80,6 +80,7 @@ ngVis.directive('timeLine', function () {
       var timeline = new vis.Timeline(element[0]);
 
       scope.$watch('data', function () {
+        timeline.clear({options: true});
         if (scope.data.single) {
           timeline.clear({groups: true});
           timeline.setItems(scope.data.load);
