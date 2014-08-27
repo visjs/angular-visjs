@@ -58,7 +58,7 @@ ngVis.directive('vis', function () {
     transclude: true,
     controller: function ($scope) {
       this.setTimeline = function (timeline) {
-        $scope.timed = timeline;
+        $scope.timeline = timeline;
       };
     },
     link: function (scope, element, attr) {
@@ -74,9 +74,7 @@ ngVis.directive('timeLine', function () {
     scope: {
       data: '=',
       options: '=',
-      events: '=',
-      methods: '=',
-      timed: '='
+      events: '='
     },
     link: function (scope, element, attr, visCtrl) {
       var timeline = new vis.Timeline(element[0]);
@@ -98,37 +96,12 @@ ngVis.directive('timeLine', function () {
       });
 
       scope.$watch('events', function (events) {
-        if (events.timechange) {
-          timeline.on('timechange', events.timechange);
-        }
+        angular.forEach(events, function (callback, event) {
+          if (['rangechange', 'rangechanged', 'select', 'timechange', 'timechanged'].indexOf(String(event)) >= 0) {
+            timeline.on(event, callback);
+          }
+        });
       });
-
-      if (scope.events.rangechange)   timeline.on('rangechange', scope.events.rangechange);
-      if (scope.events.rangechanged)  timeline.on('rangechanged', scope.events.rangechanged);
-      if (scope.events.select)        timeline.on('select', scope.events.select);
-      if (scope.events.timechange)    timeline.on('timechange', scope.events.timechange);
-      if (scope.events.timechanged)   timeline.on('timechanged', scope.events.timechanged);
-
-      scope.methods = {
-        getCustomTime: function () {
-          return timeline.getCustomTime();
-        },
-        setCustomTime: function (time) {
-          timeline.setCustomTime(time);
-        },
-        getWindow: function () {
-          return timeline.getWindow();
-        },
-        setWindow: function (start, end) {
-          timeline.setWindow(start, end);
-        },
-        fit: function () {
-          return timeline.fit();
-        }
-      };
-
-      // TODO: ???
-      scope.getCustomTime = timeline.getCustomTime;
 
       visCtrl.setTimeline(timeline);
     }

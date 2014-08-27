@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AngularVis</title>
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/css/foundation.min.css"/>
+  <link rel="stylesheet" href="bower_components/foundation/css/foundation.css"/>
   <link rel="stylesheet" href="bower_components/vis/dist/vis.min.css"/>
   <style>
     #showcase {
@@ -56,6 +56,11 @@
       border-color: magenta;
       color: #ffffff;
     }
+
+    .vis.timeline .item.past {
+      filter: alpha(opacity=50);
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body ng-controller="appController">
@@ -81,8 +86,7 @@
   <vis ng-transclude>
     <time-line data="data"
                options="options"
-               events="timeline.events"
-               methods="timeline.methods"></time-line>
+               events="events"></time-line>
   </vis>
 </div>
 
@@ -139,7 +143,7 @@
             <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom</a>
           </li>
           <li class="{{(example == 'pastAndFuture') && 'active'}}">
-            <a ng-click="setExample('pastAndFuture')">past and future (*)</a>
+            <a ng-click="setExample('pastAndFuture')">past and future</a>
           </li>
           <li class="{{(example == 'navigationMenu') && 'active'}}">
             <a ng-click="setExample('navigationMenu')">navigation menu</a>
@@ -198,13 +202,13 @@
     <h2>Event listeners</h2>
     <dl>
       <dt>Range change</dt>
-      <dd>{{logged.rangechange | json}}</dd>
+      <dd>{{logs.rangechange | json}}</dd>
       <dt>Range changed</dt>
-      <dd>{{logged.rangechanged | json}}</dd>
+      <dd>{{logs.rangechanged | json}}</dd>
       <dt>Select</dt>
-      <dd>{{logged.select | json}}</dd>
+      <dd>{{logs.select | json}}</dd>
       <dt>Items *</dt>
-      <dd>{{logged.items | json}}</dd>
+      <dd>{{logs.items | json}}</dd>
     </dl>
   </article>
 
@@ -216,10 +220,10 @@
         <div class="large-4 columns">
           <div class="row collapse">
             <div class="small-6 columns">
-              <input type="text" ng-model="customTime" />
+              <input type="text" ng-model="customTime"/>
             </div>
             <div class="small-6 columns">
-              <a ng-click="setCustomTime(customTime)" class="button postfix">Set custom time</a>
+              <a ng-click="timeline.setCustomTime(customTime)" class="button postfix">Set custom time</a>
             </div>
           </div>
         </div>
@@ -231,15 +235,15 @@
         <input type="button" class="button small" value="Get custom time" ng-click="getCustomTime()"/>
       </div>
       <div class="small-4 columns">
-        {{logged.customTime | json}}
+        {{logs.customTime | json}}
       </div>
     </div>
 
     <dl>
       <dt>Time change</dt>
-      <dd>{{logged.timechange | json}}</dd>
+      <dd>{{logs.timechange | json}}</dd>
       <dt>Time changed</dt>
-      <dd>{{logged.timechanged | json}}</dd>
+      <dd>{{logs.timechanged | json}}</dd>
     </dl>
   </article>
 
@@ -247,7 +251,7 @@
     <h2>Edit items</h2>
     <dl>
       <dt>Items *</dt>
-      <dd>{{logged.items | json}}</dd>
+      <dd>{{logs.items | json}}</dd>
     </dl>
   </article>
 
@@ -288,7 +292,7 @@
     </p>
     <dl>
       <dt>Custom time</dt>
-      <dd>{{logged.customTime | json}}</dd>
+      <dd>{{logs.customTime | json}}</dd>
     </dl>
   </article>
 
@@ -339,11 +343,11 @@
 </div>
 </div>
 
-<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.1/moment.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/foundation/5.3.3/js/foundation.min.js"></script>
+<script src="bower_components/moment/min/moment.min.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/foundation/js/foundation.min.js"></script>
 <script src="bower_components/vis/dist/vis.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
 <script src="angular-vis.js"></script>
 <script src="app.js"></script>
 <script>

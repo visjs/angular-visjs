@@ -1,51 +1,19 @@
 'use strict';
 
+// TODO
+// 1. Use grunt or gulp for minimizing and distribution
+// 2. Integrate helper directives for timeline
+// 3. Organize examples in angular way
+// 4. Documentation
+// 5. Solve issue with transition between point or block time slots
+
 var ngVisApp = angular.module('ngVisApp', ['ngVis']);
 
 ngVisApp.controller('appController', function ($scope, $location, $timeout, visDataSet) {
 
-  // a lot of data
-  // $scope.count = 100;
-
-  // $scope._timed = {};
-
-  $scope.logged = {};
+  $scope.logs = {};
 
   var now = moment().minutes(0).seconds(0).milliseconds(0);
-
-  $scope.setWindow = function (periods) {
-    $scope.timeline.methods.setWindow(periods.start, periods.end);
-  };
-
-  $scope.timeline = {
-    events: {
-      rangechange: function (properties) {
-        $timeout(function () {
-          $scope.logged.rangechange = properties;
-        });
-      },
-      rangechanged: function (properties) {
-        $timeout(function () {
-          $scope.logged.rangechanged = properties;
-        });
-      },
-      select: function (properties) {
-        $timeout(function () {
-          $scope.logged.select = properties;
-        });
-      },
-      timechange: function (properties) {
-        $timeout(function () {
-          $scope.logged.timechange = properties;
-        });
-      },
-      timechanged: function (properties) {
-        $timeout(function () {
-          $scope.logged.timechanged = properties;
-        });
-      }
-    }
-  };
 
   $scope.setExample = function (example) {
     $scope.example = example;
@@ -55,7 +23,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
 
       case 'basicUsage':
-        var data = visDataSet([
+        $scope.data = visDataSet([
           {id: 1, content: 'item 1', start: '2014-04-20'},
           {id: 2, content: 'item 2', start: '2014-04-14'},
           {id: 3, content: 'item 3', start: '2014-04-18'},
@@ -64,11 +32,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
 
-        $scope.data = data;
-
         $scope.options = {};
-
-        $timeout(function () { console.log('timeline ->', $scope.timed) });
         break;
 
 
@@ -184,35 +148,39 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
 
       case 'groups':
-        data = {
-          groups: [],
-          items: []
+        var makeGroups = function () {
+          var data = {
+            groups: [],
+            items: []
+          };
+
+          var groupCount = 3;
+          var itemCount = 20;
+
+          var names = ['John', 'Alston', 'Lee', 'Grant'];
+
+          for (var g = 0; g < groupCount; g++) {
+            data.groups.push({id: g, content: names[g]});
+          }
+
+          for (var i = 0; i < itemCount; i++) {
+            var start = now.clone().add('hours', Math.random() * 200);
+            var group = Math.floor(Math.random() * groupCount);
+
+            data.items.push({
+              id: i,
+              group: group,
+              content: 'item ' + i +
+                ' <span style="color:#97B0F8;">(' + names[group] + ')</span>',
+              start: start,
+              type: 'box'
+            });
+          }
+
+          return data;
         };
 
-        var groupCount = 3;
-        var itemCount = 20;
-
-        var names = ['John', 'Alston', 'Lee', 'Grant'];
-
-        for (var g = 0; g < groupCount; g++) {
-          data.groups.push({id: g, content: names[g]});
-        }
-
-        for (var i = 0; i < itemCount; i++) {
-          var start = now.clone().add('hours', Math.random() * 200);
-          var group = Math.floor(Math.random() * groupCount);
-
-          data.items.push({
-            id: i,
-            group: group,
-            content: 'item ' + i +
-              ' <span style="color:#97B0F8;">(' + names[group] + ')</span>',
-            start: start,
-            type: 'box'
-          });
-        }
-
-        $scope.data = visDataSet(data);
+        $scope.data = visDataSet(makeGroups());
 
         $scope.options = {
           groupOrder: 'content'  // groupOrder can be a property name or a sorting function
@@ -230,9 +198,27 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2013-04-27'}
         ]);
 
+        $scope.events = {
+          rangechange: function (properties) {
+            $timeout(function () {
+              $scope.logs.rangechange = properties;
+            });
+          },
+          rangechanged: function (properties) {
+            $timeout(function () {
+              $scope.logs.rangechanged = properties;
+            });
+          },
+          select: function (properties) {
+            $timeout(function () {
+              $scope.logs.select = properties;
+            });
+          }
+        };
+
         $scope.data.load.on('*', function (event, properties) {
           $timeout(function () {
-            $scope.logged.items = {
+            $scope.logs.items = {
               event: event,
               properties: properties
             };
@@ -247,15 +233,24 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
       case 'customTimeBar':
         $scope.customTime = moment().year() + '-' +
-                            parseInt(moment().month() + 1) + '-' +
-                            parseInt(moment().date() + 2);
+          parseInt(moment().month() + 1) + '-' +
+          parseInt(moment().date() + 2);
 
-        $scope.getCustomTime = function () {
-          $scope.logged.customTime = $scope.timeline.methods.getCustomTime();
+        $scope.events = {
+          timechange: function (properties) {
+            $timeout(function () {
+              $scope.logs.timechange = properties;
+            });
+          },
+          timechanged: function (properties) {
+            $timeout(function () {
+              $scope.logs.timechanged = properties;
+            });
+          }
         };
 
-        $scope.setCustomTime = function (time) {
-          $scope.timeline.methods.setCustomTime(time);
+        $scope.getCustomTime = function () {
+          $scope.logs.customTime = $scope.timeline.getCustomTime();
         };
 
         $scope.data = visDataSet([]);
@@ -281,7 +276,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
         $scope.data.load.on('*', function (event, properties) {
           $timeout(function () {
-            $scope.logged.items = {
+            $scope.logs.items = {
               event: event,
               properties: properties
             };
@@ -431,36 +426,40 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           showCustomTime: true
         };
 
-        $scope.timeline.events.timechange = function (event) {
-          $scope.logged.timechange = event.time;
+        $scope.events = {
+          timechange: function (event) {
+            $timeout(function () {
+              $scope.logs.timechange = event.time;
 
-          var item = $scope.data.load.get(1);
+              var item = $scope.data.load.get(1);
 
-          if (event.time > item.start) {
-            item.end = new Date(event.time);
+              if (moment(event.time).unix() > moment(item.start).unix()) {
+                item.end = new Date(event.time);
 
-            var now = new Date();
+                var now = new Date();
 
-            if (event.time < now) {
-              item.content = "Dynamic event (past)";
-              item.className = 'past';
-            }
-            else if (event.time > now) {
-              item.content = "Dynamic event (future)";
-              item.className = 'future';
-            }
-            else {
-              item.content = "Dynamic event (now)";
-              item.className = 'now';
-            }
+                if (event.time < now) {
+                  item.content = "Dynamic event (past)";
+                  item.className = 'past';
+                }
+                else if (event.time > now) {
+                  item.content = "Dynamic event (future)";
+                  item.className = 'future';
+                }
+                else {
+                  item.content = "Dynamic event (now)";
+                  item.className = 'now';
+                }
 
-            $scope.data.load.update(item);
+                $scope.data.load.update(item);
+              }
+            });
           }
         };
 
         $timeout(function () {
           // set a custom range from -2 minute to +3 minutes current time
-          $scope.setWindow({
+          $scope.timeline.setWindow({
             start: new Date((new Date()).getTime() - 2 * 60 * 1000),
             end: new Date((new Date()).getTime() + 3 * 60 * 1000)
           });
@@ -472,7 +471,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         $scope.groupCountValue = $scope.groupCountValue || 100;
 
         $scope.groupCount = function (count) {
-          data = {
+          var data = {
             groups: [
               {id: 1, content: 'Truck&nbsp;1'},
               {id: 2, content: 'Truck&nbsp;2'},
@@ -504,6 +503,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
               order++;
             }
+
             truck++;
           }
 
@@ -563,10 +563,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
       case 'navigationMenu':
         var zoom = function (percentage) {
-          var range = $scope.timeline.methods.getWindow();
+          var range = $scope.timeline.getWindow();
           var interval = range.end - range.start;
 
-          $scope.setWindow({
+          $scope.timeline.setWindow({
             start: range.start.valueOf() - interval * percentage,
             end: range.end.valueOf() + interval * percentage
           });
@@ -581,10 +581,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         };
 
         var move = function (percentage) {
-          var range = $scope.timeline.methods.getWindow();
+          var range = $scope.timeline.getWindow();
           var interval = range.end - range.start;
 
-          $scope.setWindow({
+          $scope.timeline.setWindow({
             start: range.start.valueOf() - interval * percentage,
             end: range.end.valueOf() - interval * percentage
           });
@@ -612,53 +612,79 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
 
       case 'dataSerialization':
-//        $scope.serialized = [
-//          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
-//          {"id": 2, "content": "item 2", "start": "2014-01-18"},
-//          {"id": 3, "content": "item 3", "start": "2014-01-21"},
-//          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
-//          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
-//          {"id": 6, "content": "item 6", "start": "2014-01-26"}
-//        ];
-//
-//        items.clear();
-//        items.add($scope.serialized);
-//        // $scope.data = items;
-//
-//        $scope.options = {
-//          editable: true
-//        };
-//
-//        $scope.loadData = function () {
-//          var data = items.get({
-//            type: {
-//              start: 'ISODate',
-//              end: 'ISODate'
-//            }
-//          });
-//
-//          $scope.serialized = JSON.stringify(data, null, 2);
-//        };
-//
-//        $scope.saveData = function () {
-//          var txtData = document.getElementById('data');
-//          var data = JSON.parse(txtData.value);
-//
-//          items.clear();
-//          items.update(data);
-//
-//          // adjust the timeline window such that we see the loaded data
-//          // timeline.fit();
-//
-//          // items.clear();
-//          // items.add($scope.serialized);
-//          // $scope.data = items;
-//        };
-//
-//        // $scope.loadData();
+        $scope.data = visDataSet([
+          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
+          {"id": 2, "content": "item 2", "start": "2014-01-18"},
+          {"id": 3, "content": "item 3", "start": "2014-01-21"},
+          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
+          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
+          {"id": 6, "content": "item 6", "start": "2014-01-26"}
+        ]);
+
+        $scope.options = {
+          editable: true
+        };
+
+        $scope.loadData = function () {
+          var data = items.get({
+            type: {
+              start: 'ISODate',
+              end: 'ISODate'
+            }
+          });
+
+          $scope.serialized = JSON.stringify(data, null, 2);
+        };
+
+        $scope.saveData = function () {
+          var txtData = document.getElementById('data');
+          var data = JSON.parse(txtData.value);
+
+          items.clear();
+          items.update(data);
+
+          // adjust the timeline window such that we see the loaded data
+          // timeline.fit();
+
+          // items.clear();
+          // items.add($scope.serialized);
+          // $scope.data = items;
+        };
+
+        // $scope.loadData();
         break;
     }
   };
 
   $scope.setExample($location.hash() || 'basicUsage');
+
+
+//
+//  $timeout(function () {
+//
+//    $scope.timeline.on('timechange', function (properties) {
+//      $scope.logged.timechange = properties;
+//    });
+//
+//    $scope.timeline.on('timechanged', function (properties) {
+//      $scope.logged.timechanged = properties;
+//    });
+//
+//    $scope.timeline.on('rangechange', function (properties) {
+//      $scope.logged.rangechange = properties;
+//      console.log('properties ->', properties);
+//    });
+//
+//    $scope.timeline.on('rangechanged', function (properties) {
+//      $scope.logged.rangechanged = properties;
+//    });
+//
+//    $scope.timeline.on('select', function (properties) {
+//      $scope.logged.select = properties;
+//    });
+//
+//  });
+//
+
+
 });
