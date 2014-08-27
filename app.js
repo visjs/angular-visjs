@@ -27,7 +27,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 1, content: 'item 1', start: '2014-04-20'},
           {id: 2, content: 'item 2', start: '2014-04-14'},
           {id: 3, content: 'item 3', start: '2014-04-18'},
-          {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
+          {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19', type: 'range'},
+          {id: 7, content: 'item 7', start: '2014-04-17', end: '2014-04-20', type: 'box'},
           {id: 5, content: 'item 5', start: '2014-04-25'},
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
@@ -614,11 +615,11 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
       case 'dataSerialization':
         $scope.data = visDataSet([
           {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
-          {"id": 2, "content": "item 2", "start": "2014-01-18"},
-          {"id": 3, "content": "item 3", "start": "2014-01-21"},
-          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
-          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
-          {"id": 6, "content": "item 6", "start": "2014-01-26"}
+//          {"id": 2, "content": "item 2", "start": "2014-01-18"},
+//          {"id": 3, "content": "item 3", "start": "2014-01-21"},
+//          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
+//          {"id": 5, "content": "item 5", "start": "2014-01-28", "type": "point"},
+//          {"id": 6, "content": "item 6", "start": "2014-01-26"}
         ]);
 
         $scope.options = {
@@ -626,65 +627,35 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         };
 
         $scope.loadData = function () {
-          var data = items.get({
+          var data = $scope.data.load.get({
             type: {
               start: 'ISODate',
               end: 'ISODate'
             }
           });
 
-          $scope.serialized = JSON.stringify(data, null, 2);
+          console.log('data ->', data);
+
+          $timeout(function () {
+            $scope.serialized = JSON.stringify(data, null, 2);
+          });
         };
 
         $scope.saveData = function () {
           var txtData = document.getElementById('data');
           var data = JSON.parse(txtData.value);
 
-          items.clear();
-          items.update(data);
+          $scope.data.load.clear();
+          $scope.data.load.update(data);
 
-          // adjust the timeline window such that we see the loaded data
-          // timeline.fit();
-
-          // items.clear();
-          // items.add($scope.serialized);
-          // $scope.data = items;
+          $scope.timeline.fit();
         };
 
-        // $scope.loadData();
+        $scope.loadData();
         break;
     }
   };
 
   $scope.setExample($location.hash() || 'basicUsage');
-
-
-//
-//  $timeout(function () {
-//
-//    $scope.timeline.on('timechange', function (properties) {
-//      $scope.logged.timechange = properties;
-//    });
-//
-//    $scope.timeline.on('timechanged', function (properties) {
-//      $scope.logged.timechanged = properties;
-//    });
-//
-//    $scope.timeline.on('rangechange', function (properties) {
-//      $scope.logged.rangechange = properties;
-//      console.log('properties ->', properties);
-//    });
-//
-//    $scope.timeline.on('rangechanged', function (properties) {
-//      $scope.logged.rangechanged = properties;
-//    });
-//
-//    $scope.timeline.on('select', function (properties) {
-//      $scope.logged.select = properties;
-//    });
-//
-//  });
-//
-
 
 });
