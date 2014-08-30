@@ -81,7 +81,6 @@
   </section>
 </nav>
 
-
 <div id="showcase" class="row fluid">
   <vis ng-transclude>
     <time-line data="data"
@@ -90,10 +89,9 @@
   </vis>
 </div>
 
-
 <div class="row fluid">
 
-<div class="large-3 medium-4 columns">
+<div class="medium-3 columns">
   <div class="hide-for-small">
     <div class="sidebar">
       <nav>
@@ -103,9 +101,6 @@
           <li class="{{(example == 'basicUsage') && 'active'}}">
             <a ng-click="setExample('basicUsage')">basic usage</a>
           </li>
-          <!--<li class="{{(example == 'aLotOfData') && 'active'}}">-->
-          <!--<a ng-click="setExample('aLotOfData')">a lot of data (*)</a>-->
-          <!--</li>-->
           <li class="{{(example == 'htmlData') && 'active'}}">
             <a ng-click="setExample('htmlData')">html data</a>
           </li>
@@ -157,7 +152,7 @@
   </div>
 </div>
 
-<div class="large-9 medium-8 columns" ng-switch="example">
+<div class="medium-6 columns" ng-switch="example">
 
   <article ng-switch-when="basicUsage">
     <h2>Basic Usage</h2>
@@ -168,25 +163,6 @@
 
     <p>Drag items around, create new items, and remove items.</p>
   </article>
-
-  <!--<article ng-switch-when="aLotOfData">-->
-  <!--<h2>Test with a lot of data</h2>-->
-
-  <!--<form>-->
-  <!--<div class="row">-->
-  <!--<div class="large-4 columns">-->
-  <!--<div class="row collapse">-->
-  <!--<div class="small-10 columns">-->
-  <!--<input type="text" placeholder="Number of items" ng-model="count">-->
-  <!--</div>-->
-  <!--<div class="small-2 columns">-->
-  <!--<a href="#" class="button postfix" ng-click="drawData(count)">Draw</a>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</div>-->
-  <!--</form>-->
-  <!--</article>-->
 
   <article ng-switch-when="htmlData">
     <h2>HTML data</h2>
@@ -341,6 +317,79 @@
   </article>
 
 </div>
+
+<div class="medium-3 columns">
+
+  <h2>Options</h2>
+
+  <div class="row">
+
+    <form>
+      <div class="row">
+        <div class="medium-11">
+
+          <div class="row">
+            <div class="medium-4 columns">
+              <label class="right inline">Align</label>
+            </div>
+            <div class="medium-7 columns">
+              <select ng-model="options.align" ng-options="_ for _ in defaults.align"></select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="medium-4 columns">
+              <label class="right inline">autoResize</label>
+            </div>
+            <div class="medium-7 columns">
+              <div class="switch">
+                <input id="autoResize" type="checkbox" ng-model="options.autoResize">
+                <label for="autoResize">autoResize</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="medium-4 columns">
+              <label class="right inline">editable</label>
+            </div>
+            <div class="medium-7 columns">
+              <div class="switch">
+                <input id="editable" type="checkbox" ng-model="options.editable">
+                <label for="editable">editable</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="medium-4 columns">
+              <label for="selectable" class="right inline">selectable</label>
+            </div>
+            <div class="medium-7 columns">
+              <div class="switch">
+                <input id="selectable" type="checkbox" ng-model="options.selectable">
+                <label for="selectable">selectable</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="medium-4 columns">
+              <label class="right inline">Orientation</label>
+            </div>
+            <div class="medium-7 columns">
+              <select ng-model="options.orientation" ng-options="_ for _ in defaults.orientation"></select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+</div>
+
 </div>
 
 <script src="bower_components/moment/min/moment.min.js"></script>

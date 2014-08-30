@@ -25,9 +25,24 @@ ngVis.factory('visDataSet', function () {
   return function (data) {
     var processed;
 
+    var regulate = function (items) {
+      angular.forEach(items, function (item) {
+        if (! item.hasOwnProperty('type')) {
+          item.type = (item.hasOwnProperty('end')) ? 'range' : 'box';
+        } else {
+          if (item.type == 'range' && ! item.hasOwnProperty('end')) {
+            item.type = 'box';
+            console.warn('One of the timeline items has been labeled as "range" but no "end" specified!');
+          }
+        }
+      });
+
+      return items;
+    };
+
     if (angular.isArray(data)) {
       items.clear();
-      items.add(data);
+      items.add( regulate(data) );
 
       processed = {
         load: items,
@@ -37,7 +52,7 @@ ngVis.factory('visDataSet', function () {
       groups.clear();
       items.clear();
       groups.add(data.groups);
-      items.add(data.items);
+      items.add( regulate(data.items) );
 
       processed = {
         load: {
@@ -81,6 +96,7 @@ ngVis.directive('timeLine', function () {
 
       scope.$watch('data', function () {
         timeline.clear({options: true});
+
         if (scope.data.single) {
           timeline.clear({groups: true});
           timeline.setItems(scope.data.load);
@@ -88,12 +104,14 @@ ngVis.directive('timeLine', function () {
           timeline.setGroups(scope.data.load.groups);
           timeline.setItems(scope.data.load.items);
         }
+
+        timeline.fit();
       });
 
-      scope.$watch('options', function (options) {
+      scope.$watchCollection('options', function (options) {
         timeline.clear({options: true});
         timeline.setOptions(options);
-        timeline.fit();
+        // timeline.fit();
       });
 
       scope.$watch('events', function (events) {

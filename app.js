@@ -1,17 +1,53 @@
 'use strict';
 
 // TODO
-// 1. Use grunt or gulp for minimizing and distribution
-// 2. Integrate helper directives for timeline
-// 3. Organize examples in angular way
-// 4. Documentation
-// 5. Solve issue with transition between point or block time slots
+// Use grunt or gulp for minimizing and distribution
+// Integrate helper directives for timeline
+// Organize examples in angular way
+// Documentation
 
 var ngVisApp = angular.module('ngVisApp', ['ngVis']);
 
 ngVisApp.controller('appController', function ($scope, $location, $timeout, visDataSet) {
 
   $scope.logs = {};
+
+  $scope.defaults = {
+    align: ['left', 'center', 'right'],
+    autoResize: [true, false],
+    editable: [true, false],
+    selectable: [true, false],
+
+    orientation: ['top', 'bottom']
+  };
+
+  var options = {
+    align: 'center', // left | right (String)
+    autoResize: true, // false (Boolean)
+    editable: true,
+    selectable: true,
+    // start: null,
+    // end: null,
+    // height: null,
+    // width: '100%',
+    // margin: {
+    //   axis: 20,
+    //   item: 10
+    // },
+    // min: null,
+    // max: null,
+    // maxHeight: null,
+    orientation: 'bottom',
+    // padding: 5,
+    showCurrentTime: true,
+    showCustomTime: true,
+    showMajorLabels: true,
+    showMinorLabels: true,
+    // type: 'box', // dot | point
+    // zoomMin: 1000,
+    // zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
+    // groupOrder: 'content'
+  };
 
   var now = moment().minutes(0).seconds(0).milliseconds(0);
 
@@ -33,7 +69,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
 
-        $scope.options = {};
+        $timeout(function () { $scope.timeline.clear({options: true}) });
+        $scope.options = angular.extend(options, {});
         break;
 
 
@@ -47,7 +84,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2014-01-26'}
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           start: '2014-01-10',
           end: '2014-02-10',
           orientation: 'top',
@@ -62,43 +99,8 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
            },
            */
           showCurrentTime: true
-        };
+        });
         break;
-
-
-//      case 'aLotOfData':
-//        $scope.createData = function (value) {
-//          var count = parseInt(value) || 100;
-//          var newData = [];
-//
-//          for (var i = 0; i < count; i++) {
-//            newData.push({
-//              id: i,
-//              content: 'item ' + i,
-//              start: now + 24 * 3600 * 1000 * i // much much faster than now.clone add days
-//            });
-//          }
-//
-//          $scope.data = visDataSet(newData);
-//        };
-//
-//        $scope.drawData = function () {
-//          $scope.createData($scope.count);
-//        };
-//
-//        $scope.drawData();
-//
-//        $scope.options = {
-//          editable: true,
-//          start: now.clone().add('days', -3),
-//          end: now.clone().add('days', 11),
-//          zoomMin: 1000 * 60 * 60 * 24,          // a day
-//          zoomMax: 1000 * 60 * 60 * 24 * 30 * 3  // three months
-//          //maxHeight: 300,
-//          //height: '300px',
-//          //orientation: 'top'
-//        };
-//        break;
 
 
       case 'htmlData':
@@ -144,7 +146,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           }
         ]);
 
-        $scope.options = {};
+        $scope.options = angular.extend(options, {});
         break;
 
 
@@ -183,9 +185,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
         $scope.data = visDataSet(makeGroups());
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           groupOrder: 'content'  // groupOrder can be a property name or a sorting function
-        };
+        });
         break;
 
 
@@ -226,9 +228,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           });
         });
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           editable: true
-        };
+        });
         break;
 
 
@@ -256,12 +258,12 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
         $scope.data = visDataSet([]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           showCurrentTime: true,
           showCustomTime: true,
           start: new Date(Date.now() - 1000 * 60 * 60 * 24),
           end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6)
-        };
+        });
         break;
 
 
@@ -284,7 +286,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           });
         });
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           editable: true,
 
           onAdd: function (item, callback) {
@@ -328,7 +330,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
               callback(null); // cancel deletion
             }
           }
-        };
+        });
         break;
 
 
@@ -349,7 +351,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           ]
         });
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           // option groupOrder can be a property name or a sort function
           // the sort function must compare two groups and return a value
           //     > 0 when a > b
@@ -359,7 +361,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
             return a.value - b.value;
           },
           editable: true
-        };
+        });
         break;
 
 
@@ -369,13 +371,13 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {'start': new Date(2012, 4, 26), 'content': 'Last'}
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           height: '300px',
           min: new Date(2012, 0, 1),                // lower limit of visible range
           max: new Date(2013, 0, 1),                // upper limit of visible range
           zoomMin: 1000 * 60 * 60 * 24,             // one day in milliseconds
           zoomMax: 1000 * 60 * 60 * 24 * 31 * 3     // about three months in milliseconds
-        };
+        });
         break;
 
 
@@ -403,12 +405,12 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {start: new Date(1945, 3, 16), content: 'Battle of Berlin - End of the Third Reich'}
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           // Set global item type. Type can also be specified for items individually
           // Available types: 'box' (default), 'point', 'range', 'rangeoverflow'
           type: 'point',
           showMajorLabels: false
-        };
+        });
         break;
 
 
@@ -422,10 +424,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           }
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           showCurrentTime: true,
           showCustomTime: true
-        };
+        });
 
         $scope.events = {
           timechange: function (event) {
@@ -513,7 +515,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
         $scope.groupCount($scope.groupCountValue);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           stack: false,
           start: new Date(),
           end: new Date(1000 * 60 * 60 * 24 + (new Date()).valueOf()),
@@ -523,7 +525,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
             axis: 5   // minimal margin between items and the axis
           },
           orientation: 'top'
-        };
+        });
         break;
 
 
@@ -556,9 +558,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           }
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           editable: true
-        };
+        });
         break;
 
 
@@ -608,13 +610,14 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
 
-        $scope.options = {};
+        $scope.options = angular.extend(options, {});
         break;
 
 
       case 'dataSerialization':
         $scope.data = visDataSet([
-          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"},
+          {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"}
+//          ,
 //          {"id": 2, "content": "item 2", "start": "2014-01-18"},
 //          {"id": 3, "content": "item 3", "start": "2014-01-21"},
 //          {"id": 4, "content": "item 4", "start": "2014-01-19", "end": "2014-01-24"},
@@ -622,9 +625,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 //          {"id": 6, "content": "item 6", "start": "2014-01-26"}
         ]);
 
-        $scope.options = {
+        $scope.options = angular.extend(options, {
           editable: true
-        };
+        });
 
         $scope.loadData = function () {
           var data = $scope.data.load.get({
@@ -633,8 +636,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
               end: 'ISODate'
             }
           });
-
-          console.log('data ->', data);
 
           $timeout(function () {
             $scope.serialized = JSON.stringify(data, null, 2);
