@@ -13,12 +13,19 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
   $scope.logs = {};
 
   $scope.defaults = {
-    align: ['left', 'center', 'right'],
+    orientation: ['top', 'bottom'],
     autoResize: [true, false],
-    editable: [true, false],
-    selectable: [true, false],
+    showCurrentTime: [true, false],
+    showCustomTime: [true, false],
+    showMajorLabels: [true, false],
+    showMinorLabels: [true, false],
+    align: ['left', 'center', 'right'],
+    stack: [true, false],
 
-    orientation: ['top', 'bottom']
+    moveable: [true, false],
+    zoomable: [true, false],
+    selectable: [true, false],
+    editable: [true, false]
   };
 
   var options = {
@@ -39,7 +46,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
     // maxHeight: null,
     orientation: 'bottom',
     // padding: 5,
-    showCurrentTime: true,
+    showCurrentTime: false,
     showCustomTime: true,
     showMajorLabels: true,
     showMinorLabels: true,
