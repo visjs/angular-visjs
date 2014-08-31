@@ -74,7 +74,7 @@
   <ul class="title-area">
     <li class="name">
       <h1>
-        <a href="#">AngularVis-Timeline</a>
+        <a ng-click="setView('introduction')">AngularVis-Timeline</a>
       </h1>
     </li>
   </ul>
@@ -92,22 +92,18 @@
 
 <!--vis module-->
 <vis ng-transclude>
-
   <div class="panel" ng-show="page.navigation">
     <div class="row fluid">
       <div class="medium-5 columns">
-
         <!--timeline board-->
         <time-board>
           <h4>{{info.first}}</h4>
           <h5>{{info.second}}</h5>
           <h6>{{info.third}}</h6>
         </time-board>
-
       </div>
       <div class="medium-7 columns">
         <br/>
-
         <!--timeline navigation-->
         <time-navigation class="clearfix">
           <ul class="button-group round right">
@@ -126,18 +122,13 @@
             <li><a ng-click="stepScope(1)" class="button tiny"><i class="fi-arrow-right"></i></a></li>
           </ul>
         </time-navigation>
-
       </div>
     </div>
   </div>
-
   <div id="showcase" class="row fluid" style="margin-top: -20px">
-
     <!--timeline-->
     <time-line data="data" options="options" events="events"></time-line>
-
   </div>
-
 </vis>
 
 <div class="panel" ng-show="page.options">
@@ -239,220 +230,197 @@
   </div>
 </div>
 
+<br/>
+
 <div class="row fluid">
-  <div class="medium-3 columns">
-  <div class="hide-for-small">
-    <div class="sidebar">
-      <nav>
-        <ul class="side-nav" ng-show="page.introduction">
-          <li class="heading">Introduction</li>
-          <li class="{{(example == 'basicUsage') && 'active'}}">
-            <a ng-click="setExample('basicUsage')">basic usage</a>
-          </li>
-          <li class="{{(example == 'htmlData') && 'active'}}">
-            <a ng-click="setExample('htmlData')">html data</a>
-          </li>
-          <li class="{{(example == 'interactive') && 'active'}}">
-            <a ng-click="setExample('interactive')">interactive</a>
-          </li>
-          <li class="{{(example == 'groups') && 'active'}}">
-            <a ng-click="setExample('groups')">groups</a>
-          </li>
-          <li class="{{(example == 'orderGroups') && 'active'}}">
-            <a ng-click="setExample('orderGroups')">order groups</a>
-          </li>
-          <li class="{{(example == 'points') && 'active'}}">
-            <a ng-click="setExample('points')">points</a>
-          </li>
-          <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
-            <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
-          </li>
-          <li class="{{(example == 'itemClassNames') && 'active'}}">
-            <a ng-click="setExample('itemClassNames')">item class names</a>
-          </li>
-          <li class="{{(example == 'dataSerialization') && 'active'}}">
-            <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
-          </li>
-        </ul>
-        <ul class="side-nav" ng-show="page.options">
-          <li class="heading">Options</li>
-          <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
-            <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom</a>
-          </li>
-        </ul>
-        <ul class="side-nav" ng-show="page.events">
-          <li class="heading">Events</li>
-          <li class="{{(example == 'eventListeners') && 'active'}}">
-            <a ng-click="setExample('eventListeners')">event listeners</a>
-          </li>
-        </ul>
-        <ul class="side-nav" ng-show="page.methods">
-          <li class="heading">Methods</li>
-          <li class="{{(example == 'editItems') && 'active'}}">
-            <a ng-click="setExample('editItems')">edit items</a>
-          </li>
-        </ul>
-        <ul class="side-nav" ng-show="page.navigation">
-          <li class="heading">Navigation</li>
-          <li class="{{(example == 'customTimeBar') && 'active'}}">
-            <a ng-click="setExample('customTimeBar')">custom time bar</a>
-          </li>
-        </ul>
-      </nav>
+  <div class="medium-3 columns" ng-show="page.introduction">
+    <div class="hide-for-small">
+      <div class="sidebar">
+        <nav>
+          <ul class="side-nav">
+            <li class="heading">Introduction</li>
+            <li class="{{(example == 'basicUsage') && 'active'}}">
+              <a ng-click="setExample('basicUsage')">basic usage</a>
+            </li>
+            <li class="{{(example == 'htmlData') && 'active'}}">
+              <a ng-click="setExample('htmlData')">html data</a>
+            </li>
+            <li class="{{(example == 'interactive') && 'active'}}">
+              <a ng-click="setExample('interactive')">interactive</a>
+            </li>
+            <li class="{{(example == 'groups') && 'active'}}">
+              <a ng-click="setExample('groups')">groups</a>
+            </li>
+            <li class="{{(example == 'orderGroups') && 'active'}}">
+              <a ng-click="setExample('orderGroups')">order groups</a>
+            </li>
+            <li class="{{(example == 'points') && 'active'}}">
+              <a ng-click="setExample('points')">points</a>
+            </li>
+            <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
+              <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
+            </li>
+            <li class="{{(example == 'itemClassNames') && 'active'}}">
+              <a ng-click="setExample('itemClassNames')">item class names</a>
+            </li>
+            <li class="{{(example == 'dataSerialization') && 'active'}}">
+              <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
-</div>
-  <div class="medium-6 columns" ng-switch="example">
+  <div class="medium-9 columns" ng-show="page.introduction">
+    <section ng-switch="example">
+      <article ng-switch-when="basicUsage">
+        <h2>Basic Usage</h2>
+      </article>
+      <article ng-switch-when="htmlData">
+        <h2>HTML data</h2>
 
-  <article ng-switch-when="basicUsage">
-    <h2>Basic Usage</h2>
-  </article>
+        <p>Load HTML contents in the Timeline</p>
+      </article>
+      <article ng-switch-when="interactive">
+        <h2>Interactive</h2>
 
-  <article ng-switch-when="interactive">
-    <h2>Interactive</h2>
+        <p>Drag items around, create new items, and remove items.</p>
+      </article>
+      <article ng-switch-when="groups">
+        <h2>Groups</h2>
+      </article>
+      <article ng-switch-when="orderGroups">
+        <h2>Order groups</h2>
+      </article>
+      <article ng-switch-when="points">
+        <h2>Points</h2>
+        <h4>World War II timeline</h4>
 
-    <p>Drag items around, create new items, and remove items.</p>
-  </article>
+        <p>Source: <a href="http://www.onwar.com/chrono/index.htm"
+                      target="_blank">http://www.onwar.com/chrono/index.htm</a>
+        </p>
+      </article>
+      <article ng-switch-when="aLotOfGroupedData">
+        <h2>Timeline grouping performance</h2>
 
-  <article ng-switch-when="htmlData">
-    <h2>HTML data</h2>
+        <p>
+          Choose a number of items:
+          <a ng-click="groupCount(10)">10</a>,
+          <a ng-click="groupCount(100)">100</a>,
+          <a ng-click="groupCount(1000)">1000</a>,
+          <a ng-click="groupCount(10000)">10000</a>,
+          <a ng-click="groupCount(100000)">100000</a>
 
-    <p>Load HTML contents in the Timeline</p>
-  </article>
+        <p>
 
-  <article ng-switch-when="groups">
-    <h2>Groups</h2>
-  </article>
+        <p>Current number of items: {{groupCountValue}}</p>
+      </article>
+      <article ng-switch-when="itemClassNames">
+        <h2>Item class names</h2>
+      </article>
+      <article ng-switch-when="dataSerialization">
+        <h2>Serialization and de-serialization</h2>
 
-  <article ng-switch-when="eventListeners">
-    <h2>Event listeners</h2>
-    <dl>
-      <dt>Range change</dt>
-      <dd>{{logs.rangechange | json}}</dd>
-      <dt>Range changed</dt>
-      <dd>{{logs.rangechanged | json}}</dd>
-      <dt>Select</dt>
-      <dd>{{logs.select | json}}</dd>
-      <dt>Items *</dt>
-      <dd>{{logs.items | json}}</dd>
-    </dl>
-  </article>
+        <div class="buttons">
+          <input class="button" type="button" value="&darr; Load" ng-click="loadData()">
+          <input class="button" type="button" value="&uarr; Save" ng-click="saveData(serialized)">
+        </div>
+        <textarea id="data" style="height: 500px">{{serialized}}</textarea>
+      </article>
+    </section>
+  </div>
+  <div class="medium-12 columns" ng-show="page.options">
+    <article>
+      <h2>Limit move and zoom</h2>
 
-  <article ng-switch-when="customTimeBar">
-    <h2>Custom time bar</h2>
+      <p>
+        The visible range is limited in this demo:
+      </p>
+      <ul>
+        <li>minimum visible date is limited to 2012-01-01 using option <code>min</code></li>
+        <li>maximum visible date is limited to 2013-01-01 (excluded) using option <code>max</code></li>
+        <li>visible zoom interval is limited to a minimum of 24 hours using option <code>zoomMin</code></li>
+        <li>visible zoom interval is limited to a maximum of about 3 months using option <code>zoomMax</code></li>
+      </ul>
+    </article>
+  </div>
+  <div class="medium-12 columns" ng-show="page.events">
+    <div class="row fluid">
+      <div class="medium-8 columns">
+        <article>
+          <h2>Events</h2>
+          Some content about events.
+        </article>
+      </div>
+      <div class="medium-4 columns">
+        <div class="panel callout radius">
+          <dl>
+            <dt>Range change</dt>
+            <dd>
+              <pre>{{logs.rangechange | json}}</pre>
+            </dd>
+            <dt>Range changed</dt>
+            <dd>
+              <pre>{{logs.rangechanged | json}}</pre>
+            </dd>
+            <dt>Time change</dt>
+            <dd>
+              <pre>{{logs.timechange | json}}</pre>
+            </dd>
+            <dt>Time changed</dt>
+            <dd>
+              <pre>{{logs.timechanged | json}}</pre>
+            </dd>
+            <dt>Select</dt>
+            <dd>
+              <pre>{{logs.select | json}}</pre>
+            </dd>
+            <dt>Items *</dt>
+            <dd>
+              <pre>{{logs.items | json}}</pre>
+            </dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="medium-12 columns" ng-show="page.methods">
+    <article>
+      <h2>Edit items</h2>
+      <dl>
+        <dt>Items *</dt>
+        <dd>{{logs.items | json}}</dd>
+      </dl>
+    </article>
+    <article>
+      <h2>Custom time bar</h2>
 
-    <form>
-      <div class="row">
-        <div class="large-4 columns">
-          <div class="row collapse">
-            <div class="small-6 columns">
-              <input type="text" ng-model="customTime"/>
-            </div>
-            <div class="small-6 columns">
-              <a ng-click="timeline.setCustomTime(customTime)" class="button postfix">Set custom time</a>
+      <form>
+        <div class="row">
+          <div class="large-4 columns">
+            <div class="row collapse">
+              <div class="small-6 columns">
+                <input type="text" ng-model="customTime"/>
+              </div>
+              <div class="small-6 columns">
+                <a ng-click="timeline.setCustomTime(customTime)" class="button postfix">Set custom time</a>
+              </div>
             </div>
           </div>
         </div>
+      </form>
+
+      <div class="row">
+        <div class="small-4 columns">
+          <input type="button" class="button small" value="Get custom time" ng-click="getCustomTime()"/>
+        </div>
+        <div class="small-4 columns">
+          {{logs.customTime | json}}
+        </div>
       </div>
-    </form>
-
-    <div class="row">
-      <div class="small-4 columns">
-        <input type="button" class="button small" value="Get custom time" ng-click="getCustomTime()"/>
-      </div>
-      <div class="small-4 columns">
-        {{logs.customTime | json}}
-      </div>
-    </div>
-
-    <dl>
-      <dt>Time change</dt>
-      <dd>{{logs.timechange | json}}</dd>
-      <dt>Time changed</dt>
-      <dd>{{logs.timechanged | json}}</dd>
-    </dl>
-  </article>
-
-  <article ng-switch-when="editItems">
-    <h2>Edit items</h2>
-    <dl>
-      <dt>Items *</dt>
-      <dd>{{logs.items | json}}</dd>
-    </dl>
-  </article>
-
-  <article ng-switch-when="orderGroups">
-    <h2>Order groups</h2>
-  </article>
-
-  <article ng-switch-when="limitMoveAndZoom">
-    <h2>Limit move and zoom</h2>
-
-    <p>
-      The visible range is limited in this demo:
-    </p>
-    <ul>
-      <li>minimum visible date is limited to 2012-01-01 using option <code>min</code></li>
-      <li>maximum visible date is limited to 2013-01-01 (excluded) using option <code>max</code></li>
-      <li>visible zoom interval is limited to a minimum of 24 hours using option <code>zoomMin</code></li>
-      <li>visible zoom interval is limited to a maximum of about 3 months using option <code>zoomMax</code></li>
-    </ul>
-  </article>
-
-  <article ng-switch-when="points">
-    <h2>Points</h2>
-    <h4>World War II timeline</h4>
-
-    <p>Source: <a href="http://www.onwar.com/chrono/index.htm" target="_blank">http://www.onwar.com/chrono/index.htm</a>
-    </p>
-  </article>
-
-  <article ng-switch-when="pastAndFuture">
-    <h2>Past and future</h2>
-
-    <p>
-      When the custom time bar is shown, the user can drag this bar to a specific
-      time. The Timeline sends an event that the custom time is changed, after
-      which the contents of the timeline can be changed according to the specified
-      time in past or future.
-    </p>
-    <dl>
-      <dt>Custom time</dt>
-      <dd>{{logs.customTime | json}}</dd>
-    </dl>
-  </article>
-
-  <article ng-switch-when="aLotOfGroupedData">
-    <h2>Timeline grouping performance</h2>
-
-    <p>
-      Choose a number of items:
-      <a ng-click="groupCount(10)">10</a>,
-      <a ng-click="groupCount(100)">100</a>,
-      <a ng-click="groupCount(1000)">1000</a>,
-      <a ng-click="groupCount(10000)">10000</a>,
-      <a ng-click="groupCount(100000)">100000</a>
-
-    <p>
-
-    <p>Current number of items: {{groupCountValue}}</p>
-  </article>
-
-  <article ng-switch-when="itemClassNames">
-    <h2>Item class names</h2>
-  </article>
-
-  <article ng-switch-when="dataSerialization">
-    <h2>Serialization and de-serialization</h2>
-
-    <div class="buttons">
-      <input class="button" type="button" value="&darr; Load" ng-click="loadData()">
-      <input class="button" type="button" value="&uarr; Save" ng-click="saveData(serialized)">
-    </div>
-    <textarea id="data" style="height: 500px">{{serialized}}</textarea>
-  </article>
-
-</div>
+    </article>
+  </div>
+  <div class="medium-12 columns" ng-show="page.navigation"></div>
 </div>
 
 <script src="bower_components/moment/min/moment.min.js"></script>

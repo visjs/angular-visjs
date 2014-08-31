@@ -44,10 +44,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
     // maxHeight: null,
     orientation: 'bottom',
     // padding: 5,
-    showCurrentTime: false,
+    showCurrentTime: true,
     showCustomTime: true,
     showMajorLabels: true,
-    showMinorLabels: true,
+    showMinorLabels: true
     // type: 'box', // dot | point
     // zoomMin: 1000,
     // zoomMax: 1000 * 60 * 60 * 24 * 30 * 12 * 10,
@@ -76,6 +76,7 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         $timeout(function () {
           $scope.timeline.clear({options: true})
         });
+
         $scope.options = angular.extend(options, {});
         break;
 
@@ -183,66 +184,10 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         break;
 
 
-      case 'eventListeners':
-        $scope.data = visDataSet([
-          {id: 1, content: 'item 1', start: '2013-04-20'},
-          {id: 2, content: 'item 2', start: '2013-04-14'},
-          {id: 3, content: 'item 3', start: '2013-04-18'},
-          {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
-          {id: 5, content: 'item 5', start: '2013-04-25'},
-          {id: 6, content: 'item 6', start: '2013-04-27'}
-        ]);
-
-        $scope.events = {
-          rangechange: function (properties) {
-            $timeout(function () {
-              $scope.logs.rangechange = properties;
-            });
-          },
-          rangechanged: function (properties) {
-            $timeout(function () {
-              $scope.logs.rangechanged = properties;
-            });
-          },
-          select: function (properties) {
-            $timeout(function () {
-              $scope.logs.select = properties;
-            });
-          }
-        };
-
-        $scope.data.load.on('*', function (event, properties) {
-          $timeout(function () {
-            $scope.logs.items = {
-              event: event,
-              properties: properties
-            };
-          });
-        });
-
-        $scope.options = angular.extend(options, {
-          editable: true
-        });
-        break;
-
-
       case 'customTimeBar':
         $scope.customTime = moment().year() + '-' +
           parseInt(moment().month() + 1) + '-' +
           parseInt(moment().date() + 2);
-
-        $scope.events = {
-          timechange: function (properties) {
-            $timeout(function () {
-              $scope.logs.timechange = properties;
-            });
-          },
-          timechanged: function (properties) {
-            $timeout(function () {
-              $scope.logs.timechanged = properties;
-            });
-          }
-        };
 
         $scope.getCustomTime = function () {
           $scope.logs.customTime = $scope.timeline.getCustomTime();
@@ -255,73 +200,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           showCustomTime: true,
           start: new Date(Date.now() - 1000 * 60 * 60 * 24),
           end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6)
-        });
-        break;
-
-
-      case 'editItems':
-        $scope.data = visDataSet([
-          {id: 1, content: 'item 1', start: new Date(2013, 3, 20)},
-          {id: 2, content: 'item 2', start: new Date(2013, 3, 14)},
-          {id: 3, content: 'item 3', start: new Date(2013, 3, 18)},
-          {id: 4, content: 'item 4', start: new Date(2013, 3, 16), end: new Date(2013, 3, 19)},
-          {id: 5, content: 'item 5', start: new Date(2013, 3, 25)},
-          {id: 6, content: 'item 6', start: new Date(2013, 3, 27)}
-        ]);
-
-        $scope.data.load.on('*', function (event, properties) {
-          $timeout(function () {
-            $scope.logs.items = {
-              event: event,
-              properties: properties
-            };
-          });
-        });
-
-        $scope.options = angular.extend(options, {
-          editable: true,
-
-          onAdd: function (item, callback) {
-            item.content = prompt('Enter text content for new item:', item.content);
-
-            if (item.content != null) {
-              callback(item); // send back adjusted new item
-            }
-            else {
-              callback(null); // cancel item creation
-            }
-          },
-
-          onMove: function (item, callback) {
-            if (confirm('Do you really want to move the item to\n' +
-              'start: ' + item.start + '\n' +
-              'end: ' + item.end + '?')) {
-              callback(item); // send back item as confirmation (can be changed
-            }
-            else {
-              callback(null); // cancel editing item
-            }
-          },
-
-          onUpdate: function (item, callback) {
-            item.content = prompt('Edit items text:', item.content);
-
-            if (item.content != null) {
-              callback(item); // send back adjusted item
-            }
-            else {
-              callback(null); // cancel updating the item
-            }
-          },
-
-          onRemove: function (item, callback) {
-            if (confirm('Remove item ' + item.content + '?')) {
-              callback(item); // confirm deletion
-            }
-            else {
-              callback(null); // cancel deletion
-            }
-          }
         });
         break;
 
@@ -353,22 +231,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
             return a.value - b.value;
           },
           editable: true
-        });
-        break;
-
-
-      case 'limitMoveAndZoom':
-        $scope.data = visDataSet([
-          {'start': new Date(2012, 4, 25), 'content': 'First'},
-          {'start': new Date(2012, 4, 26), 'content': 'Last'}
-        ]);
-
-        $scope.options = angular.extend(options, {
-          height: '300px',
-          min: new Date(2012, 0, 1),                // lower limit of visible range
-          max: new Date(2013, 0, 1),                // upper limit of visible range
-          zoomMin: 1000 * 60 * 60 * 24,             // one day in milliseconds
-          zoomMax: 1000 * 60 * 60 * 24 * 31 * 3     // about three months in milliseconds
         });
         break;
 
@@ -597,6 +459,44 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         $scope.loadData();
         break;
     }
+
+
+    $scope.events = {
+      rangechange: function (properties) {
+        $timeout(function () {
+          $scope.logs.rangechange = properties;
+        });
+      },
+      rangechanged: function (properties) {
+        $timeout(function () {
+          $scope.logs.rangechanged = properties;
+        });
+      },
+      timechange: function (properties) {
+        $timeout(function () {
+          $scope.logs.timechange = properties;
+        });
+      },
+      timechanged: function (properties) {
+        $timeout(function () {
+          $scope.logs.timechanged = properties;
+        });
+      },
+      select: function (properties) {
+        $timeout(function () {
+          $scope.logs.select = properties;
+        });
+      }
+    };
+
+    $scope.data.load.on('*', function (event, properties) {
+      $timeout(function () {
+        $scope.logs.items = {
+          event: event,
+          properties: properties
+        };
+      });
+    });
   };
 
 
@@ -611,8 +511,97 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
     $scope.page[view] = true;
 
+    $scope.setExample('basicUsage');
+
     $location.hash(view);
   };
 
   $scope.setView($location.hash() || 'introduction');
 });
+
+
+//OPTIONS
+
+//case 'limitMoveAndZoom':
+//$scope.data = visDataSet([
+//  {'start': new Date(2012, 4, 25), 'content': 'First'},
+//  {'start': new Date(2012, 4, 26), 'content': 'Last'}
+//]);
+//
+//$scope.options = angular.extend(options, {
+//  height: '300px',
+//  min: new Date(2012, 0, 1),                // lower limit of visible range
+//  max: new Date(2013, 0, 1),                // upper limit of visible range
+//  zoomMin: 1000 * 60 * 60 * 24,             // one day in milliseconds
+//  zoomMax: 1000 * 60 * 60 * 24 * 31 * 3     // about three months in milliseconds
+//});
+//break;
+
+
+//METHODS
+
+//case 'editItems':
+//$scope.data = visDataSet([
+//  {id: 1, content: 'item 1', start: new Date(2013, 3, 20)},
+//  {id: 2, content: 'item 2', start: new Date(2013, 3, 14)},
+//  {id: 3, content: 'item 3', start: new Date(2013, 3, 18)},
+//  {id: 4, content: 'item 4', start: new Date(2013, 3, 16), end: new Date(2013, 3, 19)},
+//  {id: 5, content: 'item 5', start: new Date(2013, 3, 25)},
+//  {id: 6, content: 'item 6', start: new Date(2013, 3, 27)}
+//]);
+//
+//$scope.data.load.on('*', function (event, properties) {
+//  $timeout(function () {
+//    $scope.logs.items = {
+//      event: event,
+//      properties: properties
+//    };
+//  });
+//});
+//
+//$scope.options = angular.extend(options, {
+//  editable: true,
+//
+//  onAdd: function (item, callback) {
+//    item.content = prompt('Enter text content for new item:', item.content);
+//
+//    if (item.content != null) {
+//      callback(item); // send back adjusted new item
+//    }
+//    else {
+//      callback(null); // cancel item creation
+//    }
+//  },
+//
+//  onMove: function (item, callback) {
+//    if (confirm('Do you really want to move the item to\n' +
+//      'start: ' + item.start + '\n' +
+//      'end: ' + item.end + '?')) {
+//      callback(item); // send back item as confirmation (can be changed
+//    }
+//    else {
+//      callback(null); // cancel editing item
+//    }
+//  },
+//
+//  onUpdate: function (item, callback) {
+//    item.content = prompt('Edit items text:', item.content);
+//
+//    if (item.content != null) {
+//      callback(item); // send back adjusted item
+//    }
+//    else {
+//      callback(null); // cancel updating the item
+//    }
+//  },
+//
+//  onRemove: function (item, callback) {
+//    if (confirm('Remove item ' + item.content + '?')) {
+//      callback(item); // confirm deletion
+//    }
+//    else {
+//      callback(null); // cancel deletion
+//    }
+//  }
+//});
+//break;
