@@ -3,8 +3,9 @@
 Development and documentation is in progress.
 
 ## Usage
-
-<time-line data="data" options="options" events="events"></time-line>
+```
+  <time-line data="data" options="options" events="events"></time-line>
+```
 
 ### Data:
 ```
