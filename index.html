@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AngularVis</title>
   <link rel="stylesheet" href="bower_components/foundation/css/foundation.css"/>
+  <link rel="stylesheet" href="bower_components/foundation-icons/foundation-icons.css"/>
   <link rel="stylesheet" href="bower_components/vis/dist/vis.min.css"/>
   <style>
     #showcase {
@@ -73,35 +74,68 @@
   <ul class="title-area">
     <li class="name">
       <h1>
-        <a href="#">AngularVis</a>
+        <a href="#">AngularVis-Timeline</a>
       </h1>
     </li>
   </ul>
 
   <section class="top-bar-section">
     <ul class="right">
-      <li class="active"><a href="">Timeline</a></li>
+      <li class=""><a href="">Introduction</a></li>
+      <li class=""><a href="">Options</a></li>
+      <li class=""><a href="">Events</a></li>
+      <li class=""><a href="">Methods</a></li>
+      <li class=""><a href="">Navigation</a></li>
     </ul>
   </section>
 </nav>
 
+<!--vis module-->
+<vis ng-transclude>
+  <div class="panel">
+    <div class="row fluid">
+      <div class="medium-5 columns">
 
-<div class="row fluid">
-  <div class="medium-12">
-    <div class="panel">
-      <p>Time indicators</p>
+        <!--timeline board-->
+        <time-board>
+          <h4>{{info.first}}</h4>
+          <h5>{{info.second}}</h5>
+          <h6>{{info.third}}</h6>
+        </time-board>
+
+      </div>
+      <div class="medium-7 columns">
+        <br/>
+
+        <!--timeline navigation-->
+        <time-navigation class="clearfix">
+          <ul class="button-group round right">
+            <li>
+              <button ng-click="setScope('day')" class="button tiny">Day</button>
+            </li>
+            <li><a ng-click="setScope('week')" class="button tiny">Week</a></li>
+            <li><a ng-click="setScope('month')" class="button tiny">Month</a></li>
+            <li><a ng-click="setScope('year')" class="button tiny">Year</a></li>
+            <li><a ng-click="setScope('custom')" class="button tiny">Custom</a></li>
+          </ul>
+          <ul class="button-group round right" style="margin-right: 15px">
+            <li><a ng-click="stepScope(-1)" class="button tiny"><i class="fi-arrow-left"></i></a></li>
+            <li><a ng-click="zoomScope(0.2)" class="button tiny"><i class="fi-arrow-up"></i></a></li>
+            <li><a ng-click="zoomScope(-0.2)" class="button tiny"><i class="fi-arrow-down"></i></a></li>
+            <li><a ng-click="stepScope(1)" class="button tiny"><i class="fi-arrow-right"></i></a></li>
+          </ul>
+        </time-navigation>
+
+      </div>
     </div>
   </div>
-</div>
+  <div id="showcase" class="row fluid" style="margin-top: -20px">
 
+    <!--timeline-->
+    <time-line data="data" options="options" events="events"></time-line>
 
-<div id="showcase" class="row fluid">
-  <vis ng-transclude>
-    <time-line data="data"
-               options="options"
-               events="events"></time-line>
-  </vis>
-</div>
+  </div>
+</vis>
 
 <div class="panel">
   <div class="row fluid">
@@ -114,6 +148,7 @@
         </li>
         <li>
           <h6>Auto resize</h6>
+
           <div class="switch round tiny">
             <input id="autoResize" type="checkbox" ng-model="options.autoResize">
             <label for="autoResize"></label>
@@ -121,6 +156,7 @@
         </li>
         <li>
           <h6>Current time</h6>
+
           <div class="switch round tiny">
             <input id="showCurrentTime" type="checkbox" ng-model="options.showCurrentTime">
             <label for="showCurrentTime"></label>
@@ -128,6 +164,7 @@
         </li>
         <li>
           <h6>Custom time</h6>
+
           <div class="switch round tiny">
             <input id="showCustomTime" type="checkbox" ng-model="options.showCustomTime">
             <label for="showCustomTime"></label>
@@ -135,6 +172,7 @@
         </li>
         <li>
           <h6>Major labels</h6>
+
           <div class="switch round tiny">
             <input id="showMajorLabels" type="checkbox" ng-model="options.showMajorLabels">
             <label for="showMajorLabels"></label>
@@ -142,6 +180,7 @@
         </li>
         <li>
           <h6>Minor labels</h6>
+
           <div class="switch round tiny">
             <input id="showMinorLabels" type="checkbox" ng-model="options.showMinorLabels">
             <label for="showMinorLabels"></label>
@@ -153,6 +192,7 @@
         </li>
         <li>
           <h6>Stack</h6>
+
           <div class="switch round tiny">
             <input id="stack" type="checkbox" ng-model="options.stack">
             <label for="stack"></label>
@@ -161,6 +201,7 @@
         <li><br/>|</li>
         <li>
           <h6>Moveable</h6>
+
           <div class="switch round tiny">
             <input id="moveable" type="checkbox" ng-model="options.moveable">
             <label for="moveable"></label>
@@ -168,6 +209,7 @@
         </li>
         <li>
           <h6>Zoomable</h6>
+
           <div class="switch round tiny">
             <input id="zoomable" type="checkbox" ng-model="options.zoomable">
             <label for="zoomable"></label>
@@ -175,6 +217,7 @@
         </li>
         <li>
           <h6>Selectable</h6>
+
           <div class="switch round tiny">
             <input id="selectable" type="checkbox" ng-model="options.selectable">
             <label for="selectable"></label>
@@ -182,6 +225,7 @@
         </li>
         <li>
           <h6>Editable</h6>
+
           <div class="switch round tiny">
             <input id="editable" type="checkbox" ng-model="options.editable">
             <label for="editable"></label>
@@ -194,7 +238,7 @@
 
 <div class="row fluid">
 
-  <div class="medium-3 columns">
+<div class="medium-3 columns">
   <div class="hide-for-small">
     <div class="sidebar">
       <nav>
@@ -243,9 +287,6 @@
           <li class="{{(example == 'pastAndFuture') && 'active'}}">
             <a ng-click="setExample('pastAndFuture')">past and future</a>
           </li>
-          <li class="{{(example == 'navigationMenu') && 'active'}}">
-            <a ng-click="setExample('navigationMenu')">navigation menu</a>
-          </li>
           <li class="{{(example == 'dataSerialization') && 'active'}}">
             <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
           </li>
@@ -255,7 +296,7 @@
   </div>
 </div>
 
-  <div class="medium-6 columns" ng-switch="example">
+<div class="medium-6 columns" ng-switch="example">
 
   <article ng-switch-when="basicUsage">
     <h2>Basic Usage</h2>
@@ -388,25 +429,11 @@
 
     <p>
 
-    <p>
-      Current number of items: {{groupCountValue}}
-    </p>
+    <p>Current number of items: {{groupCountValue}}</p>
   </article>
 
   <article ng-switch-when="itemClassNames">
     <h2>Item class names</h2>
-  </article>
-
-  <article ng-switch-when="navigationMenu">
-    <h2>Navigation menu</h2>
-    <ul class="button-group">
-      <li><a ng-click="zoomIn()" class="button">Zoom in</a></li>
-      <li><a ng-click="zoomOut()" class="button">Zoom out</a></li>
-    </ul>
-    <ul class="button-group">
-      <li><a ng-click="moveLeft()" class="button">Move left</a></li>
-      <li><a ng-click="moveRight()" class="button">Move right</a></li>
-    </ul>
   </article>
 
   <article ng-switch-when="dataSerialization">

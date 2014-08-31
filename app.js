@@ -571,56 +571,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         break;
 
 
-      case 'navigationMenu':
-        var zoom = function (percentage) {
-          var range = $scope.timeline.getWindow();
-          var interval = range.end - range.start;
-
-          $scope.timeline.setWindow({
-            start: range.start.valueOf() - interval * percentage,
-            end: range.end.valueOf() + interval * percentage
-          });
-        };
-
-        $scope.zoomIn = function () {
-          zoom(-0.2);
-        };
-
-        $scope.zoomOut = function () {
-          zoom(0.2);
-        };
-
-        var move = function (percentage) {
-          var range = $scope.timeline.getWindow();
-          var interval = range.end - range.start;
-
-          $scope.timeline.setWindow({
-            start: range.start.valueOf() - interval * percentage,
-            end: range.end.valueOf() - interval * percentage
-          });
-        };
-
-        $scope.moveLeft = function () {
-          move(0.2);
-        };
-
-        $scope.moveRight = function () {
-          move(-0.2);
-        };
-
-        $scope.data = visDataSet([
-          {id: 1, content: 'item 1', start: '2014-04-20'},
-          {id: 2, content: 'item 2', start: '2014-04-14'},
-          {id: 3, content: 'item 3', start: '2014-04-18'},
-          {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19'},
-          {id: 5, content: 'item 5', start: '2014-04-25'},
-          {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
-        ]);
-
-        $scope.options = angular.extend(options, {});
-        break;
-
-
       case 'dataSerialization':
         $scope.data = visDataSet([
           {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"}
@@ -665,5 +615,4 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
   };
 
   $scope.setExample($location.hash() || 'basicUsage');
-
 });

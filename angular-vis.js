@@ -3,7 +3,6 @@
 var ngVis = angular.module('ngVis', []);
 
 ngVis.factory('visDataSet', function () {
-
   var items = new vis.DataSet({
     type: {
       start: 'ISODate',
@@ -27,10 +26,10 @@ ngVis.factory('visDataSet', function () {
 
     var regulate = function (items) {
       angular.forEach(items, function (item) {
-        if (! item.hasOwnProperty('type')) {
+        if (!item.hasOwnProperty('type')) {
           item.type = (item.hasOwnProperty('end')) ? 'range' : 'box';
         } else {
-          if (item.type == 'range' && ! item.hasOwnProperty('end')) {
+          if (item.type == 'range' && !item.hasOwnProperty('end')) {
             item.type = 'box';
             console.warn('One of the timeline items has been labeled as "range" but no "end" specified!');
           }
@@ -42,7 +41,7 @@ ngVis.factory('visDataSet', function () {
 
     if (angular.isArray(data)) {
       items.clear();
-      items.add( regulate(data) );
+      items.add(regulate(data));
 
       processed = {
         load: items,
@@ -52,7 +51,7 @@ ngVis.factory('visDataSet', function () {
       groups.clear();
       items.clear();
       groups.add(data.groups);
-      items.add( regulate(data.items) );
+      items.add(regulate(data.items));
 
       processed = {
         load: {
@@ -69,11 +68,19 @@ ngVis.factory('visDataSet', function () {
 
 ngVis.directive('vis', function () {
   return {
-    restrict: 'E',
+    restrict: 'EA',
     transclude: true,
-    controller: function ($scope) {
+    controller: function ($scope, $timeout) {
       this.setTimeline = function (timeline) {
-        $scope.timeline = timeline;
+        this.timeline = $scope.timeline = timeline;
+
+        $scope.range = timeline.getWindow();
+
+        timeline.on('rangechange', function (properties) {
+          $timeout(function () {
+            $scope.range = properties
+          });
+        });
       };
     },
     link: function (scope, element, attr) {
@@ -83,9 +90,9 @@ ngVis.directive('vis', function () {
 
 ngVis.directive('timeLine', function () {
   return {
-    restrict: 'E',
+    restrict: 'EA',
     require: '^vis',
-    transclude: true,
+    transclude: false,
     scope: {
       data: '=',
       options: '=',
@@ -111,7 +118,6 @@ ngVis.directive('timeLine', function () {
       scope.$watchCollection('options', function (options) {
         timeline.clear({options: true});
         timeline.setOptions(options);
-        // timeline.fit();
       });
 
       scope.$watch('events', function (events) {
@@ -123,6 +129,214 @@ ngVis.directive('timeLine', function () {
       });
 
       visCtrl.setTimeline(timeline);
+    }
+  }
+});
+
+ngVis.directive('timeBoard', function () {
+  return {
+    restrict: 'EA',
+    require: '^vis',
+    link: function (scope, element, attr, vis) {
+      var range = {
+        apart: function (date) {
+          return {
+            year: moment(date).get('year'),
+            month: {
+              number: moment(date).get('month'),
+              name: moment(date).format('MMMM')
+            },
+            week: moment(date).format('w'),
+            day: {
+              number: moment(date).get('date'),
+              name: moment(date).format('dddd')
+            },
+            hour: moment(date).format('HH'),
+            minute: moment(date).format('mm'),
+            second: moment(date).format('ss'),
+            milli: moment(date).get('milliseconds')
+          }
+        },
+
+        analyse: function (period) {
+          var p = {
+            s: this.apart(period.start),
+            e: this.apart(period.end)
+          };
+
+          // TODO: Choose for a more sensible name
+          var info = {
+            first: '',
+            second: '',
+            third: ''
+          };
+
+          if (p.s.year == p.e.year) {
+            info = {
+              first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + '  -  ' + p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name,
+              second: p.s.year,
+              third: ''
+            };
+
+            if (p.s.month.number == p.e.month.number) {
+              info = {
+                first: p.s.day.name + ' ' + p.s.day.number + '  -  ' + p.e.day.name + ' ' + p.e.day.number,
+                second: p.s.month.name + ' ' + p.s.year,
+                third: 'Month number: ' + Number(p.s.month.number + 1)
+              };
+
+              if (p.s.week == p.e.week) {
+                info.third += ', Week number: ' + p.s.week;
+              }
+              else {
+                info.third += ', Week numbers: ' + p.s.week + ' - ' + p.e.week;
+              }
+
+              if (p.s.day.number == p.e.day.number) {
+                if (p.e.hour == 23 &&
+                  p.e.minute == 59 &&
+                  p.e.second == 59 &&
+                  p.e.milli == 999) {
+                  p.e.hour = 24;
+                  p.e.minute = '00';
+                  p.e.second = '00';
+                  p.e.milli = '00';
+                }
+
+                info = {
+                  first: p.s.hour + ':' + p.s.minute + '  -  ' + p.e.hour + ':' + p.e.minute,
+                  second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                  third: 'Week number: ' + p.s.week
+                };
+
+                if (p.s.hour == p.e.hour) {
+                  info = {
+                    first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '  -  ' + p.e.hour + ':' + p.e.minute + ':' + p.e.second,
+                    second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                    third: 'Week number: ' + p.s.week
+                  };
+
+                  if (p.s.minute == p.e.minute) {
+                    info = {
+                      first: p.s.hour + ':' + p.s.minute + ':' + p.s.second + '.' + p.s.milli + '  -  ' + p.e.hour + ':' + p.e.minute + ':' + p.e.second + '.' + p.e.milli,
+                      second: p.s.day.name + ' ' + p.s.day.number + ' ' + p.s.month.name + ' ' + p.s.year,
+                      third: 'Week number: ' + p.s.week
+                    };
+                  }
+                }
+              }
+            }
+          }
+          else {
+            info = {
+              first: p.s.day.name + ' ' + p.s.day.number + '-' + p.s.month.name + ', ' + p.s.year + '  -  ' + p.e.day.name + ' ' + p.e.day.number + '-' + p.e.month.name + ', ' + p.e.year,
+              second: '',
+              third: 'Years: ' + p.s.year + ' - ' + p.e.year
+            };
+          }
+
+          return info;
+        },
+
+        indicate: function (period) {
+          return this.analyse(period);
+        }
+      };
+
+      scope.$watch('range', function (period) {
+        scope.info = range.indicate(period);
+      });
+    }
+  }
+});
+
+ngVis.directive('timeNavigation', function () {
+  return {
+    restrict: 'EA',
+    require: '^vis',
+    link: function (scope, element, attr, vis) {
+      setTimeout(function () {
+        var start = 0;
+
+        scope.setScope = function (period) {
+          scope.view = {
+            day: false,
+            week: false,
+            month: false,
+            year: false,
+            custom: false
+          };
+
+          scope.view[period] = true;
+
+          if (period != 'custom') {
+            vis.timeline.setWindow(
+              moment().startOf(period),
+              moment().endOf(period)
+            );
+
+            vis.timeline.setOptions({
+              min: moment().startOf(period).valueOf(),
+              start: moment().startOf(period).valueOf(),
+              max: moment().endOf(period).valueOf(),
+              end: moment().endOf(period).valueOf()
+            });
+          }
+          else {
+            vis.timeline.setOptions({
+              min: null,
+              max: null
+            });
+
+            vis.timeline.fit();
+          }
+
+          start = 0;
+        };
+
+        var view;
+
+        scope.stepScope = function (direction) {
+          if ((scope.view && scope.view.custom) || !angular.isDefined(scope.view)) {
+            var percentage = (direction > 0) ? 0.2 : -0.2,
+              range = scope.timeline.getWindow(),
+              interval = range.end - range.start;
+
+            scope.timeline.setWindow({
+              start: range.start.valueOf() - interval * percentage,
+              end: range.end.valueOf() - interval * percentage
+            });
+          } else {
+            start = start + direction;
+
+            angular.forEach(scope.view, function (active, _view) {
+              if (active) view = _view;
+            });
+
+            vis.timeline.setWindow(
+              moment().add(view, start).startOf(view),
+              moment().add(view, start).endOf(view)
+            );
+
+            vis.timeline.setOptions({
+              min: moment().add(view, start).startOf(view).valueOf(),
+              start: moment().add(view, start).startOf(view).valueOf(),
+              max: moment().add(view, start).endOf(view).valueOf(),
+              end: moment().add(view, start).endOf(view).valueOf()
+            });
+          }
+        };
+
+        scope.zoomScope = function (percentage) {
+          var range = scope.timeline.getWindow(),
+            interval = range.end - range.start;
+
+          scope.timeline.setWindow({
+            start: range.start.valueOf() - interval * percentage,
+            end: range.end.valueOf() + interval * percentage
+          });
+        }
+      }, 0);
     }
   }
 });
