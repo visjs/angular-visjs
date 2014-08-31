@@ -294,6 +294,8 @@ ngVis.directive('timeNavigation', function () {
           start = 0;
         };
 
+        scope.setScope('custom');
+
         var view;
 
         scope.stepScope = function (direction) {

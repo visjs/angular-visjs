@@ -66,6 +66,10 @@
     h6 {
       font-size: 0.75rem;
     }
+
+    pre {
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body ng-controller="appController">
@@ -81,21 +85,26 @@
 
   <section class="top-bar-section">
     <ul class="right">
-      <li class="{{page.introduction && 'active'}}"><a ng-click="setView('introduction')">Introduction</a></li>
-      <li class="{{page.options && 'active'}}"><a ng-click="setView('options')">Options</a></li>
-      <li class="{{page.events && 'active'}}"><a ng-click="setView('events')">Events</a></li>
-      <li class="{{page.methods && 'active'}}"><a ng-click="setView('methods')">Methods</a></li>
-      <li class="{{page.navigation && 'active'}}"><a ng-click="setView('navigation')">Navigation</a></li>
+      <li class="{{page.introduction && 'active'}}">
+        <a ng-click="setView('introduction')">Introduction</a>
+      </li>
+      <li class="{{page.options && 'active'}}">
+        <a ng-click="setView('options')">Options</a>
+      </li>
+      <li class="{{page.events && 'active'}}">
+        <a ng-click="setView('events')">Methods & Events</a>
+      </li>
+      <li class="{{page.navigation && 'active'}}">
+        <a ng-click="setView('navigation')">Navigation</a>
+      </li>
     </ul>
   </section>
 </nav>
 
-<!--vis module-->
 <vis ng-transclude>
   <div class="panel" ng-show="page.navigation">
     <div class="row fluid">
       <div class="medium-5 columns">
-        <!--timeline board-->
         <time-board>
           <h4>{{info.first}}</h4>
           <h5>{{info.second}}</h5>
@@ -104,29 +113,44 @@
       </div>
       <div class="medium-7 columns">
         <br/>
-        <!--timeline navigation-->
         <time-navigation class="clearfix">
           <ul class="button-group round right">
             <li>
-              <button ng-click="setScope('day')" class="button tiny">Day</button>
+              <a ng-click="setScope('day')" class="button tiny {{view.day && 'primary' || 'secondary'}}">Day</a>
             </li>
-            <li><a ng-click="setScope('week')" class="button tiny">Week</a></li>
-            <li><a ng-click="setScope('month')" class="button tiny">Month</a></li>
-            <li><a ng-click="setScope('year')" class="button tiny">Year</a></li>
-            <li><a ng-click="setScope('custom')" class="button tiny">Custom</a></li>
+            <li>
+              <a ng-click="setScope('week')" class="button tiny {{view.week && 'primary' || 'secondary'}}">Week</a>
+            </li>
+            <li>
+              <a ng-click="setScope('month')" class="button tiny {{view.month && 'primary' || 'secondary'}}">Month</a>
+            </li>
+            <li>
+              <a ng-click="setScope('year')" class="button tiny {{view.year && 'primary' || 'secondary'}}">Year</a>
+            </li>
+            <li>
+              <a ng-click="setScope('custom')"
+                 class="button tiny {{view.custom && 'primary' || 'secondary'}}">Custom</a>
+            </li>
           </ul>
           <ul class="button-group round right" style="margin-right: 15px">
-            <li><a ng-click="stepScope(-1)" class="button tiny"><i class="fi-arrow-left"></i></a></li>
-            <li><a ng-click="zoomScope(0.2)" class="button tiny"><i class="fi-arrow-up"></i></a></li>
-            <li><a ng-click="zoomScope(-0.2)" class="button tiny"><i class="fi-arrow-down"></i></a></li>
-            <li><a ng-click="stepScope(1)" class="button tiny"><i class="fi-arrow-right"></i></a></li>
+            <li>
+              <a ng-click="stepScope(-1)" class="button tiny"><i class="fi-arrow-left"></i></a>
+            </li>
+            <li>
+              <a ng-click="zoomScope(0.2)" class="button tiny"><i class="fi-arrow-up"></i></a>
+            </li>
+            <li>
+              <a ng-click="zoomScope(-0.2)" class="button tiny"><i class="fi-arrow-down"></i></a>
+            </li>
+            <li>
+              <a ng-click="stepScope(1)" class="button tiny"><i class="fi-arrow-right"></i></a>
+            </li>
           </ul>
         </time-navigation>
       </div>
     </div>
   </div>
   <div id="showcase" class="row fluid" style="margin-top: -20px">
-    <!--timeline-->
     <time-line data="data" options="options" events="events"></time-line>
   </div>
 </vis>
@@ -242,26 +266,14 @@
             <li class="{{(example == 'basicUsage') && 'active'}}">
               <a ng-click="setExample('basicUsage')">basic usage</a>
             </li>
-            <li class="{{(example == 'htmlData') && 'active'}}">
-              <a ng-click="setExample('htmlData')">html data</a>
-            </li>
-            <li class="{{(example == 'interactive') && 'active'}}">
-              <a ng-click="setExample('interactive')">interactive</a>
-            </li>
             <li class="{{(example == 'groups') && 'active'}}">
               <a ng-click="setExample('groups')">groups</a>
-            </li>
-            <li class="{{(example == 'orderGroups') && 'active'}}">
-              <a ng-click="setExample('orderGroups')">order groups</a>
             </li>
             <li class="{{(example == 'points') && 'active'}}">
               <a ng-click="setExample('points')">points</a>
             </li>
             <li class="{{(example == 'aLotOfGroupedData') && 'active'}}">
               <a ng-click="setExample('aLotOfGroupedData')">a lot of grouped data</a>
-            </li>
-            <li class="{{(example == 'itemClassNames') && 'active'}}">
-              <a ng-click="setExample('itemClassNames')">item class names</a>
             </li>
             <li class="{{(example == 'dataSerialization') && 'active'}}">
               <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
@@ -271,33 +283,40 @@
       </div>
     </div>
   </div>
+
   <div class="medium-9 columns" ng-show="page.introduction">
     <section ng-switch="example">
       <article ng-switch-when="basicUsage">
-        <h2>Basic Usage</h2>
-      </article>
-      <article ng-switch-when="htmlData">
-        <h2>HTML data</h2>
-
-        <p>Load HTML contents in the Timeline</p>
-      </article>
-      <article ng-switch-when="interactive">
-        <h2>Interactive</h2>
+        <h2>Basic Usage (Interactive)</h2>
 
         <p>Drag items around, create new items, and remove items.</p>
+
+        <div class="row">
+          <div class="medium-6 columns">
+            <div class="panel">
+              <h4 class="subheader">Data</h4>
+              <code><pre>{{data.load._data | json}}</pre></code>
+            </div>
+          </div>
+          <div class="medium-6 columns">
+            <div class="panel">
+              <h4 class="subheader">Options</h4>
+              <code><pre>{{options | json}}</pre></code>
+            </div>
+          </div>
+        </div>
+
       </article>
       <article ng-switch-when="groups">
         <h2>Groups</h2>
-      </article>
-      <article ng-switch-when="orderGroups">
-        <h2>Order groups</h2>
       </article>
       <article ng-switch-when="points">
         <h2>Points</h2>
         <h4>World War II timeline</h4>
 
-        <p>Source: <a href="http://www.onwar.com/chrono/index.htm"
-                      target="_blank">http://www.onwar.com/chrono/index.htm</a>
+        <p>
+          Source:
+          <a href="http://www.onwar.com/chrono/index.htm" target="_blank">http://www.onwar.com/chrono/index.htm</a>
         </p>
       </article>
       <article ng-switch-when="aLotOfGroupedData">
@@ -308,15 +327,11 @@
           <a ng-click="groupCount(10)">10</a>,
           <a ng-click="groupCount(100)">100</a>,
           <a ng-click="groupCount(1000)">1000</a>,
-          <a ng-click="groupCount(10000)">10000</a>,
-          <a ng-click="groupCount(100000)">100000</a>
+          <a ng-click="groupCount(10000)">10000</a>
 
         <p>
 
         <p>Current number of items: {{groupCountValue}}</p>
-      </article>
-      <article ng-switch-when="itemClassNames">
-        <h2>Item class names</h2>
       </article>
       <article ng-switch-when="dataSerialization">
         <h2>Serialization and de-serialization</h2>
@@ -329,97 +344,73 @@
       </article>
     </section>
   </div>
-  <div class="medium-12 columns" ng-show="page.options">
-    <article>
-      <h2>Limit move and zoom</h2>
 
-      <p>
-        The visible range is limited in this demo:
-      </p>
-      <ul>
-        <li>minimum visible date is limited to 2012-01-01 using option <code>min</code></li>
-        <li>maximum visible date is limited to 2013-01-01 (excluded) using option <code>max</code></li>
-        <li>visible zoom interval is limited to a minimum of 24 hours using option <code>zoomMin</code></li>
-        <li>visible zoom interval is limited to a maximum of about 3 months using option <code>zoomMax</code></li>
-      </ul>
-    </article>
-  </div>
+  <div class="medium-12 columns" ng-show="page.options"></div>
+
   <div class="medium-12 columns" ng-show="page.events">
     <div class="row fluid">
-      <div class="medium-8 columns">
+      <div class="medium-7 columns">
         <article>
-          <h2>Events</h2>
-          Some content about events.
+          <h2>Custom time bar</h2>
+
+          <form>
+            <div class="row">
+              <div class="large-4 columns">
+                <div class="row collapse">
+                  <div class="small-6 columns">
+                    <input type="text" ng-model="customTime"/>
+                  </div>
+                  <div class="small-6 columns">
+                    <a ng-click="timeline.setCustomTime(customTime)" class="button postfix">Set custom time</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <div class="row">
+            <div class="small-4 columns">
+              <input type="button" class="button small" value="Get custom time" ng-click="getCustomTime()"/>
+            </div>
+            <div class="small-4 columns">
+              {{logs.customTime | json}}
+            </div>
+          </div>
         </article>
       </div>
-      <div class="medium-4 columns">
-        <div class="panel callout radius">
+      <div class="medium-5 columns">
+        <div class="panel">
           <dl>
             <dt>Range change</dt>
             <dd>
-              <pre>{{logs.rangechange | json}}</pre>
+              <pre>{{logs.rangechange}}</pre>
             </dd>
             <dt>Range changed</dt>
             <dd>
-              <pre>{{logs.rangechanged | json}}</pre>
+              <pre>{{logs.rangechanged}}</pre>
             </dd>
             <dt>Time change</dt>
             <dd>
-              <pre>{{logs.timechange | json}}</pre>
+              <pre>{{logs.timechange}}</pre>
             </dd>
             <dt>Time changed</dt>
             <dd>
-              <pre>{{logs.timechanged | json}}</pre>
+              <pre>{{logs.timechanged}}</pre>
             </dd>
             <dt>Select</dt>
             <dd>
-              <pre>{{logs.select | json}}</pre>
+              <pre>{{logs.select}}</pre>
             </dd>
             <dt>Items *</dt>
             <dd>
-              <pre>{{logs.items | json}}</pre>
+              <pre>{{logs.items}}</pre>
             </dd>
           </dl>
         </div>
       </div>
     </div>
   </div>
-  <div class="medium-12 columns" ng-show="page.methods">
-    <article>
-      <h2>Edit items</h2>
-      <dl>
-        <dt>Items *</dt>
-        <dd>{{logs.items | json}}</dd>
-      </dl>
-    </article>
-    <article>
-      <h2>Custom time bar</h2>
 
-      <form>
-        <div class="row">
-          <div class="large-4 columns">
-            <div class="row collapse">
-              <div class="small-6 columns">
-                <input type="text" ng-model="customTime"/>
-              </div>
-              <div class="small-6 columns">
-                <a ng-click="timeline.setCustomTime(customTime)" class="button postfix">Set custom time</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <div class="row">
-        <div class="small-4 columns">
-          <input type="button" class="button small" value="Get custom time" ng-click="getCustomTime()"/>
-        </div>
-        <div class="small-4 columns">
-          {{logs.customTime | json}}
-        </div>
-      </div>
-    </article>
-  </div>
   <div class="medium-12 columns" ng-show="page.navigation"></div>
 </div>
 

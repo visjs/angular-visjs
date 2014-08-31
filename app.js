@@ -56,155 +56,54 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
   var now = moment().minutes(0).seconds(0).milliseconds(0);
 
+  var sampleData = function () {
+    return visDataSet([
+      { id: 1,
+        content: '<i class="fi-flag"></i> item 1',
+        start: moment().add('days', 1),
+        className: 'magenta' },
+      { id: 2,
+        content: '<a href="http://visjs.org" target="_blank">visjs.org</a>',
+        start: moment().add('days', 2) },
+      { id: 3,
+        content: 'item 3',
+        start: moment().add('days', -2) },
+      { id: 4,
+        content: 'item 4',
+        start: moment().add('days', 1),
+        end: moment().add('days', 3),
+        type: 'range' },
+      { id: 7,
+        content: '<i class="fi-anchor"></i> item 7',
+        start: moment().add('days', -3),
+        end: moment().add('days', -2),
+        type: 'range',
+        className: 'orange' },
+      { id: 5,
+        content: 'item 5',
+        start: moment().add('days', -1),
+        type: 'point' },
+      { id: 6,
+        content: 'item 6',
+        start: moment().add('days', 4),
+        type: 'point' }
+    ]);
+  };
+
   $scope.setExample = function (example) {
     $scope.example = example;
 
+    $timeout(function () { $scope.timeline.clear({options: true}) });
+
     switch (example) {
 
-
       case 'basicUsage':
-        $scope.data = visDataSet([
-          {id: 1, content: 'item 1', start: '2014-04-20'},
-          {id: 2, content: 'item 2', start: '2014-04-14'},
-          {id: 3, content: 'item 3', start: '2014-04-18'},
-          {id: 4, content: 'item 4', start: '2014-04-16', end: '2014-04-19', type: 'range'},
-          {id: 7, content: 'item 7', start: '2014-04-17', end: '2014-04-20', type: 'range'},
-          {id: 5, content: 'item 5', start: '2014-04-25'},
-          {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
-        ]);
-
-        $timeout(function () {
-          $scope.timeline.clear({options: true})
-        });
+        $scope.data = sampleData();
 
         $scope.options = angular.extend(options, {});
         break;
-
-
-      case 'interactive':
-        $scope.data = visDataSet([
-          {id: 1, content: 'item 1<br>start', start: '2014-01-23'},
-          {id: 2, content: 'item 2', start: '2014-01-18'},
-          {id: 3, content: 'item 3', start: '2014-01-21'},
-          {id: 4, content: 'item 4', start: '2014-01-19', end: '2014-01-24'},
-          {id: 5, content: 'item 5', start: '2014-01-28', type: 'point'},
-          {id: 6, content: 'item 6', start: '2014-01-26'}
-        ]);
-
-        $scope.options = angular.extend(options, {
-          start: '2014-01-10',
-          end: '2014-02-10',
-          orientation: 'top',
-          height: '300px',
-          editable: true,
-          /* alternatively, enable/disable individual actions:
-           editable: {
-           add: true,
-           updateTime: true,
-           updateGroup: true,
-           remove: true
-           },
-           */
-          showCurrentTime: true
-        });
-        break;
-
-
-      case 'htmlData':
-        $scope.data = visDataSet([
-          { id: 1,
-            content: '<div><i>item 1</i></div>',
-            start: '2013-04-20' },
-          { id: 2,
-            content: '<div><span>item 2</span></div>',
-            start: '2013-04-14' },
-          { id: 3,
-            content: '<div><span class="large">item 3</span></div>',
-            start: '2013-04-18' },
-          { id: 4,
-            content: 'item <span class="large">4</span>',
-            start: '2013-04-16',
-            end: '2013-04-19' },
-          { id: 5,
-            content: '<div>item 5<br/>' +
-              '<img src="bower_components/vis/examples/timeline/img/attachment-icon.png" ' +
-              'style="width:48px; height:48px;" /></div>',
-            start: '2013-04-25' },
-          { id: 6,
-            content: 'item6<br><img src="bower_components/vis/examples/timeline/img/comments-icon.png" ' +
-              'style="width: 48px; height: 48px;">',
-            start: '2013-04-27' },
-          { id: 7,
-            content: 'item7<br><a href="http://visjs.org" target="_blank">click here</a>',
-            start: '2013-04-21' }
-        ]);
-
-        $scope.options = angular.extend(options, {});
-        break;
-
 
       case 'groups':
-        var makeGroups = function () {
-          var data = {
-            groups: [],
-            items: []
-          };
-
-          var groupCount = 3;
-          var itemCount = 20;
-
-          var names = ['John', 'Alston', 'Lee', 'Grant'];
-
-          for (var g = 0; g < groupCount; g++) {
-            data.groups.push({id: g, content: names[g]});
-          }
-
-          for (var i = 0; i < itemCount; i++) {
-            var start = now.clone().add('hours', Math.random() * 200);
-            var group = Math.floor(Math.random() * groupCount);
-
-            data.items.push({
-              id: i,
-              group: group,
-              content: 'item ' + i +
-                ' <span style="color:#97B0F8;">(' + names[group] + ')</span>',
-              start: start,
-              type: 'box'
-            });
-          }
-
-          return data;
-        };
-
-        $scope.data = visDataSet(makeGroups());
-
-        $scope.options = angular.extend(options, {
-          groupOrder: 'content'  // groupOrder can be a property name or a sorting function
-        });
-        break;
-
-
-      case 'customTimeBar':
-        $scope.customTime = moment().year() + '-' +
-          parseInt(moment().month() + 1) + '-' +
-          parseInt(moment().date() + 2);
-
-        $scope.getCustomTime = function () {
-          $scope.logs.customTime = $scope.timeline.getCustomTime();
-        };
-
-        $scope.data = visDataSet([]);
-
-        $scope.options = angular.extend(options, {
-          showCurrentTime: true,
-          showCustomTime: true,
-          start: new Date(Date.now() - 1000 * 60 * 60 * 24),
-          end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6)
-        });
-        break;
-
-
-      case 'orderGroups':
         $scope.data = visDataSet({
           groups: [
             {id: 0, content: 'First', value: 1},
@@ -221,15 +120,18 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           ]
         });
 
-        $scope.options = angular.extend(options, {
+        var orderedContent = 'content';
+        var orderedSorting = function (a, b) {
           // option groupOrder can be a property name or a sort function
           // the sort function must compare two groups and return a value
           //     > 0 when a > b
           //     < 0 when a < b
           //       0 when a == b
-          groupOrder: function (a, b) {
-            return a.value - b.value;
-          },
+          return a.value - b.value;
+        };
+
+        $scope.options = angular.extend(options, {
+          groupOrder: orderedContent,
           editable: true
         });
         break;
@@ -264,62 +166,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           // Available types: 'box' (default), 'point', 'range', 'rangeoverflow'
           type: 'point',
           showMajorLabels: false
-        });
-        break;
-
-
-      case 'pastAndFuture':
-        $scope.data = visDataSet([
-          {
-            id: 1,
-            start: new Date((new Date()).getTime() - 60 * 1000),
-            end: new Date(),
-            content: 'Dynamic event'
-          }
-        ]);
-
-        $scope.options = angular.extend(options, {
-          showCurrentTime: true,
-          showCustomTime: true
-        });
-
-        $scope.events = {
-          timechange: function (event) {
-            $timeout(function () {
-              $scope.logs.timechange = event.time;
-
-              var item = $scope.data.load.get(1);
-
-              if (moment(event.time).unix() > moment(item.start).unix()) {
-                item.end = new Date(event.time);
-
-                var now = new Date();
-
-                if (event.time < now) {
-                  item.content = "Dynamic event (past)";
-                  item.className = 'past';
-                }
-                else if (event.time > now) {
-                  item.content = "Dynamic event (future)";
-                  item.className = 'future';
-                }
-                else {
-                  item.content = "Dynamic event (now)";
-                  item.className = 'now';
-                }
-
-                $scope.data.load.update(item);
-              }
-            });
-          }
-        };
-
-        $timeout(function () {
-          // set a custom range from -2 minute to +3 minutes current time
-          $scope.timeline.setWindow({
-            start: new Date((new Date()).getTime() - 2 * 60 * 1000),
-            end: new Date((new Date()).getTime() + 3 * 60 * 1000)
-          });
         });
         break;
 
@@ -383,41 +229,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         break;
 
 
-      case 'itemClassNames':
-        $scope.data = visDataSet([
-          {
-            'start': new Date(2012, 7, 19),
-            'content': 'default'
-          },
-          {
-            'start': new Date(2012, 7, 23),
-            'content': 'green',
-            'className': 'green'
-          },
-          {
-            'start': new Date(2012, 7, 29),
-            'content': 'red',
-            'className': 'red'
-          },
-          {
-            'start': new Date(2012, 7, 27),
-            'end': new Date(2012, 8, 1),
-            'content': 'orange',
-            'className': 'orange'
-          },
-          {
-            'start': new Date(2012, 8, 2),
-            'content': 'magenta',
-            'className': 'magenta'
-          }
-        ]);
-
-        $scope.options = angular.extend(options, {
-          editable: true
-        });
-        break;
-
-
       case 'dataSerialization':
         $scope.data = visDataSet([
           {"id": 1, "content": "item 1<br>start", "start": "2014-01-23"}
@@ -460,7 +271,86 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         break;
     }
 
+    $timeout(function () { $scope.timeline.fit() });
+  };
 
+  $scope.setView = function (view) {
+    $scope.page = {
+      introduction: false,
+      options: false,
+      events: false,
+      navigation: false
+    };
+
+    $scope.page[view] = true;
+
+    switch (view) {
+      case 'introduction':
+        $scope.setExample('basicUsage');
+        break;
+      case 'options':
+        $scope.setExample('basicUsage');
+        break;
+      case 'events':
+        $scope.data = sampleData();
+
+        $scope.options = angular.extend(options, {
+          editable: true,
+
+          onAdd: function (item, callback) {
+            item.content = prompt('Enter text content for new item:', item.content);
+
+            if (item.content != null) {
+              callback(item); // send back adjusted new item
+            }
+            else {
+              callback(null); // cancel item creation
+            }
+          },
+
+          onMove: function (item, callback) {
+            if (confirm('Do you really want to move the item to\n' +
+              'start: ' + item.start + '\n' +
+              'end: ' + item.end + '?')) {
+              callback(item); // send back item as confirmation (can be changed
+            }
+            else {
+              callback(null); // cancel editing item
+            }
+          },
+
+          onUpdate: function (item, callback) {
+            item.content = prompt('Edit items text:', item.content);
+
+            if (item.content != null) {
+              callback(item); // send back adjusted item
+            }
+            else {
+              callback(null); // cancel updating the item
+            }
+          },
+
+          onRemove: function (item, callback) {
+            if (confirm('Remove item ' + item.content + '?')) {
+              callback(item); // confirm deletion
+            }
+            else {
+              callback(null); // cancel deletion
+            }
+          }
+        });
+        break;
+      case 'navigation':
+        $scope.setExample('basicUsage');
+        break;
+    }
+
+    $location.hash(view);
+  };
+
+  $scope.setView($location.hash() || 'introduction');
+
+  $timeout(function () {
     $scope.events = {
       rangechange: function (properties) {
         $timeout(function () {
@@ -497,111 +387,92 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
         };
       });
     });
-  };
-
-
-  $scope.setView = function (view) {
-    $scope.page = {
-      introduction: false,
-      options: false,
-      events: false,
-      methods: false,
-      navigation: false
-    };
-
-    $scope.page[view] = true;
-
-    $scope.setExample('basicUsage');
-
-    $location.hash(view);
-  };
-
-  $scope.setView($location.hash() || 'introduction');
+  });
 });
 
 
-//OPTIONS
 
-//case 'limitMoveAndZoom':
-//$scope.data = visDataSet([
-//  {'start': new Date(2012, 4, 25), 'content': 'First'},
-//  {'start': new Date(2012, 4, 26), 'content': 'Last'}
-//]);
+
+
+
+
+//case 'customTimeBar':
+//$scope.customTime = moment().year() + '-' +
+//  parseInt(moment().month() + 1) + '-' +
+//  parseInt(moment().date() + 2);
+//
+//$scope.getCustomTime = function () {
+//  $scope.logs.customTime = $scope.timeline.getCustomTime();
+//};
+//
+//$scope.data = visDataSet([]);
 //
 //$scope.options = angular.extend(options, {
-//  height: '300px',
-//  min: new Date(2012, 0, 1),                // lower limit of visible range
-//  max: new Date(2013, 0, 1),                // upper limit of visible range
-//  zoomMin: 1000 * 60 * 60 * 24,             // one day in milliseconds
-//  zoomMax: 1000 * 60 * 60 * 24 * 31 * 3     // about three months in milliseconds
+//  showCurrentTime: true,
+//  showCustomTime: true,
+//  start: new Date(Date.now() - 1000 * 60 * 60 * 24),
+//  end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6)
 //});
 //break;
 
 
-//METHODS
 
-//case 'editItems':
+
+
+
+
+
+//case 'pastAndFuture':
 //$scope.data = visDataSet([
-//  {id: 1, content: 'item 1', start: new Date(2013, 3, 20)},
-//  {id: 2, content: 'item 2', start: new Date(2013, 3, 14)},
-//  {id: 3, content: 'item 3', start: new Date(2013, 3, 18)},
-//  {id: 4, content: 'item 4', start: new Date(2013, 3, 16), end: new Date(2013, 3, 19)},
-//  {id: 5, content: 'item 5', start: new Date(2013, 3, 25)},
-//  {id: 6, content: 'item 6', start: new Date(2013, 3, 27)}
+//  {
+//    id: 1,
+//    start: new Date((new Date()).getTime() - 60 * 1000),
+//    end: new Date(),
+//    content: 'Dynamic event'
+//  }
 //]);
 //
-//$scope.data.load.on('*', function (event, properties) {
-//  $timeout(function () {
-//    $scope.logs.items = {
-//      event: event,
-//      properties: properties
-//    };
-//  });
+//$scope.options = angular.extend(options, {
+//  showCurrentTime: true,
+//  showCustomTime: true
 //});
 //
-//$scope.options = angular.extend(options, {
-//  editable: true,
+//$scope.events = {
+//  timechange: function (event) {
+//    $timeout(function () {
+//      $scope.logs.timechange = event.time;
 //
-//  onAdd: function (item, callback) {
-//    item.content = prompt('Enter text content for new item:', item.content);
+//      var item = $scope.data.load.get(1);
 //
-//    if (item.content != null) {
-//      callback(item); // send back adjusted new item
-//    }
-//    else {
-//      callback(null); // cancel item creation
-//    }
-//  },
+//      if (moment(event.time).unix() > moment(item.start).unix()) {
+//        item.end = new Date(event.time);
 //
-//  onMove: function (item, callback) {
-//    if (confirm('Do you really want to move the item to\n' +
-//      'start: ' + item.start + '\n' +
-//      'end: ' + item.end + '?')) {
-//      callback(item); // send back item as confirmation (can be changed
-//    }
-//    else {
-//      callback(null); // cancel editing item
-//    }
-//  },
+//        var now = new Date();
 //
-//  onUpdate: function (item, callback) {
-//    item.content = prompt('Edit items text:', item.content);
+//        if (event.time < now) {
+//          item.content = "Dynamic event (past)";
+//          item.className = 'past';
+//        }
+//        else if (event.time > now) {
+//          item.content = "Dynamic event (future)";
+//          item.className = 'future';
+//        }
+//        else {
+//          item.content = "Dynamic event (now)";
+//          item.className = 'now';
+//        }
 //
-//    if (item.content != null) {
-//      callback(item); // send back adjusted item
-//    }
-//    else {
-//      callback(null); // cancel updating the item
-//    }
-//  },
-//
-//  onRemove: function (item, callback) {
-//    if (confirm('Remove item ' + item.content + '?')) {
-//      callback(item); // confirm deletion
-//    }
-//    else {
-//      callback(null); // cancel deletion
-//    }
+//        $scope.data.load.update(item);
+//      }
+//    });
 //  }
+//};
+//
+//$timeout(function () {
+//  // set a custom range from -2 minute to +3 minutes current time
+//  $scope.timeline.setWindow({
+//    start: new Date((new Date()).getTime() - 2 * 60 * 1000),
+//    end: new Date((new Date()).getTime() + 3 * 60 * 1000)
+//  });
 //});
 //break;
