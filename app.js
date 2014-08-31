@@ -2,8 +2,6 @@
 
 // TODO
 // Use grunt or gulp for minimizing and distribution
-// Integrate helper directives for timeline
-// Organize examples in angular way
 // Documentation
 
 var ngVisApp = angular.module('ngVisApp', ['ngVis']);
@@ -60,7 +58,6 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
   $scope.setExample = function (example) {
     $scope.example = example;
-    $location.hash(example);
 
     switch (example) {
 
@@ -76,7 +73,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
           {id: 6, content: 'item 6', start: '2014-04-27', type: 'point'}
         ]);
 
-        $timeout(function () { $scope.timeline.clear({options: true}) });
+        $timeout(function () {
+          $scope.timeline.clear({options: true})
+        });
         $scope.options = angular.extend(options, {});
         break;
 
@@ -112,45 +111,31 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
 
       case 'htmlData':
         $scope.data = visDataSet([
-          {
-            id: 1,
+          { id: 1,
             content: '<div><i>item 1</i></div>',
-            start: '2013-04-20'
-          },
-          {
-            id: 2,
+            start: '2013-04-20' },
+          { id: 2,
             content: '<div><span>item 2</span></div>',
-            start: '2013-04-14'
-          },
-          {
-            id: 3,
+            start: '2013-04-14' },
+          { id: 3,
             content: '<div><span class="large">item 3</span></div>',
-            start: '2013-04-18'
-          },
-          {
-            id: 4,
+            start: '2013-04-18' },
+          { id: 4,
             content: 'item <span class="large">4</span>',
             start: '2013-04-16',
-            end: '2013-04-19'
-          },
-          {
-            id: 5,
+            end: '2013-04-19' },
+          { id: 5,
             content: '<div>item 5<br/>' +
               '<img src="bower_components/vis/examples/timeline/img/attachment-icon.png" ' +
               'style="width:48px; height:48px;" /></div>',
-            start: '2013-04-25'
-          },
-          {
-            id: 6,
+            start: '2013-04-25' },
+          { id: 6,
             content: 'item6<br><img src="bower_components/vis/examples/timeline/img/comments-icon.png" ' +
               'style="width: 48px; height: 48px;">',
-            start: '2013-04-27'
-          },
-          {
-            id: 7,
+            start: '2013-04-27' },
+          { id: 7,
             content: 'item7<br><a href="http://visjs.org" target="_blank">click here</a>',
-            start: '2013-04-21'
-          }
+            start: '2013-04-21' }
         ]);
 
         $scope.options = angular.extend(options, {});
@@ -614,5 +599,20 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, visD
     }
   };
 
-  $scope.setExample($location.hash() || 'basicUsage');
+
+  $scope.setView = function (view) {
+    $scope.page = {
+      introduction: false,
+      options: false,
+      events: false,
+      methods: false,
+      navigation: false
+    };
+
+    $scope.page[view] = true;
+
+    $location.hash(view);
+  };
+
+  $scope.setView($location.hash() || 'introduction');
 });

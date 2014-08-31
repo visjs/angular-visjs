@@ -81,18 +81,19 @@
 
   <section class="top-bar-section">
     <ul class="right">
-      <li class=""><a href="">Introduction</a></li>
-      <li class=""><a href="">Options</a></li>
-      <li class=""><a href="">Events</a></li>
-      <li class=""><a href="">Methods</a></li>
-      <li class=""><a href="">Navigation</a></li>
+      <li class="{{page.introduction && 'active'}}"><a ng-click="setView('introduction')">Introduction</a></li>
+      <li class="{{page.options && 'active'}}"><a ng-click="setView('options')">Options</a></li>
+      <li class="{{page.events && 'active'}}"><a ng-click="setView('events')">Events</a></li>
+      <li class="{{page.methods && 'active'}}"><a ng-click="setView('methods')">Methods</a></li>
+      <li class="{{page.navigation && 'active'}}"><a ng-click="setView('navigation')">Navigation</a></li>
     </ul>
   </section>
 </nav>
 
 <!--vis module-->
 <vis ng-transclude>
-  <div class="panel">
+
+  <div class="panel" ng-show="page.navigation">
     <div class="row fluid">
       <div class="medium-5 columns">
 
@@ -129,15 +130,17 @@
       </div>
     </div>
   </div>
+
   <div id="showcase" class="row fluid" style="margin-top: -20px">
 
     <!--timeline-->
     <time-line data="data" options="options" events="events"></time-line>
 
   </div>
+
 </vis>
 
-<div class="panel">
+<div class="panel" ng-show="page.options">
   <div class="row fluid">
     <div class="medium-12">
       <h4>Configuration</h4>
@@ -237,19 +240,20 @@
 </div>
 
 <div class="row fluid">
-
-<div class="medium-3 columns">
+  <div class="medium-3 columns">
   <div class="hide-for-small">
     <div class="sidebar">
       <nav>
-        <ul class="side-nav">
-          <li class="heading">Data</li>
-
+        <ul class="side-nav" ng-show="page.introduction">
+          <li class="heading">Introduction</li>
           <li class="{{(example == 'basicUsage') && 'active'}}">
             <a ng-click="setExample('basicUsage')">basic usage</a>
           </li>
           <li class="{{(example == 'htmlData') && 'active'}}">
             <a ng-click="setExample('htmlData')">html data</a>
+          </li>
+          <li class="{{(example == 'interactive') && 'active'}}">
+            <a ng-click="setExample('interactive')">interactive</a>
           </li>
           <li class="{{(example == 'groups') && 'active'}}">
             <a ng-click="setExample('groups')">groups</a>
@@ -266,37 +270,39 @@
           <li class="{{(example == 'itemClassNames') && 'active'}}">
             <a ng-click="setExample('itemClassNames')">item class names</a>
           </li>
-
-          <li class="heading">Usage</li>
-
-          <li class="{{(example == 'interactive') && 'active'}}">
-            <a ng-click="setExample('interactive')">interactive</a>
+          <li class="{{(example == 'dataSerialization') && 'active'}}">
+            <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
           </li>
-          <li class="{{(example == 'eventListeners') && 'active'}}">
-            <a ng-click="setExample('eventListeners')">event listeners</a>
-          </li>
-          <li class="{{(example == 'customTimeBar') && 'active'}}">
-            <a ng-click="setExample('customTimeBar')">custom time bar</a>
-          </li>
-          <li class="{{(example == 'editItems') && 'active'}}">
-            <a ng-click="setExample('editItems')">edit items</a>
-          </li>
+        </ul>
+        <ul class="side-nav" ng-show="page.options">
+          <li class="heading">Options</li>
           <li class="{{(example == 'limitMoveAndZoom') && 'active'}}">
             <a ng-click="setExample('limitMoveAndZoom')">limit move and zoom</a>
           </li>
-          <li class="{{(example == 'pastAndFuture') && 'active'}}">
-            <a ng-click="setExample('pastAndFuture')">past and future</a>
+        </ul>
+        <ul class="side-nav" ng-show="page.events">
+          <li class="heading">Events</li>
+          <li class="{{(example == 'eventListeners') && 'active'}}">
+            <a ng-click="setExample('eventListeners')">event listeners</a>
           </li>
-          <li class="{{(example == 'dataSerialization') && 'active'}}">
-            <a ng-click="setExample('dataSerialization')">data serialization (*)</a>
+        </ul>
+        <ul class="side-nav" ng-show="page.methods">
+          <li class="heading">Methods</li>
+          <li class="{{(example == 'editItems') && 'active'}}">
+            <a ng-click="setExample('editItems')">edit items</a>
+          </li>
+        </ul>
+        <ul class="side-nav" ng-show="page.navigation">
+          <li class="heading">Navigation</li>
+          <li class="{{(example == 'customTimeBar') && 'active'}}">
+            <a ng-click="setExample('customTimeBar')">custom time bar</a>
           </li>
         </ul>
       </nav>
     </div>
   </div>
 </div>
-
-<div class="medium-6 columns" ng-switch="example">
+  <div class="medium-6 columns" ng-switch="example">
 
   <article ng-switch-when="basicUsage">
     <h2>Basic Usage</h2>
@@ -447,7 +453,6 @@
   </article>
 
 </div>
-
 </div>
 
 <script src="bower_components/moment/min/moment.min.js"></script>
