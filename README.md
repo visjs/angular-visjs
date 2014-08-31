@@ -7,6 +7,7 @@ Development and documentation is in progress.
 <time-line data="data" options="options" events="events"></time-line>
 
 ### Data:
+```
   $scope.data = visDataSet({
      "1": {
        "id": 1,
@@ -55,8 +56,10 @@ Development and documentation is in progress.
        "className": "orange"
      }
   });
+```  
 
 ### Options:
+```
   $scope.options = {
    "align": "center",
    "autoResize": true,
@@ -68,4 +71,5 @@ Development and documentation is in progress.
    "showMajorLabels": true,
    "showMinorLabels": true
   };
+```  
                          
