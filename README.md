@@ -2,6 +2,10 @@
 
 Development and documentation is in progress.
 
+## Help needed
+
+We are looking for someone enthusiastic to maintain and develop the `angular-visjs` library. Interested? Send an email to jos@almende.org.
+
 ## Usage
 ```
   <time-line data="data" options="options" events="events"></time-line>
