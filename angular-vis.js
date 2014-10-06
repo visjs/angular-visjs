@@ -3,27 +3,27 @@
 var ngVis = angular.module('ngVis', []);
 
 ngVis.factory('visDataSet', function () {
-  var items = new vis.DataSet({
-    type: {
-      start: 'ISODate',
-      end: 'ISODate'
-    }
-  });
-
-  var groups = new vis.DataSet();
-
-  // var count = items.get().length;
-  /*
-   if (count > 0) {
-   items.update(data);
-   } else {
-   items.add(data);
-   }
-   */
-
   return function (data) {
     var processed;
+    var items = new vis.DataSet({
+      type: {
+        start: 'ISODate',
+        end: 'ISODate'
+      }
+    });
 
+    var groups = new vis.DataSet();
+
+    // var count = items.get().length;
+    /*
+     if (count > 0) {
+     items.update(data);
+     } else {
+     items.add(data);
+     }
+     */
+
+    // TODO: is this checking for `type` needed? (is also done by the Timeline itself)
     var regulate = function (items) {
       angular.forEach(items, function (item) {
         if (!item.hasOwnProperty('type')) {
