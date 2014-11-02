@@ -342,3 +342,38 @@ ngVis.directive('timeNavigation', function () {
     }
   }
 });
+
+/**
+ * Directive for network chart.
+ */
+ngVis.directive('network', function () {
+  return {
+    restrict: 'EA',
+    require: '^vis',
+    transclude: false,
+    scope: {
+      data: '=',
+      options: '=',
+      events: '='
+    },
+    link: function (scope, element, attr, visCtrl) {
+      var network = new vis.Network(element[0], scope.data, scope.options);
+
+      scope.$watch('data', function () {
+        network.setData(scope.data);
+      });
+
+      scope.$watchCollection('options', function (options) {
+        network.setOptions(options);
+      });
+
+      scope.$watch('events', function (events) {
+        angular.forEach(events, function (callback, event) {
+          if (['select', 'click', 'hoverNode'].indexOf(String(event)) >= 0) {
+            network.on(event, callback);
+          }
+        });
+      });
+    }
+  };
+});
