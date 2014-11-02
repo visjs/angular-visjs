@@ -342,3 +342,69 @@ ngVis.directive('timeNavigation', function () {
     }
   }
 });
+
+/**
+ * Directive for graph2d.
+ * Uses the 'setTimeline' method in vis directive to allow support for timeboard and navigation
+ */
+ngVis.directive('graph2d', function () {
+  return {
+    restrict: 'EA',
+    require: '^vis',
+    transclude: false,
+    scope: {
+      data: '=',
+      options: '=',
+      events: '='
+    },
+    link: function (scope, element, attr, visCtrl) {
+      var graph = new vis.Graph2d(element[0]);
+
+      // Record if we have a chart loaded. Allows ng-hide="graphLoaded" to be used
+      scope.graphLoaded = false;
+
+      scope.$watch('data', function () {
+        if (scope.data === undefined) {
+          return;
+        }
+
+        // There are currently some bugs in the vis library
+        // Changing data sets causes the lib to hang, so we recreate the graph (for now)
+        if(graph !== undefined) {
+          graph.destroy();
+        }
+        graph = new vis.Graph2d(element[0]);
+        visCtrl.setTimeline(graph);
+
+        graph.clear({items: true, groups: true, options: true});
+
+        scope.graphLoaded = true;
+
+        if (scope.data.single) {
+          graph.clear({groups: true});
+          graph.setItems(scope.data);
+        } else {
+          graph.setOptions(scope.options);
+          graph.setGroups(scope.data.groups);
+          graph.setItems(scope.data.items);
+        }
+      });
+
+      scope.$watchCollection('options', function (options) {
+        graph.clear({options: true});
+        graph.setOptions(options);
+      });
+
+      scope.$watch('events', function (events) {
+        angular.forEach(events, function (callback, event) {
+          if (['rangechange', 'rangechanged', 'select', 'timechange', 'timechanged'].indexOf(String(event)) >=
+              0) {
+            graph.on(event, callback);
+          }
+        });
+      });
+
+      visCtrl.setTimeline(graph);
+    }
+  };
+});
