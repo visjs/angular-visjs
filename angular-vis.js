@@ -264,25 +264,21 @@ ngVis.directive('timeNavigation', function () {
             week: false,
             month: false,
             year: false,
+            lastday: false,
+            lastweek: false,
+            lastmonth: false,
+            lastyear: false,
+
             custom: false
           };
 
+          // Sanity check
+          if(scope.view[period] === undefined) {
+            period = 'custom';
+          }
           scope.view[period] = true;
 
-          if (period != 'custom') {
-            vis.timeline.setWindow(
-              moment().startOf(period),
-              moment().endOf(period)
-            );
-
-            vis.timeline.setOptions({
-              min: moment().startOf(period).valueOf(),
-              start: moment().startOf(period).valueOf(),
-              max: moment().endOf(period).valueOf(),
-              end: moment().endOf(period).valueOf()
-            });
-          }
-          else {
+          if (period == 'custom') {
             vis.timeline.setOptions({
               min: null,
               max: null
@@ -290,10 +286,35 @@ ngVis.directive('timeNavigation', function () {
 
             vis.timeline.fit();
           }
+          else {
+            var periodStart, periodEnd;
+            if(period.indexOf('last') === 0) {
+              // These options are seen as the last day, or last week
+              // Starting from NOW.
+              period = period.substr(4);
+
+              periodStart = moment().subtract(1, period);
+              periodEnd = moment().valueOf();
+            }
+            else {
+              // These options are 'this week', or 'this month' etc
+              // Starting from the beginning of the week/month etc.
+              periodStart = moment().startOf(period).valueOf();
+              periodEnd = moment().endOf(period).valueOf();
+            }
+
+            vis.timeline.setWindow(periodStart, periodEnd);
+            vis.timeline.setOptions({
+              min: periodStart,
+              start: periodStart,
+              max: periodEnd,
+              end: periodEnd
+            });
+          }
 
           start = 0;
         };
-
+        
         scope.setScope('custom');
 
         var view;
