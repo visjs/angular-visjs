@@ -138,18 +138,26 @@ ngVis.directive('timeBoard', function () {
     restrict: 'EA',
     require: '^vis',
     link: function (scope, element, attr, vis) {
+      // Allow setting of the day/month formats using attributes
+      var nameFormat = {
+        day: "dddd",
+        month: "MMMM"
+      };
+      nameFormat.day = attr.formatDay || "dddd";
+      nameFormat.month = attr.formatMonth || "MMMM";
+
       var range = {
         apart: function (date) {
           return {
             year: moment(date).get('year'),
             month: {
               number: moment(date).get('month'),
-              name: moment(date).format('MMMM')
+              name: moment(date).format(nameFormat.month)
             },
             week: moment(date).format('w'),
             day: {
               number: moment(date).get('date'),
-              name: moment(date).format('dddd')
+              name: moment(date).format(nameFormat.day)
             },
             hour: moment(date).format('HH'),
             minute: moment(date).format('mm'),
