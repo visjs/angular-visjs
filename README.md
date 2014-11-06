@@ -2,9 +2,11 @@
 
 Development and documentation is in progress.
 
-## Help needed
+**NOTE:** This library is currently being refactored. The intention is make the directives simpler, removing the additional
+'non-vis.js' related directives (such as time-board and time-navigation), and bring the DataSet factory in-line with the
+vis.DataSet such that the documentation for vis is fully (hopefully) applicable and consistent.
 
-We are looking for someone enthusiastic to maintain and develop the `angular-visjs` library. Interested? Send an email to jos@almende.org.
+Stay tuned, but expect changes!
 
 ## Usage
 ```
