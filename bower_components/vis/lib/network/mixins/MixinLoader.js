@@ -116,35 +116,32 @@ exports._loadManipulationSystem = function () {
     if (this.manipulationDiv === undefined) {
       this.manipulationDiv = document.createElement('div');
       this.manipulationDiv.className = 'network-manipulationDiv';
-      this.manipulationDiv.id = 'network-manipulationDiv';
       if (this.editMode == true) {
         this.manipulationDiv.style.display = "block";
       }
       else {
         this.manipulationDiv.style.display = "none";
       }
-      this.containerElement.insertBefore(this.manipulationDiv, this.frame);
+      this.frame.appendChild(this.manipulationDiv);
     }
 
     if (this.editModeDiv === undefined) {
       this.editModeDiv = document.createElement('div');
       this.editModeDiv.className = 'network-manipulation-editMode';
-      this.editModeDiv.id = 'network-manipulation-editMode';
       if (this.editMode == true) {
         this.editModeDiv.style.display = "none";
       }
       else {
         this.editModeDiv.style.display = "block";
       }
-      this.containerElement.insertBefore(this.editModeDiv, this.frame);
+      this.frame.appendChild(this.editModeDiv);
     }
 
     if (this.closeDiv === undefined) {
       this.closeDiv = document.createElement('div');
       this.closeDiv.className = 'network-manipulation-closeDiv';
-      this.closeDiv.id = 'network-manipulation-closeDiv';
       this.closeDiv.style.display = this.manipulationDiv.style.display;
-      this.containerElement.insertBefore(this.closeDiv, this.frame);
+      this.frame.appendChild(this.closeDiv);
     }
 
     // load the manipulation functions
@@ -157,10 +154,11 @@ exports._loadManipulationSystem = function () {
     if (this.manipulationDiv !== undefined) {
       // removes all the bindings and overloads
       this._createManipulatorBar();
+
       // remove the manipulation divs
-      this.containerElement.removeChild(this.manipulationDiv);
-      this.containerElement.removeChild(this.editModeDiv);
-      this.containerElement.removeChild(this.closeDiv);
+      this.frame.removeChild(this.manipulationDiv);
+      this.frame.removeChild(this.editModeDiv);
+      this.frame.removeChild(this.closeDiv);
 
       this.manipulationDiv = undefined;
       this.editModeDiv = undefined;
@@ -179,7 +177,6 @@ exports._loadManipulationSystem = function () {
  */
 exports._loadNavigationControls = function () {
   this._loadMixin(NavigationMixin);
-
   // the clean function removes the button divs, this is done to remove the bindings.
   this._cleanNavigation();
   if (this.constants.navigation.enabled == true) {

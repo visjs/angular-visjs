@@ -4,7 +4,7 @@ require.config({
   }
 });
 
-require(['../../../../dist/vis'], function (vis) {
+require(['vis'], function (vis) {
   var container = document.getElementById('visualization');
   var data = new vis.DataSet([
     {id: 1, content: 'item 1', start: '2013-04-20'},

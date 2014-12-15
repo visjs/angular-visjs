@@ -11,6 +11,12 @@ exports._clearManipulatorBar = function() {
   while (this.manipulationDiv.hasChildNodes()) {
     this.manipulationDiv.removeChild(this.manipulationDiv.firstChild);
   }
+  this.manipulationDOM = {};
+
+  this._manipulationReleaseOverload = function () {};
+  delete this.sectors['support']['nodes']['targetNode'];
+  delete this.sectors['support']['nodes']['targetViaNode'];
+  this.controlNodesActive = false;
 };
 
 /**
@@ -35,9 +41,9 @@ exports._restoreOverloadedFunctions = function() {
  */
 exports._toggleEditMode = function() {
   this.editMode = !this.editMode;
-  var toolbar = document.getElementById("network-manipulationDiv");
-  var closeDiv = document.getElementById("network-manipulation-closeDiv");
-  var editModeDiv = document.getElementById("network-manipulation-editMode");
+  var toolbar = this.manipulationDiv;
+  var closeDiv = this.closeDiv;
+  var editModeDiv = this.editModeDiv;
   if (this.editMode == true) {
     toolbar.style.display="block";
     closeDiv.style.display="block";
@@ -64,11 +70,14 @@ exports._createManipulatorBar = function() {
     this.off('select', this.boundFunction);
   }
 
+  var locale = this.constants.locales[this.constants.locale];
+
   if (this.edgeBeingEdited !== undefined) {
     this.edgeBeingEdited._disableControlNodes();
     this.edgeBeingEdited = undefined;
     this.selectedControlNode = null;
     this.controlNodesActive = false;
+    this._redraw();
   }
 
   // restore overloaded functions
@@ -80,67 +89,110 @@ exports._createManipulatorBar = function() {
   // reset global variables
   this.blockConnectingEdgeSelection = false;
   this.forceAppendSelection = false;
+  this.manipulationDOM = {};
 
   if (this.editMode == true) {
     while (this.manipulationDiv.hasChildNodes()) {
       this.manipulationDiv.removeChild(this.manipulationDiv.firstChild);
     }
-    // add the icons to the manipulator div
-    this.manipulationDiv.innerHTML = "" +
-      "<span class='network-manipulationUI add' id='network-manipulate-addNode'>" +
-        "<span class='network-manipulationLabel'>"+this.constants.labels['add'] +"</span></span>" +
-      "<div class='network-seperatorLine'></div>" +
-      "<span class='network-manipulationUI connect' id='network-manipulate-connectNode'>" +
-        "<span class='network-manipulationLabel'>"+this.constants.labels['link'] +"</span></span>";
+
+    this.manipulationDOM['addNodeSpan'] = document.createElement('span');
+    this.manipulationDOM['addNodeSpan'].className = 'network-manipulationUI add';
+    this.manipulationDOM['addNodeLabelSpan'] = document.createElement('span');
+    this.manipulationDOM['addNodeLabelSpan'].className = 'network-manipulationLabel';
+    this.manipulationDOM['addNodeLabelSpan'].innerHTML = locale['addNode'];
+    this.manipulationDOM['addNodeSpan'].appendChild(this.manipulationDOM['addNodeLabelSpan']);
+
+    this.manipulationDOM['seperatorLineDiv1'] = document.createElement('div');
+    this.manipulationDOM['seperatorLineDiv1'].className = 'network-seperatorLine';
+
+    this.manipulationDOM['addEdgeSpan'] = document.createElement('span');
+    this.manipulationDOM['addEdgeSpan'].className = 'network-manipulationUI connect';
+    this.manipulationDOM['addEdgeLabelSpan'] = document.createElement('span');
+    this.manipulationDOM['addEdgeLabelSpan'].className = 'network-manipulationLabel';
+    this.manipulationDOM['addEdgeLabelSpan'].innerHTML = locale['addEdge'];
+    this.manipulationDOM['addEdgeSpan'].appendChild(this.manipulationDOM['addEdgeLabelSpan']);
+
+    this.manipulationDiv.appendChild(this.manipulationDOM['addNodeSpan']);
+    this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv1']);
+    this.manipulationDiv.appendChild(this.manipulationDOM['addEdgeSpan']);
+
     if (this._getSelectedNodeCount() == 1 && this.triggerFunctions.edit) {
-      this.manipulationDiv.innerHTML += "" +
-        "<div class='network-seperatorLine'></div>" +
-        "<span class='network-manipulationUI edit' id='network-manipulate-editNode'>" +
-          "<span class='network-manipulationLabel'>"+this.constants.labels['editNode'] +"</span></span>";
+      this.manipulationDOM['seperatorLineDiv2'] = document.createElement('div');
+      this.manipulationDOM['seperatorLineDiv2'].className = 'network-seperatorLine';
+
+      this.manipulationDOM['editNodeSpan'] = document.createElement('span');
+      this.manipulationDOM['editNodeSpan'].className = 'network-manipulationUI edit';
+      this.manipulationDOM['editNodeLabelSpan'] = document.createElement('span');
+      this.manipulationDOM['editNodeLabelSpan'].className = 'network-manipulationLabel';
+      this.manipulationDOM['editNodeLabelSpan'].innerHTML = locale['editNode'];
+      this.manipulationDOM['editNodeSpan'].appendChild(this.manipulationDOM['editNodeLabelSpan']);
+
+      this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv2']);
+      this.manipulationDiv.appendChild(this.manipulationDOM['editNodeSpan']);
     }
     else if (this._getSelectedEdgeCount() == 1 && this._getSelectedNodeCount() == 0) {
-      this.manipulationDiv.innerHTML += "" +
-        "<div class='network-seperatorLine'></div>" +
-        "<span class='network-manipulationUI edit' id='network-manipulate-editEdge'>" +
-        "<span class='network-manipulationLabel'>"+this.constants.labels['editEdge'] +"</span></span>";
+      this.manipulationDOM['seperatorLineDiv3'] = document.createElement('div');
+      this.manipulationDOM['seperatorLineDiv3'].className = 'network-seperatorLine';
+
+      this.manipulationDOM['editEdgeSpan'] = document.createElement('span');
+      this.manipulationDOM['editEdgeSpan'].className = 'network-manipulationUI edit';
+      this.manipulationDOM['editEdgeLabelSpan'] = document.createElement('span');
+      this.manipulationDOM['editEdgeLabelSpan'].className = 'network-manipulationLabel';
+      this.manipulationDOM['editEdgeLabelSpan'].innerHTML = locale['editEdge'];
+      this.manipulationDOM['editEdgeSpan'].appendChild(this.manipulationDOM['editEdgeLabelSpan']);
+
+      this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv3']);
+      this.manipulationDiv.appendChild(this.manipulationDOM['editEdgeSpan']);
     }
     if (this._selectionIsEmpty() == false) {
-      this.manipulationDiv.innerHTML += "" +
-        "<div class='network-seperatorLine'></div>" +
-        "<span class='network-manipulationUI delete' id='network-manipulate-delete'>" +
-          "<span class='network-manipulationLabel'>"+this.constants.labels['del'] +"</span></span>";
+      this.manipulationDOM['seperatorLineDiv4'] = document.createElement('div');
+      this.manipulationDOM['seperatorLineDiv4'].className = 'network-seperatorLine';
+
+      this.manipulationDOM['deleteSpan'] = document.createElement('span');
+      this.manipulationDOM['deleteSpan'].className = 'network-manipulationUI delete';
+      this.manipulationDOM['deleteLabelSpan'] = document.createElement('span');
+      this.manipulationDOM['deleteLabelSpan'].className = 'network-manipulationLabel';
+      this.manipulationDOM['deleteLabelSpan'].innerHTML = locale['del'];
+      this.manipulationDOM['deleteSpan'].appendChild(this.manipulationDOM['deleteLabelSpan']);
+
+      this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv4']);
+      this.manipulationDiv.appendChild(this.manipulationDOM['deleteSpan']);
     }
 
 
     // bind the icons
-    var addNodeButton = document.getElementById("network-manipulate-addNode");
-    addNodeButton.onclick = this._createAddNodeToolbar.bind(this);
-    var addEdgeButton = document.getElementById("network-manipulate-connectNode");
-    addEdgeButton.onclick = this._createAddEdgeToolbar.bind(this);
+    this.manipulationDOM['addNodeSpan'].onclick = this._createAddNodeToolbar.bind(this);
+    this.manipulationDOM['addEdgeSpan'].onclick = this._createAddEdgeToolbar.bind(this);
     if (this._getSelectedNodeCount() == 1 && this.triggerFunctions.edit) {
-      var editButton = document.getElementById("network-manipulate-editNode");
-      editButton.onclick = this._editNode.bind(this);
+      this.manipulationDOM['editNodeSpan'].onclick = this._editNode.bind(this);
     }
     else if (this._getSelectedEdgeCount() == 1 && this._getSelectedNodeCount() == 0) {
-      var editButton = document.getElementById("network-manipulate-editEdge");
-      editButton.onclick = this._createEditEdgeToolbar.bind(this);
+      this.manipulationDOM['editEdgeSpan'].onclick = this._createEditEdgeToolbar.bind(this);
     }
     if (this._selectionIsEmpty() == false) {
-      var deleteButton = document.getElementById("network-manipulate-delete");
-      deleteButton.onclick = this._deleteSelected.bind(this);
+      this.manipulationDOM['deleteSpan'].onclick = this._deleteSelected.bind(this);
     }
-    var closeDiv = document.getElementById("network-manipulation-closeDiv");
-    closeDiv.onclick = this._toggleEditMode.bind(this);
+    this.closeDiv.onclick = this._toggleEditMode.bind(this);
 
     this.boundFunction = this._createManipulatorBar.bind(this);
     this.on('select', this.boundFunction);
   }
   else {
-    this.editModeDiv.innerHTML = "" +
-      "<span class='network-manipulationUI edit editmode' id='network-manipulate-editModeButton'>" +
-      "<span class='network-manipulationLabel'>" + this.constants.labels['edit'] + "</span></span>";
-    var editModeButton = document.getElementById("network-manipulate-editModeButton");
-    editModeButton.onclick = this._toggleEditMode.bind(this);
+    while (this.editModeDiv.hasChildNodes()) {
+      this.editModeDiv.removeChild(this.editModeDiv.firstChild);
+    }
+
+    this.manipulationDOM['editModeSpan'] = document.createElement('span');
+    this.manipulationDOM['editModeSpan'].className = 'network-manipulationUI edit editmode';
+    this.manipulationDOM['editModeLabelSpan'] = document.createElement('span');
+    this.manipulationDOM['editModeLabelSpan'].className = 'network-manipulationLabel';
+    this.manipulationDOM['editModeLabelSpan'].innerHTML = locale['edit'];
+    this.manipulationDOM['editModeSpan'].appendChild(this.manipulationDOM['editModeLabelSpan']);
+
+    this.editModeDiv.appendChild(this.manipulationDOM['editModeSpan']);
+
+    this.manipulationDOM['editModeSpan'].onclick = this._toggleEditMode.bind(this);
   }
 };
 
@@ -158,17 +210,32 @@ exports._createAddNodeToolbar = function() {
     this.off('select', this.boundFunction);
   }
 
-  // create the toolbar contents
-  this.manipulationDiv.innerHTML = "" +
-    "<span class='network-manipulationUI back' id='network-manipulate-back'>" +
-    "<span class='network-manipulationLabel'>" + this.constants.labels['back'] + " </span></span>" +
-    "<div class='network-seperatorLine'></div>" +
-    "<span class='network-manipulationUI none' id='network-manipulate-back'>" +
-    "<span id='network-manipulatorLabel' class='network-manipulationLabel'>" + this.constants.labels['addDescription'] + "</span></span>";
+  var locale = this.constants.locales[this.constants.locale];
+
+  this.manipulationDOM = {};
+  this.manipulationDOM['backSpan'] = document.createElement('span');
+  this.manipulationDOM['backSpan'].className = 'network-manipulationUI back';
+  this.manipulationDOM['backLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['backLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['backLabelSpan'].innerHTML = locale['back'];
+  this.manipulationDOM['backSpan'].appendChild(this.manipulationDOM['backLabelSpan']);
+
+  this.manipulationDOM['seperatorLineDiv1'] = document.createElement('div');
+  this.manipulationDOM['seperatorLineDiv1'].className = 'network-seperatorLine';
+
+  this.manipulationDOM['descriptionSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionSpan'].className = 'network-manipulationUI none';
+  this.manipulationDOM['descriptionLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['descriptionLabelSpan'].innerHTML = locale['addDescription'];
+  this.manipulationDOM['descriptionSpan'].appendChild(this.manipulationDOM['descriptionLabelSpan']);
+
+  this.manipulationDiv.appendChild(this.manipulationDOM['backSpan']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv1']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['descriptionSpan']);
 
   // bind the icon
-  var backButton = document.getElementById("network-manipulate-back");
-  backButton.onclick = this._createManipulatorBar.bind(this);
+  this.manipulationDOM['backSpan'].onclick = this._createManipulatorBar.bind(this);
 
   // we use the boundFunction so we can reference it when we unbind it from the "select" event.
   this.boundFunction = this._addNode.bind(this);
@@ -187,6 +254,8 @@ exports._createAddEdgeToolbar = function() {
   this._unselectAll(true);
   this.freezeSimulation = true;
 
+  var locale = this.constants.locales[this.constants.locale];
+
   if (this.boundFunction) {
     this.off('select', this.boundFunction);
   }
@@ -195,16 +264,30 @@ exports._createAddEdgeToolbar = function() {
   this.forceAppendSelection = false;
   this.blockConnectingEdgeSelection = true;
 
-  this.manipulationDiv.innerHTML = "" +
-    "<span class='network-manipulationUI back' id='network-manipulate-back'>" +
-      "<span class='network-manipulationLabel'>" + this.constants.labels['back'] + " </span></span>" +
-    "<div class='network-seperatorLine'></div>" +
-    "<span class='network-manipulationUI none' id='network-manipulate-back'>" +
-      "<span id='network-manipulatorLabel' class='network-manipulationLabel'>" + this.constants.labels['linkDescription'] + "</span></span>";
+  this.manipulationDOM = {};
+  this.manipulationDOM['backSpan'] = document.createElement('span');
+  this.manipulationDOM['backSpan'].className = 'network-manipulationUI back';
+  this.manipulationDOM['backLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['backLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['backLabelSpan'].innerHTML = locale['back'];
+  this.manipulationDOM['backSpan'].appendChild(this.manipulationDOM['backLabelSpan']);
+
+  this.manipulationDOM['seperatorLineDiv1'] = document.createElement('div');
+  this.manipulationDOM['seperatorLineDiv1'].className = 'network-seperatorLine';
+
+  this.manipulationDOM['descriptionSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionSpan'].className = 'network-manipulationUI none';
+  this.manipulationDOM['descriptionLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['descriptionLabelSpan'].innerHTML = locale['edgeDescription'];
+  this.manipulationDOM['descriptionSpan'].appendChild(this.manipulationDOM['descriptionLabelSpan']);
+
+  this.manipulationDiv.appendChild(this.manipulationDOM['backSpan']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv1']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['descriptionSpan']);
 
   // bind the icon
-  var backButton = document.getElementById("network-manipulate-back");
-  backButton.onclick = this._createManipulatorBar.bind(this);
+  this.manipulationDOM['backSpan'].onclick = this._createManipulatorBar.bind(this);
 
   // we use the boundFunction so we can reference it when we unbind it from the "select" event.
   this.boundFunction = this._handleConnect.bind(this);
@@ -212,9 +295,13 @@ exports._createAddEdgeToolbar = function() {
 
   // temporarily overload functions
   this.cachedFunctions["_handleTouch"] = this._handleTouch;
-  this.cachedFunctions["_handleOnRelease"] = this._handleOnRelease;
+  this.cachedFunctions["_manipulationReleaseOverload"] = this._manipulationReleaseOverload;
+  this.cachedFunctions["_handleDragStart"] = this._handleDragStart;
+  this.cachedFunctions["_handleDragEnd"] = this._handleDragEnd;
   this._handleTouch = this._handleConnect;
-  this._handleOnRelease = this._finishConnect;
+  this._manipulationReleaseOverload = function () {};
+  this._handleDragStart = function () {};
+  this._handleDragEnd = this._finishConnect;
 
   // redraw to show the unselect
   this._redraw();
@@ -237,20 +324,36 @@ exports._createEditEdgeToolbar = function() {
   this.edgeBeingEdited = this._getSelectedEdge();
   this.edgeBeingEdited._enableControlNodes();
 
-  this.manipulationDiv.innerHTML = "" +
-    "<span class='network-manipulationUI back' id='network-manipulate-back'>" +
-    "<span class='network-manipulationLabel'>" + this.constants.labels['back'] + " </span></span>" +
-    "<div class='network-seperatorLine'></div>" +
-    "<span class='network-manipulationUI none' id='network-manipulate-back'>" +
-    "<span id='network-manipulatorLabel' class='network-manipulationLabel'>" + this.constants.labels['editEdgeDescription'] + "</span></span>";
+  var locale = this.constants.locales[this.constants.locale];
+
+  this.manipulationDOM = {};
+  this.manipulationDOM['backSpan'] = document.createElement('span');
+  this.manipulationDOM['backSpan'].className = 'network-manipulationUI back';
+  this.manipulationDOM['backLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['backLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['backLabelSpan'].innerHTML = locale['back'];
+  this.manipulationDOM['backSpan'].appendChild(this.manipulationDOM['backLabelSpan']);
+
+  this.manipulationDOM['seperatorLineDiv1'] = document.createElement('div');
+  this.manipulationDOM['seperatorLineDiv1'].className = 'network-seperatorLine';
+
+  this.manipulationDOM['descriptionSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionSpan'].className = 'network-manipulationUI none';
+  this.manipulationDOM['descriptionLabelSpan'] = document.createElement('span');
+  this.manipulationDOM['descriptionLabelSpan'].className = 'network-manipulationLabel';
+  this.manipulationDOM['descriptionLabelSpan'].innerHTML = locale['editEdgeDescription'];
+  this.manipulationDOM['descriptionSpan'].appendChild(this.manipulationDOM['descriptionLabelSpan']);
+
+  this.manipulationDiv.appendChild(this.manipulationDOM['backSpan']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv1']);
+  this.manipulationDiv.appendChild(this.manipulationDOM['descriptionSpan']);
 
   // bind the icon
-  var backButton = document.getElementById("network-manipulate-back");
-  backButton.onclick = this._createManipulatorBar.bind(this);
+  this.manipulationDOM['backSpan'].onclick = this._createManipulatorBar.bind(this);
 
   // temporarily overload functions
   this.cachedFunctions["_handleTouch"]      = this._handleTouch;
-  this.cachedFunctions["_handleOnRelease"]  = this._handleOnRelease;
+  this.cachedFunctions["_manipulationReleaseOverload"]  = this._manipulationReleaseOverload;
   this.cachedFunctions["_handleTap"]        = this._handleTap;
   this.cachedFunctions["_handleDragStart"]  = this._handleDragStart;
   this.cachedFunctions["_handleOnDrag"]     = this._handleOnDrag;
@@ -258,14 +361,11 @@ exports._createEditEdgeToolbar = function() {
   this._handleTap       = function () {};
   this._handleOnDrag    = this._controlNodeDrag;
   this._handleDragStart = function () {}
-  this._handleOnRelease = this._releaseControlNode;
+  this._manipulationReleaseOverload = this._releaseControlNode;
 
   // redraw to show the unselect
   this._redraw();
 };
-
-
-
 
 
 /**
@@ -285,6 +385,7 @@ exports._selectControlNode = function(pointer) {
   this._redraw();
 };
 
+
 /**
  * the function bound to the selection event. It checks if you want to connect a cluster and changes the description
  * to walk the user through the process.
@@ -302,7 +403,7 @@ exports._controlNodeDrag = function(event) {
 
 exports._releaseControlNode = function(pointer) {
   var newNode = this._getNodeAt(pointer);
-  if (newNode != null) {
+  if (newNode !== null) {
     if (this.edgeBeingEdited.controlNodes.from.selected == true) {
       this._editEdge(newNode.id, this.edgeBeingEdited.to.id);
       this.edgeBeingEdited.controlNodes.from.unselect();
@@ -328,37 +429,40 @@ exports._releaseControlNode = function(pointer) {
 exports._handleConnect = function(pointer) {
   if (this._getSelectedNodeCount() == 0) {
     var node = this._getNodeAt(pointer);
+
     if (node != null) {
       if (node.clusterSize > 1) {
-        alert("Cannot create edges to a cluster.")
+        alert(this.constants.locales[this.constants.locale]['createEdgeError'])
       }
       else {
         this._selectObject(node,false);
+        var supportNodes = this.sectors['support']['nodes'];
+
         // create a node the temporary line can look at
-        this.sectors['support']['nodes']['targetNode'] = new Node({id:'targetNode'},{},{},this.constants);
-        this.sectors['support']['nodes']['targetNode'].x = node.x;
-        this.sectors['support']['nodes']['targetNode'].y = node.y;
-        this.sectors['support']['nodes']['targetViaNode'] = new Node({id:'targetViaNode'},{},{},this.constants);
-        this.sectors['support']['nodes']['targetViaNode'].x = node.x;
-        this.sectors['support']['nodes']['targetViaNode'].y = node.y;
-        this.sectors['support']['nodes']['targetViaNode'].parentEdgeId = "connectionEdge";
+        supportNodes['targetNode'] = new Node({id:'targetNode'},{},{},this.constants);
+        var targetNode = supportNodes['targetNode'];
+        targetNode.x = node.x;
+        targetNode.y = node.y;
 
         // create a temporary edge
-        this.edges['connectionEdge'] = new Edge({id:"connectionEdge",from:node.id,to:this.sectors['support']['nodes']['targetNode'].id}, this, this.constants);
-        this.edges['connectionEdge'].from = node;
-        this.edges['connectionEdge'].connected = true;
-        this.edges['connectionEdge'].smooth = true;
-        this.edges['connectionEdge'].selected = true;
-        this.edges['connectionEdge'].to = this.sectors['support']['nodes']['targetNode'];
-        this.edges['connectionEdge'].via = this.sectors['support']['nodes']['targetViaNode'];
+        this.edges['connectionEdge'] = new Edge({id:"connectionEdge",from:node.id,to:targetNode.id}, this, this.constants);
+        var connectionEdge = this.edges['connectionEdge'];
+        connectionEdge.from = node;
+        connectionEdge.connected = true;
+        connectionEdge.options.smoothCurves = {enabled: true,
+            dynamic: false,
+            type: "continuous",
+            roundness: 0.5
+        };
+        connectionEdge.selected = true;
+        connectionEdge.to = targetNode;
 
         this.cachedFunctions["_handleOnDrag"] = this._handleOnDrag;
         this._handleOnDrag = function(event) {
           var pointer = this._getPointer(event.gesture.center);
-          this.sectors['support']['nodes']['targetNode'].x = this._XconvertDOMtoCanvas(pointer.x);
-          this.sectors['support']['nodes']['targetNode'].y = this._YconvertDOMtoCanvas(pointer.y);
-          this.sectors['support']['nodes']['targetViaNode'].x = 0.5 * (this._XconvertDOMtoCanvas(pointer.x) + this.edges['connectionEdge'].from.x);
-          this.sectors['support']['nodes']['targetViaNode'].y = this._YconvertDOMtoCanvas(pointer.y);
+          var connectionEdge = this.edges['connectionEdge'];
+          connectionEdge.to.x = this._XconvertDOMtoCanvas(pointer.x);
+          connectionEdge.to.y = this._YconvertDOMtoCanvas(pointer.y);
         };
 
         this.moving = true;
@@ -368,9 +472,9 @@ exports._handleConnect = function(pointer) {
   }
 };
 
-exports._finishConnect = function(pointer) {
+exports._finishConnect = function(event) {
   if (this._getSelectedNodeCount() == 1) {
-
+    var pointer = this._getPointer(event.gesture.center);
     // restore the drag function
     this._handleOnDrag = this.cachedFunctions["_handleOnDrag"];
     delete this.cachedFunctions["_handleOnDrag"];
@@ -386,7 +490,7 @@ exports._finishConnect = function(pointer) {
     var node = this._getNodeAt(pointer);
     if (node != null) {
       if (node.clusterSize > 1) {
-        alert("Cannot create edges to a cluster.")
+        alert(this.constants.locales[this.constants.locale]["createEdgeError"])
       }
       else {
         this._createEdge(connectFromId,node.id);
@@ -416,7 +520,7 @@ exports._addNode = function() {
         });
       }
       else {
-        alert(this.constants.labels['addError']);
+        throw new Error('The function for add does not support two arguments (data,callback)');
         this._createManipulatorBar();
         this.moving = true;
         this.start();
@@ -450,7 +554,7 @@ exports._createEdge = function(sourceNodeId,targetNodeId) {
         });
       }
       else {
-        alert(this.constants.labels["linkError"]);
+        throw new Error('The function for connect does not support two arguments (data,callback)');
         this.moving = true;
         this.start();
       }
@@ -481,7 +585,7 @@ exports._editEdge = function(sourceNodeId,targetNodeId) {
         });
       }
       else {
-        alert(this.constants.labels["linkError"]);
+        throw new Error('The function for edit does not support two arguments (data, callback)');
         this.moving = true;
         this.start();
       }
@@ -524,11 +628,11 @@ exports._editNode = function() {
       });
     }
     else {
-      alert(this.constants.labels["editError"]);
+      throw new Error('The function for edit does not support two arguments (data, callback)');
     }
   }
   else {
-    alert(this.constants.labels["editBoundError"]);
+    throw new Error('No edit function has been bound to this button');
   }
 };
 
@@ -558,7 +662,7 @@ exports._deleteSelected = function() {
           });
         }
         else {
-          alert(this.constants.labels["deleteError"])
+          throw new Error('The function for delete does not support two arguments (data, callback)')
         }
       }
       else {
@@ -570,7 +674,7 @@ exports._deleteSelected = function() {
       }
     }
     else {
-      alert(this.constants.labels["deleteClusterError"]);
+      alert(this.constants.locales[this.constants.locale]["deleteClusterError"]);
     }
   }
 };

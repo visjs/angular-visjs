@@ -1,6 +1,6 @@
 var Emitter = require('emitter-component');
 var Hammer = require('../module/hammer');
-var mousetrap = require('mousetrap');
+var keycharm = require('keycharm');
 var util = require('../util');
 var hammerUtil = require('../hammerUtil');
 var DataSet = require('../DataSet');
@@ -13,6 +13,8 @@ var Node = require('./Node');
 var Edge = require('./Edge');
 var Popup = require('./Popup');
 var MixinLoader = require('./mixins/MixinLoader');
+var Activator = require('../shared/Activator');
+var locales = require('./locales');
 
 // Load custom shapes into CanvasRenderingContext2D
 require('./shapes');
@@ -60,10 +62,10 @@ function Network (container, data, options) {
       image: undefined,
       widthMin: 16, // px
       widthMax: 64, // px
-      fixed: false,
       fontColor: 'black',
       fontSize: 14, // px
       fontFace: 'verdana',
+      fontFill: undefined,
       level: -1,
       color: {
           border: '#2B7CE9',
@@ -81,11 +83,12 @@ function Network (container, data, options) {
       backgroundColor: '#97C2FC',
       highlightColor: '#D2E5FF',
       group: undefined,
-      borderWidth: 1
+      borderWidth: 1,
+      borderWidthSelected: undefined
     },
     edges: {
-      widthMin: 1,
-      widthMax: 15,
+      widthMin: 1, //
+      widthMax: 15,//
       width: 1,
       widthSelectionMultiplier: 2,
       hoverWidth: 1.5,
@@ -174,7 +177,8 @@ function Network (container, data, options) {
       enabled:false,
       levelSeparation: 150,
       nodeSpacing: 100,
-      direction: "UD"   // UD, DU, LR, RL
+      direction: "UD",   // UD, DU, LR, RL
+      layout: "hubsize" // hubsize, directed
     },
     freezeForStabilization: false,
     smoothCurves: {
@@ -183,29 +187,12 @@ function Network (container, data, options) {
       type: "continuous",
       roundness: 0.5
     },
-    dynamicSmoothCurves: true,
     maxVelocity:  30,
     minVelocity:  0.1,   // px/s
     stabilize: true,  // stabilize before displaying the network
     stabilizationIterations: 1000,  // maximum number of iteration to stabilize
-    labels:{
-      add:"Add Node",
-      edit:"Edit",
-      link:"Add Link",
-      del:"Delete selected",
-      editNode:"Edit Node",
-      editEdge:"Edit Edge",
-      back:"Back",
-      addDescription:"Click in an empty space to place a new node.",
-      linkDescription:"Click on a node and drag the edge to another node to connect them.",
-      editEdgeDescription:"Click on the control points and drag them to a node to connect to it.",
-      addError:"The function for add does not support two arguments (data,callback).",
-      linkError:"The function for connect does not support two arguments (data,callback).",
-      editError:"The function for edit does not support two arguments (data, callback).",
-      editBoundError:"No edit function has been bound to this button.",
-      deleteError:"The function for delete does not support two arguments (data, callback).",
-      deleteClusterError:"Clusters cannot be deleted."
-    },
+    locale: 'en',
+    locales: locales,
     tooltip: {
       delay: 300,
       fontColor: 'black',
@@ -227,9 +214,24 @@ function Network (container, data, options) {
     selectable: true
   };
   this.constants = util.extend({}, this.defaultOptions);
-
+  this.pixelRatio = 1;
+  
+  
   this.hoverObj = {nodes:{},edges:{}};
   this.controlNodesActive = false;
+  this.navigationHammers = {existing:[], _new: []};
+
+  // animation properties
+  this.animationSpeed = 1/this.renderRefreshRate;
+  this.animationEasingFunction = "easeInOutQuint";
+  this.easingTime = 0;
+  this.sourceScale = 0;
+  this.targetScale = 0;
+  this.sourceTranslation = 0;
+  this.targetTranslation = 0;
+  this.lockedOnNodeId = null;
+  this.lockedOnNodeOffset = null;
+  this.touchTime = 0;
 
   // Node variables
   var network = this;
@@ -258,6 +260,7 @@ function Network (container, data, options) {
   // load the selection system. (mandatory, required by Network)
   this._loadHierarchySystem();
 
+
   // apply options
   this._setTranslation(this.frame.clientWidth / 2, this.frame.clientHeight / 2);
   this._setScale(1);
@@ -266,6 +269,10 @@ function Network (container, data, options) {
   // other vars
   this.freezeSimulation = false;// freeze the simulation
   this.cachedFunctions = {};
+  this.startedStabilization = false;
+  this.stabilized = false;
+  this.stabilizationIterations = null;
+  this.draggingNodes = false;
 
   // containers for nodes and edges
   this.calculationNodes = {};
@@ -293,7 +300,7 @@ function Network (container, data, options) {
       network.start();
     },
     'update': function (event, params) {
-      network._updateNodes(params.items);
+      network._updateNodes(params.items, params.data);
       network.start();
     },
     'remove': function (event, params) {
@@ -331,7 +338,7 @@ function Network (container, data, options) {
   else {
     // zoom so all data will fit on the screen, if clustering is enabled, we do not want start to be called here.
     if (this.constants.stabilize == false) {
-      this.zoomExtent(true,this.constants.clustering.enabled);
+      this.zoomExtent(undefined, true,this.constants.clustering.enabled);
     }
   }
 
@@ -402,34 +409,20 @@ Network.prototype._findCenter = function(range) {
 
 
 /**
- * center the network
- *
- * @param {object} range = {minX: minX, maxX: maxX, minY: minY, maxY: maxY};
- */
-Network.prototype._centerNetwork = function(range) {
-  var center = this._findCenter(range);
-
-  center.x *= this.scale;
-  center.y *= this.scale;
-  center.x -= 0.5 * this.frame.canvas.clientWidth;
-  center.y -= 0.5 * this.frame.canvas.clientHeight;
-
-  this._setTranslation(-center.x,-center.y); // set at 0,0
-};
-
-
-/**
  * This function zooms out to fit all data on screen based on amount of nodes
  *
  * @param {Boolean} [initialZoom]  | zoom based on fitted formula or range, true = fitted, default = false;
  * @param {Boolean} [disableStart] | If true, start is not called.
  */
-Network.prototype.zoomExtent = function(initialZoom, disableStart) {
+Network.prototype.zoomExtent = function(animationOptions, initialZoom, disableStart) {
   if (initialZoom === undefined) {
     initialZoom = false;
   }
   if (disableStart === undefined) {
     disableStart = false;
+  }
+  if (animationOptions === undefined) {
+    animationOptions = false;
   }
 
   var range = this._getRange();
@@ -461,10 +454,10 @@ Network.prototype.zoomExtent = function(initialZoom, disableStart) {
     zoomLevel *= factor;
   }
   else {
-    var xDistance = (Math.abs(range.minX) + Math.abs(range.maxX)) * 1.1;
-    var yDistance = (Math.abs(range.minY) + Math.abs(range.maxY)) * 1.1;
+    var xDistance = Math.abs(range.maxX - range.minX) * 1.1;
+    var yDistance = Math.abs(range.maxY - range.minY) * 1.1;
 
-    var xZoomLevel = this.frame.canvas.clientWidth / xDistance;
+    var xZoomLevel = this.frame.canvas.clientWidth  / xDistance;
     var yZoomLevel = this.frame.canvas.clientHeight / yDistance;
 
     zoomLevel = (xZoomLevel <= yZoomLevel) ? xZoomLevel : yZoomLevel;
@@ -475,11 +468,20 @@ Network.prototype.zoomExtent = function(initialZoom, disableStart) {
   }
 
 
-  this._setScale(zoomLevel);
-  this._centerNetwork(range);
+  var center = this._findCenter(range);
   if (disableStart == false) {
+    var options = {position: center, scale: zoomLevel, animation: animationOptions};
+    this.moveTo(options);
     this.moving = true;
     this.start();
+  }
+  else {
+    center.x *= zoomLevel;
+    center.y *= zoomLevel;
+    center.x -= 0.5 * this.frame.canvas.clientWidth;
+    center.y -= 0.5 * this.frame.canvas.clientHeight;
+    this._setScale(zoomLevel);
+    this._setTranslation(-center.x,-center.y);
   }
 };
 
@@ -513,6 +515,8 @@ Network.prototype.setData = function(data, disableStart) {
   if (disableStart === undefined) {
     disableStart = false;
   }
+  // we set initializing to true to ensure that the hierarchical layout is not performed until both nodes and edges are added.
+  this.initializing = true;
 
   if (data && data.dot && (data.nodes || data.edges)) {
     throw new SyntaxError('Data must contain either parameter "dot" or ' +
@@ -521,7 +525,6 @@ Network.prototype.setData = function(data, disableStart) {
 
   // set options
   this.setOptions(data && data.options);
-
   // set all data
   if (data && data.dot) {
     // parse DOT file
@@ -543,32 +546,35 @@ Network.prototype.setData = function(data, disableStart) {
     this._setNodes(data && data.nodes);
     this._setEdges(data && data.edges);
   }
-
   this._putDataInSector();
-  if (!disableStart) {
-    // find a stable position or start animating to a stable position
-    if (this.constants.stabilize) {
-      var me = this;
-      setTimeout(function() {me._stabilize(); me.start();},0)
+  if (disableStart == false) {
+    if (this.constants.hierarchicalLayout.enabled == true) {
+      this._resetLevels();
+      this._setupHierarchicalLayout();
     }
     else {
-      this.start();
+      // find a stable position or start animating to a stable position
+      if (this.constants.stabilize) {
+        this._stabilize();
+      }
     }
+    this.start();
   }
+  this.initializing = false;
 };
 
 /**
  * Set options
  * @param {Object} options
- * @param {Boolean} [initializeView] | set zoom and translation to default.
  */
 Network.prototype.setOptions = function (options) {
   if (options) {
     var prop;
 
-    var fields = ['nodes','edges','smoothCurves','hierarchicalLayout','clustering','navigation','keyboard','dataManipulation',
-      'onAdd','onEdit','onEditEdge','onConnect','onDelete'
+    var fields = ['nodes','edges','smoothCurves','hierarchicalLayout','clustering','navigation',
+      'keyboard','dataManipulation','onAdd','onEdit','onEditEdge','onConnect','onDelete','clickToUse'
     ];
+    // extend all but the values in fields
     util.selectiveNotDeepExtend(fields,this.constants, options);
     util.selectiveNotDeepExtend(['color'],this.constants.nodes, options.nodes);
     util.selectiveNotDeepExtend(['color','length'],this.constants.edges, options.edges);
@@ -662,6 +668,23 @@ Network.prototype.setOptions = function (options) {
         this.constants.tooltip.color = util.parseColor(options.tooltip.color);
       }
     }
+
+    if ('clickToUse' in options) {
+      if (options.clickToUse) {
+        this.activator = new Activator(this.frame);
+        this.activator.on('change', this._createKeyBinds.bind(this));
+      }
+      else {
+        if (this.activator) {
+          this.activator.destroy();
+          delete this.activator;
+        }
+      }
+    }
+
+    if (options.labels) {
+      throw new Error('Option "labels" is deprecated. Use options "locale" and "locales" instead.');
+    }
   }
 
   // (Re)loading the mixins that can be enabled or disabled in the options.
@@ -680,8 +703,9 @@ Network.prototype.setOptions = function (options) {
   this.setSize(this.constants.width, this.constants.height);
   this.moving = true;
   this.start();
-
 };
+
+
 
 /**
  * Create the main frame for the Network.
@@ -697,14 +721,19 @@ Network.prototype._create = function () {
   }
 
   this.frame = document.createElement('div');
-  this.frame.className = 'network-frame';
+  this.frame.className = 'vis network-frame';
   this.frame.style.position = 'relative';
   this.frame.style.overflow = 'hidden';
 
-  // create the network canvas (HTML canvas element)
-  this.frame.canvas = document.createElement( 'canvas' );
+
+//////////////////////////////////////////////////////////////////
+
+  this.frame.canvas = document.createElement("canvas");
+
   this.frame.canvas.style.position = 'relative';
   this.frame.appendChild(this.frame.canvas);
+
+
   if (!this.frame.canvas.getContext) {
     var noCanvas = document.createElement( 'DIV' );
     noCanvas.style.color = 'red';
@@ -713,6 +742,23 @@ Network.prototype._create = function () {
     noCanvas.innerHTML =  'Error: your browser does not support HTML canvas';
     this.frame.canvas.appendChild(noCanvas);
   }
+  else {
+
+    var ctx = this.frame.canvas.getContext("2d");
+
+    this.pixelRatio = (window.devicePixelRatio || 1) / (ctx.webkitBackingStorePixelRatio ||
+              ctx.mozBackingStorePixelRatio ||
+              ctx.msBackingStorePixelRatio ||
+              ctx.oBackingStorePixelRatio ||
+              ctx.backingStorePixelRatio || 1);
+
+
+
+    this.frame.canvas.getContext("2d").setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+  }
+
+//////////////////////////////////////////////////////////////////
+
 
   var me = this;
   this.drag = {};
@@ -728,10 +774,14 @@ Network.prototype._create = function () {
   this.hammer.on('dragstart', me._onDragStart.bind(me) );
   this.hammer.on('drag',      me._onDrag.bind(me) );
   this.hammer.on('dragend',   me._onDragEnd.bind(me) );
-  this.hammer.on('release',   me._onRelease.bind(me) );
   this.hammer.on('mousewheel',me._onMouseWheel.bind(me) );
   this.hammer.on('DOMMouseScroll',me._onMouseWheel.bind(me) ); // for FF
   this.hammer.on('mousemove', me._onMouseMoveTitle.bind(me) );
+
+  this.hammerFrame = Hammer(this.frame, {
+    prevent_default: true
+  });
+  this.hammerFrame.on('release',   me._onRelease.bind(me) );
 
   // add the frame to the container element
   this.containerElement.appendChild(this.frame);
@@ -745,36 +795,43 @@ Network.prototype._create = function () {
  */
 Network.prototype._createKeyBinds = function() {
   var me = this;
-  this.mousetrap = mousetrap;
+  if (this.keycharm !== undefined) {
+    this.keycharm.destroy();
+  }
+  this.keycharm = keycharm();
 
-  this.mousetrap.reset();
+  this.keycharm.reset();
 
-  if (this.constants.keyboard.enabled == true) {
-    this.mousetrap.bind("up",   this._moveUp.bind(me)   , "keydown");
-    this.mousetrap.bind("up",   this._yStopMoving.bind(me), "keyup");
-    this.mousetrap.bind("down", this._moveDown.bind(me) , "keydown");
-    this.mousetrap.bind("down", this._yStopMoving.bind(me), "keyup");
-    this.mousetrap.bind("left", this._moveLeft.bind(me) , "keydown");
-    this.mousetrap.bind("left", this._xStopMoving.bind(me), "keyup");
-    this.mousetrap.bind("right",this._moveRight.bind(me), "keydown");
-    this.mousetrap.bind("right",this._xStopMoving.bind(me), "keyup");
-    this.mousetrap.bind("=",    this._zoomIn.bind(me),    "keydown");
-    this.mousetrap.bind("=",    this._stopZoom.bind(me),    "keyup");
-    this.mousetrap.bind("-",    this._zoomOut.bind(me),   "keydown");
-    this.mousetrap.bind("-",    this._stopZoom.bind(me),    "keyup");
-    this.mousetrap.bind("[",    this._zoomIn.bind(me),    "keydown");
-    this.mousetrap.bind("[",    this._stopZoom.bind(me),    "keyup");
-    this.mousetrap.bind("]",    this._zoomOut.bind(me),   "keydown");
-    this.mousetrap.bind("]",    this._stopZoom.bind(me),    "keyup");
-    this.mousetrap.bind("pageup",this._zoomIn.bind(me),   "keydown");
-    this.mousetrap.bind("pageup",this._stopZoom.bind(me),   "keyup");
-    this.mousetrap.bind("pagedown",this._zoomOut.bind(me),"keydown");
-    this.mousetrap.bind("pagedown",this._stopZoom.bind(me), "keyup");
+  if (this.constants.keyboard.enabled && this.isActive()) {
+    this.keycharm.bind("up",   this._moveUp.bind(me)   , "keydown");
+    this.keycharm.bind("up",   this._yStopMoving.bind(me), "keyup");
+    this.keycharm.bind("down", this._moveDown.bind(me) , "keydown");
+    this.keycharm.bind("down", this._yStopMoving.bind(me), "keyup");
+    this.keycharm.bind("left", this._moveLeft.bind(me) , "keydown");
+    this.keycharm.bind("left", this._xStopMoving.bind(me), "keyup");
+    this.keycharm.bind("right",this._moveRight.bind(me), "keydown");
+    this.keycharm.bind("right",this._xStopMoving.bind(me), "keyup");
+    this.keycharm.bind("=",    this._zoomIn.bind(me),    "keydown");
+    this.keycharm.bind("=",    this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("num+", this._zoomIn.bind(me),    "keydown");
+    this.keycharm.bind("num+", this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("num-", this._zoomOut.bind(me),   "keydown");
+    this.keycharm.bind("num-", this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("-",    this._zoomOut.bind(me),   "keydown");
+    this.keycharm.bind("-",    this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("[",    this._zoomIn.bind(me),    "keydown");
+    this.keycharm.bind("[",    this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("]",    this._zoomOut.bind(me),   "keydown");
+    this.keycharm.bind("]",    this._stopZoom.bind(me),    "keyup");
+    this.keycharm.bind("pageup",this._zoomIn.bind(me),   "keydown");
+    this.keycharm.bind("pageup",this._stopZoom.bind(me),   "keyup");
+    this.keycharm.bind("pagedown",this._zoomOut.bind(me),"keydown");
+    this.keycharm.bind("pagedown",this._stopZoom.bind(me), "keyup");
   }
 
   if (this.constants.dataManipulation.enabled == true) {
-    this.mousetrap.bind("escape",this._createManipulatorBar.bind(me));
-    this.mousetrap.bind("del",this._deleteSelected.bind(me));
+    this.keycharm.bind("esc",this._createManipulatorBar.bind(me));
+    this.keycharm.bind("delete",this._deleteSelected.bind(me));
   }
 };
 
@@ -797,11 +854,16 @@ Network.prototype._getPointer = function (touch) {
  * @private
  */
 Network.prototype._onTouch = function (event) {
-  this.drag.pointer = this._getPointer(event.gesture.center);
-  this.drag.pinched = false;
-  this.pinch.scale = this._getScale();
+  if (new Date().valueOf() - this.touchTime > 100) {
+    this.drag.pointer = this._getPointer(event.gesture.center);
+    this.drag.pinched = false;
+    this.pinch.scale = this._getScale();
 
-  this._handleTouch(this.drag.pointer);
+    // to avoid double fireing of this event because we have two hammer instances. (on canvas and on frame)
+    this.touchTime = new Date().valueOf();
+
+    this._handleTouch(this.drag.pointer);
+  }
 };
 
 /**
@@ -828,13 +890,17 @@ Network.prototype._handleDragStart = function() {
   drag.selection = [];
   drag.translation = this._getTranslation();
   drag.nodeId = null;
+  this.draggingNodes = false;
 
-  if (node != null) {
+  if (node != null && this.constants.dragNodes == true) {
+    this.draggingNodes = true;
     drag.nodeId = node.id;
     // select the clicked node if not yet selected
     if (!node.isSelected()) {
       this._selectObject(node,false);
     }
+
+    this.emit("dragStart",{nodeIds:this.getSelection().nodes});
 
     // create an array with the selected nodes and their original location and status
     for (var objectId in this.selectionObj.nodes) {
@@ -881,8 +947,10 @@ Network.prototype._handleOnDrag = function(event) {
     return;
   }
 
-  var pointer = this._getPointer(event.gesture.center);
+  // remove the focus on node if it is focussed on by the focusOnNode
+  this.releaseNode();
 
+  var pointer = this._getPointer(event.gesture.center);
   var me = this;
   var drag = this.drag;
   var selection = drag.selection;
@@ -932,7 +1000,12 @@ Network.prototype._handleOnDrag = function(event) {
  * handle drag start event
  * @private
  */
-Network.prototype._onDragEnd = function () {
+Network.prototype._onDragEnd = function (event) {
+  this._handleDragEnd(event);
+};
+
+
+Network.prototype._handleDragEnd = function(event) {
   this.drag.dragging = false;
   var selection = this.drag.selection;
   if (selection && selection.length) {
@@ -947,9 +1020,14 @@ Network.prototype._onDragEnd = function () {
   else {
     this._redraw();
   }
+  if (this.draggingNodes == false) {
+    this.emit("dragEnd",{nodeIds:[]});
+  }
+  else {
+    this.emit("dragEnd",{nodeIds:this.getSelection().nodes});
+  }
 
-};
-
+}
 /**
  * handle tap/click event: select/unselect a node
  * @private
@@ -1269,26 +1347,41 @@ Network.prototype._checkHidePopup = function (pointer) {
  *                         or '30%')
  */
 Network.prototype.setSize = function(width, height) {
-  this.frame.style.width = width;
-  this.frame.style.height = height;
+  var emitEvent = false;
+  var oldWidth = this.frame.canvas.width;
+  var oldHeight = this.frame.canvas.height;
+  if (width != this.constants.width || height != this.constants.height || this.frame.style.width != width || this.frame.style.height != height) {
+    this.frame.style.width = width;
+    this.frame.style.height = height;
 
-  this.frame.canvas.style.width = '100%';
-  this.frame.canvas.style.height = '100%';
+    this.frame.canvas.style.width = '100%';
+    this.frame.canvas.style.height = '100%';
 
-  this.frame.canvas.width = this.frame.canvas.clientWidth;
-  this.frame.canvas.height = this.frame.canvas.clientHeight;
+    this.frame.canvas.width = this.frame.canvas.clientWidth * this.pixelRatio;
+    this.frame.canvas.height = this.frame.canvas.clientHeight * this.pixelRatio;
 
-  if (this.manipulationDiv !== undefined) {
-    this.manipulationDiv.style.width = this.frame.canvas.clientWidth + "px";
+    this.constants.width = width;
+    this.constants.height = height;
+
+    emitEvent = true;
   }
-  if (this.navigationDivs !== undefined) {
-    if (this.navigationDivs['wrapper'] !== undefined) {
-      this.navigationDivs['wrapper'].style.width = this.frame.canvas.clientWidth + "px";
-      this.navigationDivs['wrapper'].style.height = this.frame.canvas.clientHeight + "px";
+  else {
+    // this would adapt the width of the canvas to the width from 100% if and only if
+    // there is a change.
+
+    if (this.frame.canvas.width != this.frame.canvas.clientWidth * this.pixelRatio) {
+      this.frame.canvas.width = this.frame.canvas.clientWidth * this.pixelRatio;
+      emitEvent = true;
+    }
+    if (this.frame.canvas.height != this.frame.canvas.clientHeight * this.pixelRatio) {
+      this.frame.canvas.height = this.frame.canvas.clientHeight * this.pixelRatio;
+      emitEvent = true;
     }
   }
 
-  this.emit('resize', {width:this.frame.canvas.width,height:this.frame.canvas.height});
+  if (emitEvent == true) {
+    this.emit('resize', {width:this.frame.canvas.width * this.pixelRatio,height:this.frame.canvas.height * this.pixelRatio, oldWidth: oldWidth * this.pixelRatio, oldHeight: oldHeight * this.pixelRatio});
+  }
 };
 
 /**
@@ -1302,7 +1395,7 @@ Network.prototype._setNodes = function(nodes) {
   if (nodes instanceof DataSet || nodes instanceof DataView) {
     this.nodesData = nodes;
   }
-  else if (nodes instanceof Array) {
+  else if (Array.isArray(nodes)) {
     this.nodesData = new DataSet();
     this.nodesData.add(nodes);
   }
@@ -1349,15 +1442,15 @@ Network.prototype._addNodes = function(ids) {
     var data = this.nodesData.get(id);
     var node = new Node(data, this.images, this.groups, this.constants);
     this.nodes[id] = node; // note: this may replace an existing node
-
     if ((node.xFixed == false || node.yFixed == false) && (node.x === null || node.y === null)) {
-      var radius = 10 * 0.1*ids.length;
+      var radius = 10 * 0.1*ids.length + 10;
       var angle = 2 * Math.PI * Math.random();
       if (node.xFixed == false) {node.x = radius * Math.cos(angle);}
       if (node.yFixed == false) {node.y = radius * Math.sin(angle);}
     }
     this.moving = true;
   }
+
   this._updateNodeIndexList();
   if (this.constants.hierarchicalLayout.enabled == true && this.initializing == false) {
     this._resetLevels();
@@ -1374,13 +1467,12 @@ Network.prototype._addNodes = function(ids) {
  * @param {Number[] | String[]} ids
  * @private
  */
-Network.prototype._updateNodes = function(ids) {
-  var nodes = this.nodes,
-      nodesData = this.nodesData;
+Network.prototype._updateNodes = function(ids,changedData) {
+  var nodes = this.nodes;
   for (var i = 0, len = ids.length; i < len; i++) {
     var id = ids[i];
     var node = nodes[id];
-    var data = nodesData.get(id);
+    var data = changedData[i];
     if (node) {
       // update node
       node.setProperties(data, this.constants);
@@ -1397,7 +1489,6 @@ Network.prototype._updateNodes = function(ids) {
     this._setupHierarchicalLayout();
   }
   this._updateNodeIndexList();
-  this._reconnectEdges();
   this._updateValueRange(nodes);
 };
 
@@ -1435,7 +1526,7 @@ Network.prototype._setEdges = function(edges) {
   if (edges instanceof DataSet || edges instanceof DataView) {
     this.edgesData = edges;
   }
-  else if (edges instanceof Array) {
+  else if (Array.isArray(edges)) {
     this.edgesData = new DataSet();
     this.edgesData.add(edges);
   }
@@ -1491,15 +1582,14 @@ Network.prototype._addEdges = function (ids) {
     var data = edgesData.get(id, {"showInternalIds" : true});
     edges[id] = new Edge(data, this, this.constants);
   }
-
   this.moving = true;
   this._updateValueRange(edges);
   this._createBezierNodes();
+  this._updateCalculationNodes();
   if (this.constants.hierarchicalLayout.enabled == true && this.initializing == false) {
     this._resetLevels();
     this._setupHierarchicalLayout();
   }
-  this._updateCalculationNodes();
 };
 
 /**
@@ -1576,6 +1666,7 @@ Network.prototype._reconnectEdges = function() {
   for (id in nodes) {
     if (nodes.hasOwnProperty(id)) {
       nodes[id].edges = [];
+      nodes[id].dynamicEdges = [];
     }
   }
 
@@ -1638,9 +1729,12 @@ Network.prototype.redraw = function() {
  */
 Network.prototype._redraw = function() {
   var ctx = this.frame.canvas.getContext('2d');
+
+  ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
+
   // clear the canvas
-  var w = this.frame.canvas.width;
-  var h = this.frame.canvas.height;
+  var w = this.frame.canvas.width  * this.pixelRatio;
+  var h = this.frame.canvas.height  * this.pixelRatio;
   ctx.clearRect(0, 0, w, h);
 
   // set scaling and translation
@@ -1653,8 +1747,8 @@ Network.prototype._redraw = function() {
     "y": this._YconvertDOMtoCanvas(0)
   };
   this.canvasBottomRight = {
-    "x": this._XconvertDOMtoCanvas(this.frame.canvas.clientWidth),
-    "y": this._YconvertDOMtoCanvas(this.frame.canvas.clientHeight)
+    "x": this._XconvertDOMtoCanvas(this.frame.canvas.clientWidth * this.pixelRatio),
+    "y": this._YconvertDOMtoCanvas(this.frame.canvas.clientHeight * this.pixelRatio)
   };
 
 
@@ -1783,9 +1877,9 @@ Network.prototype._YconvertCanvasToDOM = function(y) {
  * @returns {{x: number, y: number}}
  * @constructor
  */
-Network.prototype.canvasToDOM = function(pos) {
-  return {x:this._XconvertCanvasToDOM(pos.x),y:this._YconvertCanvasToDOM(pos.y)};
-}
+Network.prototype.canvasToDOM = function (pos) {
+  return {x: this._XconvertCanvasToDOM(pos.x), y: this._YconvertCanvasToDOM(pos.y)};
+};
 
 /**
  *
@@ -1793,9 +1887,9 @@ Network.prototype.canvasToDOM = function(pos) {
  * @returns {{x: number, y: number}}
  * @constructor
  */
-Network.prototype.DOMtoCanvas = function(pos) {
-  return {x:this._XconvertDOMtoCanvas(pos.x),y:this._YconvertDOMtoCanvas(pos.y)};
-}
+Network.prototype.DOMtoCanvas = function (pos) {
+  return {x: this._XconvertDOMtoCanvas(pos.x), y: this._YconvertDOMtoCanvas(pos.y)};
+};
 
 /**
  * Redraw all nodes
@@ -1884,11 +1978,10 @@ Network.prototype._stabilize = function() {
     this._physicsTick();
     count++;
   }
-  this.zoomExtent(false,true);
+  this.zoomExtent(undefined,false,true);
   if (this.constants.freezeForStabilization == true) {
     this._restoreFrozenNodes();
   }
-  this.emit("stabilized",{iterations:count});
 };
 
 /**
@@ -1978,17 +2071,13 @@ Network.prototype._discreteStepNodes = function() {
   if (nodesPresent == true) {
     var vminCorrected = this.constants.minVelocity / Math.max(this.scale,0.05);
     if (vminCorrected > 0.5*this.constants.maxVelocity) {
-      this.moving = true;
+      return true;
     }
     else {
-      this.moving = this._isMoving(vminCorrected);
-      if (this.moving == false) {
-        this.emit("stabilized",{iterations:null});
-      }
-      this.moving = this.moving || this.configurePhysics;
-
+      return this._isMoving(vminCorrected);
     }
   }
+  return false;
 };
 
 /**
@@ -1999,12 +2088,21 @@ Network.prototype._discreteStepNodes = function() {
 Network.prototype._physicsTick = function() {
   if (!this.freezeSimulation) {
     if (this.moving == true) {
+      var mainMovingStatus = false;
+      var supportMovingStatus = false;
+
       this._doInAllActiveSectors("_initializeForceCalculation");
-      this._doInAllActiveSectors("_discreteStepNodes");
+      var mainMoving = this._doInAllActiveSectors("_discreteStepNodes");
       if (this.constants.smoothCurves.enabled == true && this.constants.smoothCurves.dynamic == true) {
-        this._doInSupportSector("_discreteStepNodes");
+        supportMovingStatus = this._doInSupportSector("_discreteStepNodes");
       }
-      this._findCenter(this._getRange())
+      // gather movement data from all sectors, if one moves, we are NOT stabilzied
+      for (var i = 0; i < mainMoving.length; i++) {mainMovingStatus = mainMoving[0] || mainMovingStatus;}
+
+      // determine if the network has stabilzied
+      this.moving = mainMovingStatus || supportMovingStatus;
+
+      this.stabilizationIterations++;
     }
   }
 };
@@ -2039,7 +2137,6 @@ Network.prototype._animationStep = function() {
   var renderTime = Date.now();
   this._redraw();
   this.renderTime = Date.now() - renderTime;
-
 };
 
 if (typeof window !== 'undefined') {
@@ -2052,6 +2149,11 @@ if (typeof window !== 'undefined') {
  */
 Network.prototype.start = function() {
   if (this.moving == true || this.xIncrement != 0 || this.yIncrement != 0 || this.zoomIncrement != 0) {
+    if (this.startedStabilization == false) {
+      this.emit("startStabilization");
+      this.startedStabilization = true;
+    }
+
     if (!this.timer) {
       var ua = navigator.userAgent.toLowerCase();
 
@@ -2075,6 +2177,21 @@ Network.prototype.start = function() {
   }
   else {
     this._redraw();
+    if (this.stabilizationIterations > 0) {
+      // trigger the "stabilized" event.
+      // The event is triggered on the next tick, to prevent the case that
+      // it is fired while initializing the Network, in which case you would not
+      // be able to catch it
+      var me = this;
+      var params = {
+        iterations: me.stabilizationIterations
+      };
+      me.stabilizationIterations = 0;
+      me.startedStabilization = false;
+      setTimeout(function () {
+        me.emit("stabilized", params);
+      }, 0);
+    }
   }
 };
 
@@ -2199,6 +2316,14 @@ Network.prototype._initializeMixinLoaders = function () {
  * Load the XY positions of the nodes into the dataset.
  */
 Network.prototype.storePosition = function() {
+  console.log("storePosition is depricated: use .storePositions() from now on.")
+  this.storePositions();
+};
+
+/**
+ * Load the XY positions of the nodes into the dataset.
+ */
+Network.prototype.storePositions = function() {
   var dataArray = [];
   for (var nodeId in this.nodes) {
     if (this.nodes.hasOwnProperty(nodeId)) {
@@ -2213,36 +2338,253 @@ Network.prototype.storePosition = function() {
   this.nodesData.update(dataArray);
 };
 
+/**
+ * Return the positions of the nodes.
+ */
+Network.prototype.getPositions = function(ids) {
+  var dataArray = {};
+  if (ids !== undefined) {
+    if (Array.isArray(ids) == true) {
+      for (var i = 0; i < ids.length; i++) {
+        if (this.nodes[ids[i]] !== undefined) {
+          var node = this.nodes[ids[i]];
+          dataArray[ids[i]] = {x: Math.round(node.x), y: Math.round(node.y)};
+        }
+      }
+    }
+    else {
+      if (this.nodes[ids] !== undefined) {
+        var node = this.nodes[ids];
+        dataArray[ids] = {x: Math.round(node.x), y: Math.round(node.y)};
+      }
+    }
+  }
+  else {
+    for (var nodeId in this.nodes) {
+      if (this.nodes.hasOwnProperty(nodeId)) {
+        var node = this.nodes[nodeId];
+        dataArray[nodeId] = {x: Math.round(node.x), y: Math.round(node.y)};
+      }
+    }
+  }
+  return dataArray;
+};
+
+
 
 /**
  * Center a node in view.
  *
  * @param {Number} nodeId
- * @param {Number} [zoomLevel]
+ * @param {Number} [options]
  */
-Network.prototype.focusOnNode = function (nodeId, zoomLevel) {
+Network.prototype.focusOnNode = function (nodeId, options) {
   if (this.nodes.hasOwnProperty(nodeId)) {
-    if (zoomLevel === undefined) {
-      zoomLevel = this._getScale();
+    if (options === undefined) {
+      options = {};
     }
-    var nodePosition= {x: this.nodes[nodeId].x, y: this.nodes[nodeId].y};
+    var nodePosition = {x: this.nodes[nodeId].x, y: this.nodes[nodeId].y};
+    options.position = nodePosition;
+    options.lockedOnNode = nodeId;
 
-    var requiredScale = zoomLevel;
-    this._setScale(requiredScale);
-
-    var canvasCenter = this.DOMtoCanvas({x:0.5 * this.frame.canvas.width,y:0.5 * this.frame.canvas.height});
-    var translation = this._getTranslation();
-
-    var distanceFromCenter = {x:canvasCenter.x - nodePosition.x,
-                              y:canvasCenter.y - nodePosition.y};
-
-    this._setTranslation(translation.x + requiredScale * distanceFromCenter.x,
-                         translation.y + requiredScale * distanceFromCenter.y);
-    this.redraw();
+    this.moveTo(options)
   }
   else {
-    console.log("This nodeId cannot be found.")
+    console.log("This nodeId cannot be found.");
   }
+};
+
+/**
+ *
+ * @param {Object} options  |  options.offset   = {x:Number, y:Number}   // offset from the center in DOM pixels
+ *                          |  options.scale    = Number                 // scale to move to
+ *                          |  options.position = {x:Number, y:Number}   // position to move to
+ *                          |  options.animation = {duration:Number, easingFunction:String} || Boolean   // position to move to
+ */
+Network.prototype.moveTo = function (options) {
+  if (options === undefined) {
+    options = {};
+    return;
+  }
+  if (options.offset    === undefined)           {options.offset    = {x: 0, y: 0};          }
+  if (options.offset.x  === undefined)           {options.offset.x  = 0;                     }
+  if (options.offset.y  === undefined)           {options.offset.y  = 0;                     }
+  if (options.scale     === undefined)           {options.scale     = this._getScale();      }
+  if (options.position  === undefined)           {options.position  = this._getTranslation();}
+  if (options.animation === undefined)           {options.animation = {duration:0};          }
+  if (options.animation === false    )           {options.animation = {duration:0};          }
+  if (options.animation === true     )           {options.animation = {};                    }
+  if (options.animation.duration === undefined)  {options.animation.duration = 1000;         }  // default duration
+  if (options.animation.easingFunction === undefined)  {options.animation.easingFunction = "easeInOutQuad";  } // default easing function
+
+  this.animateView(options);
+};
+
+/**
+ *
+ * @param {Object} options  |  options.offset   = {x:Number, y:Number}   // offset from the center in DOM pixels
+ *                          |  options.time     = Number                 // animation time in milliseconds
+ *                          |  options.scale    = Number                 // scale to animate to
+ *                          |  options.position = {x:Number, y:Number}   // position to animate to
+ *                          |  options.easingFunction = String           // linear, easeInQuad, easeOutQuad, easeInOutQuad,
+ *                                                                       // easeInCubic, easeOutCubic, easeInOutCubic,
+ *                                                                       // easeInQuart, easeOutQuart, easeInOutQuart,
+ *                                                                       // easeInQuint, easeOutQuint, easeInOutQuint
+ */
+Network.prototype.animateView = function (options) {
+  if (options === undefined) {
+    options = {};
+    return;
+  }
+
+  // release if something focussed on the node
+  this.releaseNode();
+  if (options.locked == true) {
+    this.lockedOnNodeId = options.lockedOnNode;
+    this.lockedOnNodeOffset = options.offset;
+  }
+
+  // forcefully complete the old animation if it was still running
+  if (this.easingTime != 0) {
+    this._transitionRedraw(1); // by setting easingtime to 1, we finish the animation.
+  }
+
+  this.sourceScale = this._getScale();
+  this.sourceTranslation = this._getTranslation();
+  this.targetScale = options.scale;
+
+  // set the scale so the viewCenter is based on the correct zoom level. This is overridden in the transitionRedraw
+  // but at least then we'll have the target transition
+  this._setScale(this.targetScale);
+  var viewCenter = this.DOMtoCanvas({x: 0.5 * this.frame.canvas.clientWidth, y: 0.5 * this.frame.canvas.clientHeight});
+  var distanceFromCenter = { // offset from view, distance view has to change by these x and y to center the node
+    x: viewCenter.x - options.position.x,
+    y: viewCenter.y - options.position.y
+  };
+  this.targetTranslation = {
+    x: this.sourceTranslation.x + distanceFromCenter.x * this.targetScale + options.offset.x,
+    y: this.sourceTranslation.y + distanceFromCenter.y * this.targetScale + options.offset.y
+  };
+
+  // if the time is set to 0, don't do an animation
+  if (options.animation.duration == 0) {
+    if (this.lockedOnNodeId != null) {
+      this._classicRedraw = this._redraw;
+      this._redraw = this._lockedRedraw;
+    }
+    else {
+      this._setScale(this.targetScale);
+      this._setTranslation(this.targetTranslation.x, this.targetTranslation.y);
+      this._redraw();
+    }
+  }
+  else {
+    this.animationSpeed = 1 / (this.renderRefreshRate * options.animation.duration * 0.001) || 1 / this.renderRefreshRate;
+    this.animationEasingFunction = options.animation.easingFunction;
+    this._classicRedraw = this._redraw;
+    this._redraw = this._transitionRedraw;
+    this._redraw();
+    this.moving = true;
+    this.start();
+  }
+};
+
+
+Network.prototype._lockedRedraw = function () {
+  var nodePosition = {x: this.nodes[this.lockedOnNodeId].x, y: this.nodes[this.lockedOnNodeId].y};
+  var viewCenter = this.DOMtoCanvas({x: 0.5 * this.frame.canvas.clientWidth, y: 0.5 * this.frame.canvas.clientHeight});
+  var distanceFromCenter = { // offset from view, distance view has to change by these x and y to center the node
+    x: viewCenter.x - nodePosition.x,
+    y: viewCenter.y - nodePosition.y
+  };
+  var sourceTranslation = this._getTranslation();
+  var targetTranslation = {
+    x: sourceTranslation.x + distanceFromCenter.x * this.scale + this.lockedOnNodeOffset.x,
+    y: sourceTranslation.y + distanceFromCenter.y * this.scale + this.lockedOnNodeOffset.y
+  };
+
+  this._setTranslation(targetTranslation.x,targetTranslation.y);
+  this._classicRedraw();
+}
+
+Network.prototype.releaseNode = function () {
+  if (this.lockedOnNodeId != null) {
+    this._redraw = this._classicRedraw;
+    this.lockedOnNodeId = null;
+    this.lockedOnNodeOffset = null;
+  }
+}
+
+/**
+ *
+ * @param easingTime
+ * @private
+ */
+Network.prototype._transitionRedraw = function (easingTime) {
+  this.easingTime = easingTime || this.easingTime + this.animationSpeed;
+  this.easingTime += this.animationSpeed;
+
+  var progress = util.easingFunctions[this.animationEasingFunction](this.easingTime);
+
+  this._setScale(this.sourceScale + (this.targetScale - this.sourceScale) * progress);
+  this._setTranslation(
+    this.sourceTranslation.x + (this.targetTranslation.x - this.sourceTranslation.x) * progress,
+    this.sourceTranslation.y + (this.targetTranslation.y - this.sourceTranslation.y) * progress
+  );
+
+  this._classicRedraw();
+  this.moving = true;
+
+  // cleanup
+  if (this.easingTime >= 1.0) {
+    this.easingTime = 0;
+    if (this.lockedOnNodeId != null) {
+      this._redraw = this._lockedRedraw;
+    }
+    else {
+      this._redraw = this._classicRedraw;
+    }
+    this.emit("animationFinished");
+  }
+};
+
+Network.prototype._classicRedraw = function () {
+  // placeholder function to be overloaded by animations;
+};
+
+/**
+ * Returns true when the Network is active.
+ * @returns {boolean}
+ */
+Network.prototype.isActive = function () {
+  return !this.activator || this.activator.active;
+};
+
+
+/**
+ * Sets the scale
+ * @returns {Number}
+ */
+Network.prototype.setScale = function () {
+  return this._setScale();
+};
+
+
+/**
+ * Returns the scale
+ * @returns {Number}
+ */
+Network.prototype.getScale = function () {
+  return this._getScale();
+};
+
+
+/**
+ * Returns the scale
+ * @returns {Number}
+ */
+Network.prototype.getCenterCoordinates = function () {
+  return this.DOMtoCanvas({x: 0.5 * this.frame.canvas.clientWidth, y: 0.5 * this.frame.canvas.clientHeight});
 };
 
 module.exports = Network;

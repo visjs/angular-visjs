@@ -150,7 +150,9 @@ slow, so when only the non-minified library is needed, one can use the
 
 The folder `dist` contains bundled versions of vis.js for direct use in the browser. These bundles contain the all visualizations and includes external dependencies such as hammer.js and moment.js.
 
-The source code of vis.js consists of commonjs modules, which makes it possible to create custom bundles using tools like [Browserify](http://browserify.org/) or [Webpack](http://webpack.github.io/). This can be bundling just one visualization like the Timeline, or bundling vis.js as part of your own browserified web application. Note that hammer.js v1.0.6 or newer is required.
+The source code of vis.js consists of commonjs modules, which makes it possible to create custom bundles using tools like [Browserify](http://browserify.org/) or [Webpack](http://webpack.github.io/). This can be bundling just one visualization like the Timeline, or bundling vis.js as part of your own browserified web application. 
+
+*Note that hammer.js version 1 is required (v1.0.6-v1.1.3), version 2 is not yet supported.*
 
 #### Example 1: Bundle a single visualization
 
@@ -277,14 +279,14 @@ Then run the tests:
 
 Copyright (C) 2010-2014 Almende B.V.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Vis.js is dual licensed under both
 
-   http://www.apache.org/licenses/LICENSE-2.0
+  * The Apache 2.0 License
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+and
+
+  * The MIT License
+    http://opensource.org/licenses/MIT
+
+Vis.js may be distributed under either license.

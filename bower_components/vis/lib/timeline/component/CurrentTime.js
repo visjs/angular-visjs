@@ -1,5 +1,7 @@
 var util = require('../../util');
 var Component = require('./Component');
+var moment = require('../../module/moment');
+var locales = require('../locales');
 
 /**
  * A current time bar
@@ -14,9 +16,13 @@ function CurrentTime (body, options) {
 
   // default options
   this.defaultOptions = {
-    showCurrentTime: true
+    showCurrentTime: true,
+
+    locales: locales,
+    locale: 'en'
   };
   this.options = util.extend({}, this.defaultOptions);
+  this.offset = 0;
 
   this._create();
 
@@ -57,7 +63,7 @@ CurrentTime.prototype.destroy = function () {
 CurrentTime.prototype.setOptions = function(options) {
   if (options) {
     // copy all options that we know
-    util.selectiveExtend(['showCurrentTime'], this.options, options);
+    util.selectiveExtend(['showCurrentTime', 'locale', 'locales'], this.options, options);
   }
 };
 
@@ -78,11 +84,15 @@ CurrentTime.prototype.redraw = function() {
       this.start();
     }
 
-    var now = new Date();
+    var now = new Date(new Date().valueOf() + this.offset);
     var x = this.body.util.toScreen(now);
 
+    var locale = this.options.locales[this.options.locale];
+    var title = locale.current + ' ' + locale.time + ': ' + moment(now).format('dddd, MMMM Do YYYY, H:mm:ss');
+    title = title.charAt(0).toUpperCase() + title.substring(1);
+
     this.bar.style.left = x + 'px';
-    this.bar.title = 'Current time: ' + now;
+    this.bar.title = title;
   }
   else {
     // remove the line from the DOM
@@ -127,6 +137,27 @@ CurrentTime.prototype.stop = function() {
     clearTimeout(this.currentTimeTimer);
     delete this.currentTimeTimer;
   }
+};
+
+/**
+ * Set a current time. This can be used for example to ensure that a client's
+ * time is synchronized with a shared server time.
+ * @param {Date | String | Number} time     A Date, unix timestamp, or
+ *                                          ISO date string.
+ */
+CurrentTime.prototype.setCurrentTime = function(time) {
+  var t = util.convert(time, 'Date').valueOf();
+  var now = new Date().valueOf();
+  this.offset = t - now;
+  this.redraw();
+};
+
+/**
+ * Get the current time.
+ * @return {Date} Returns the current time.
+ */
+CurrentTime.prototype.getCurrentTime = function() {
+  return new Date(new Date().valueOf() + this.offset);
 };
 
 module.exports = CurrentTime;

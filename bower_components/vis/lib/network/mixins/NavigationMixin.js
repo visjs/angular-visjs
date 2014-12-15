@@ -2,12 +2,20 @@ var util = require('../../util');
 var Hammer = require('../../module/hammer');
 
 exports._cleanNavigation = function() {
-  // clean up previous navigation items
-  var wrapper = document.getElementById('network-navigation_wrapper');
-  if (wrapper != null) {
-    this.containerElement.removeChild(wrapper);
+  // clean hammer bindings
+  if (this.navigationHammers.existing.length != 0) {
+    for (var i = 0; i < this.navigationHammers.existing.length; i++) {
+      this.navigationHammers.existing[i].dispose();
+    }
+    this.navigationHammers.existing = [];
   }
-  document.onmouseup = null;
+
+  this._navigationReleaseOverload = function () {};
+
+  // clean up previous navigation items
+  if (this.navigationDivs && this.navigationDivs['wrapper'] && this.navigationDivs['wrapper'].parentNode) {
+    this.navigationDivs['wrapper'].parentNode.removeChild(this.navigationDivs['wrapper']);
+  }
 };
 
 /**
@@ -23,26 +31,35 @@ exports._loadNavigationElements = function() {
 
   this.navigationDivs = {};
   var navigationDivs = ['up','down','left','right','zoomIn','zoomOut','zoomExtends'];
-  var navigationDivActions = ['_moveUp','_moveDown','_moveLeft','_moveRight','_zoomIn','_zoomOut','zoomExtent'];
+  var navigationDivActions = ['_moveUp','_moveDown','_moveLeft','_moveRight','_zoomIn','_zoomOut','_zoomExtent'];
 
   this.navigationDivs['wrapper'] = document.createElement('div');
-  this.navigationDivs['wrapper'].id = "network-navigation_wrapper";
-  this.navigationDivs['wrapper'].style.position = "absolute";
-  this.navigationDivs['wrapper'].style.width = this.frame.canvas.clientWidth + "px";
-  this.navigationDivs['wrapper'].style.height = this.frame.canvas.clientHeight + "px";
-  this.containerElement.insertBefore(this.navigationDivs['wrapper'],this.frame);
+  this.frame.appendChild(this.navigationDivs['wrapper']);
 
-  var me = this;
   for (var i = 0; i < navigationDivs.length; i++) {
     this.navigationDivs[navigationDivs[i]] = document.createElement('div');
-    this.navigationDivs[navigationDivs[i]].id = "network-navigation_" + navigationDivs[i];
-    this.navigationDivs[navigationDivs[i]].className = "network-navigation " + navigationDivs[i];
+    this.navigationDivs[navigationDivs[i]].className = 'network-navigation ' + navigationDivs[i];
     this.navigationDivs['wrapper'].appendChild(this.navigationDivs[navigationDivs[i]]);
+
     var hammer = Hammer(this.navigationDivs[navigationDivs[i]], {prevent_default: true});
-    hammer.on("touch", me[navigationDivActions[i]].bind(me));
+    hammer.on('touch', this[navigationDivActions[i]].bind(this));
+    this.navigationHammers._new.push(hammer);
   }
-  var hammer = Hammer(document, {prevent_default: false});
-  hammer.on("release", me._stopMovement.bind(me));
+
+  this._navigationReleaseOverload = this._stopMovement;
+
+  this.navigationHammers.existing = this.navigationHammers._new;
+};
+
+
+/**
+ * this stops all movement induced by the navigation buttons
+ *
+ * @private
+ */
+exports._zoomExtent = function(event) {
+  this.zoomExtent({duration:700});
+  event.stopPropagation();
 };
 
 /**
@@ -68,6 +85,7 @@ exports._stopMovement = function() {
 exports._moveUp = function(event) {
   this.yIncrement = this.constants.keyboard.speed.y;
   this.start(); // if there is no node movement, the calculation wont be done
+  event.preventDefault();
 };
 
 
@@ -78,6 +96,7 @@ exports._moveUp = function(event) {
 exports._moveDown = function(event) {
   this.yIncrement = -this.constants.keyboard.speed.y;
   this.start(); // if there is no node movement, the calculation wont be done
+  event.preventDefault();
 };
 
 
@@ -88,6 +107,7 @@ exports._moveDown = function(event) {
 exports._moveLeft = function(event) {
   this.xIncrement = this.constants.keyboard.speed.x;
   this.start(); // if there is no node movement, the calculation wont be done
+  event.preventDefault();
 };
 
 
@@ -98,6 +118,7 @@ exports._moveLeft = function(event) {
 exports._moveRight = function(event) {
   this.xIncrement = -this.constants.keyboard.speed.y;
   this.start(); // if there is no node movement, the calculation wont be done
+  event.preventDefault();
 };
 
 
@@ -108,6 +129,7 @@ exports._moveRight = function(event) {
 exports._zoomIn = function(event) {
   this.zoomIncrement = this.constants.keyboard.speed.zoom;
   this.start(); // if there is no node movement, the calculation wont be done
+  event.preventDefault();
 };
 
 
@@ -115,10 +137,10 @@ exports._zoomIn = function(event) {
  * Zoom out
  * @private
  */
-exports._zoomOut = function() {
+exports._zoomOut = function(event) {
   this.zoomIncrement = -this.constants.keyboard.speed.zoom;
   this.start(); // if there is no node movement, the calculation wont be done
-  util.preventDefault(event);
+  event.preventDefault();
 };
 
 
@@ -126,8 +148,9 @@ exports._zoomOut = function() {
  * Stop zooming and unhighlight the zoom controls
  * @private
  */
-exports._stopZoom = function() {
+exports._stopZoom = function(event) {
   this.zoomIncrement = 0;
+  event && event.preventDefault();
 };
 
 
@@ -135,8 +158,9 @@ exports._stopZoom = function() {
  * Stop moving in the Y direction and unHighlight the up and down
  * @private
  */
-exports._yStopMoving = function() {
+exports._yStopMoving = function(event) {
   this.yIncrement = 0;
+  event && event.preventDefault();
 };
 
 
@@ -144,6 +168,7 @@ exports._yStopMoving = function() {
  * Stop moving in the X direction and unHighlight left and right.
  * @private
  */
-exports._xStopMoving = function() {
+exports._xStopMoving = function(event) {
   this.xIncrement = 0;
+  event && event.preventDefault();
 };

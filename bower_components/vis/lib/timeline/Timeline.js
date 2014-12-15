@@ -14,19 +14,21 @@ var ItemSet = require('./component/ItemSet');
  * Create a timeline visualization
  * @param {HTMLElement} container
  * @param {vis.DataSet | Array | google.visualization.DataTable} [items]
+ * @param {vis.DataSet | Array | google.visualization.DataTable} [groups]
  * @param {Object} [options]  See Timeline.setOptions for the available options.
  * @constructor
+ * @extends Core
  */
-function Timeline (container, items, options) {
-  // mix the core properties in here
-  for (var coreProp in Core.prototype) {
-    if (Core.prototype.hasOwnProperty(coreProp) && !Timeline.prototype.hasOwnProperty(coreProp)) {
-      Timeline.prototype[coreProp] = Core.prototype[coreProp];
-    }
-  }
-
+function Timeline (container, items, groups, options) {
   if (!(this instanceof Timeline)) {
     throw new SyntaxError('Constructor must be called with the new operator');
+  }
+
+  // if the third element is options, the forth is groups (optionally);
+  if (!(Array.isArray(groups) || groups instanceof DataSet) && groups instanceof Object) {
+    var forthArgument = options;
+    options = groups;
+    groups = forthArgument;
   }
 
   var me = this;
@@ -58,6 +60,7 @@ function Timeline (container, items, options) {
       off: this.off.bind(this),
       emit: this.emit.bind(this)
     },
+    hiddenDates: [],
     util: {
       snap: null, // will be specified after TimeAxis is created
       toScreen: me._toScreen.bind(me),
@@ -98,6 +101,11 @@ function Timeline (container, items, options) {
     this.setOptions(options);
   }
 
+  // IMPORTANT: THIS HAPPENS BEFORE SET ITEMS!
+  if (groups) {
+    this.setGroups(groups);
+  }
+
   // create itemset
   if (items) {
     this.setItems(items);
@@ -107,54 +115,8 @@ function Timeline (container, items, options) {
   }
 }
 
-/**
- * Set options. Options will be passed to all components loaded in the Timeline.
- * @param {Object} [options]
- *                           {String} orientation
- *                              Vertical orientation for the Timeline,
- *                              can be 'bottom' (default) or 'top'.
- *                           {String | Number} width
- *                              Width for the timeline, a number in pixels or
- *                              a css string like '1000px' or '75%'. '100%' by default.
- *                           {String | Number} height
- *                              Fixed height for the Timeline, a number in pixels or
- *                              a css string like '400px' or '75%'. If undefined,
- *                              The Timeline will automatically size such that
- *                              its contents fit.
- *                           {String | Number} minHeight
- *                              Minimum height for the Timeline, a number in pixels or
- *                              a css string like '400px' or '75%'.
- *                           {String | Number} maxHeight
- *                              Maximum height for the Timeline, a number in pixels or
- *                              a css string like '400px' or '75%'.
- *                           {Number | Date | String} start
- *                              Start date for the visible window
- *                           {Number | Date | String} end
- *                              End date for the visible window
- */
-Timeline.prototype.setOptions = function (options) {
-  if (options) {
-    // copy the known options
-    var fields = ['width', 'height', 'minHeight', 'maxHeight', 'autoResize', 'start', 'end', 'orientation'];
-    util.selectiveExtend(fields, this.options, options);
-
-    // enable/disable autoResize
-    this._initAutoResize();
-  }
-
-  // propagate options to all components
-  this.components.forEach(function (component) {
-    component.setOptions(options);
-  });
-
-  // TODO: remove deprecation error one day (deprecated since version 0.8.0)
-  if (options && options.order) {
-    throw new Error('Option order is deprecated. There is no replacement for this feature.');
-  }
-
-  // redraw everything
-  this.redraw();
-};
+// Extend the functionality from Core
+Timeline.prototype = new Core();
 
 /**
  * Set items
@@ -185,13 +147,20 @@ Timeline.prototype.setItems = function(items) {
   this.itemsData = newDataSet;
   this.itemSet && this.itemSet.setItems(newDataSet);
 
-  if (initialLoad && ('start' in this.options || 'end' in this.options)) {
-    this.fit();
+  if (initialLoad) {
+    if (this.options.start != undefined || this.options.end != undefined) {
+      if (this.options.start == undefined || this.options.end == undefined) {
+        var dataRange = this._getDataRange();
+      }
 
-    var start = ('start' in this.options) ? util.convert(this.options.start, 'Date') : null;
-    var end   = ('end' in this.options)   ? util.convert(this.options.end, 'Date') : null;
+      var start = this.options.start != undefined ? this.options.start : dataRange.start;
+      var end   = this.options.end != undefined   ? this.options.end   : dataRange.end;
 
-    this.setWindow(start, end);
+      this.setWindow(start, end, {animate: false});
+    }
+    else {
+      this.fit({animate: false});
+    }
   }
 };
 
@@ -220,12 +189,25 @@ Timeline.prototype.setGroups = function(groups) {
 /**
  * Set selected items by their id. Replaces the current selection
  * Unknown id's are silently ignored.
- * @param {Array} [ids] An array with zero or more id's of the items to be
- *                      selected. If ids is an empty array, all items will be
- *                      unselected.
+ * @param {string[] | string} [ids]  An array with zero or more id's of the items to be
+ *                                selected. If ids is an empty array, all items will be
+ *                                unselected.
+ * @param {Object} [options]      Available options:
+ *                                `focus: boolean`
+ *                                    If true, focus will be set to the selected item(s)
+ *                                `animate: boolean | number`
+ *                                    If true (default), the range is animated
+ *                                    smoothly to the new window.
+ *                                    If a number, the number is taken as duration
+ *                                    for the animation. Default duration is 500 ms.
+ *                                    Only applicable when option focus is true.
  */
-Timeline.prototype.setSelection = function(ids) {
+Timeline.prototype.setSelection = function(ids, options) {
   this.itemSet && this.itemSet.setSelection(ids);
+
+  if (options && options.focus) {
+    this.focus(ids, options);
+  }
 };
 
 /**
@@ -236,6 +218,56 @@ Timeline.prototype.getSelection = function() {
   return this.itemSet && this.itemSet.getSelection() || [];
 };
 
+/**
+ * Adjust the visible window such that the selected item (or multiple items)
+ * are centered on screen.
+ * @param {String | String[]} id     An item id or array with item ids
+ * @param {Object} [options]      Available options:
+ *                                `animate: boolean | number`
+ *                                    If true (default), the range is animated
+ *                                    smoothly to the new window.
+ *                                    If a number, the number is taken as duration
+ *                                    for the animation. Default duration is 500 ms.
+ *                                    Only applicable when option focus is true
+ */
+Timeline.prototype.focus = function(id, options) {
+  if (!this.itemsData || id == undefined) return;
+
+  var ids = Array.isArray(id) ? id : [id];
+
+  // get the specified item(s)
+  var itemsData = this.itemsData.getDataSet().get(ids, {
+    type: {
+      start: 'Date',
+      end: 'Date'
+    }
+  });
+
+  // calculate minimum start and maximum end of specified items
+  var start = null;
+  var end = null;
+  itemsData.forEach(function (itemData) {
+    var s = itemData.start.valueOf();
+    var e = 'end' in itemData ? itemData.end.valueOf() : itemData.start.valueOf();
+
+    if (start === null || s < start) {
+      start = s;
+    }
+
+    if (end === null || e > end) {
+      end = e;
+    }
+  });
+
+  if (start !== null && end !== null) {
+    // calculate the new middle and interval for the window
+    var middle = (start + end) / 2;
+    var interval = Math.max((this.range.end - this.range.start), (end - start) * 1.1);
+
+    var animate = (options && options.animate !== undefined) ? options.animate : true;
+    this.range.setRange(middle - interval / 2, middle + interval / 2, animate);
+  }
+};
 
 /**
  * Get the data range of the item set.
