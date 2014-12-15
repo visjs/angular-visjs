@@ -19,8 +19,6 @@ angular.module('vis.graph2d', [
     .controller('Graph2dCtrl',
     function Graph2dCtrl($scope, $timeout, VisDataSet) {
         var graph2d;
-        var dataItems;
-        var dataGroups;
 
 
         // ------------------------------------------------
@@ -242,7 +240,6 @@ angular.module('vis.graph2d', [
 
 
         var dataItems = new VisDataSet();
-
         for (var i = 0; i < names.length; i++) {
             dataItems.add([
                 {x: '2014-06-12', y: 0, group: i},

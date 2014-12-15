@@ -1,21 +1,165 @@
-<div class="jumbotron">
-    <h1 class="text-center">Angular Vis-JS</h1>
-
-    <p class="text-center lead">
-        An AngularJS directive for the VisJS visualisation framework.
-    </p>
-
-    <div class="text-center">
-        <div class="btn-group">
-            <a href="https://github.com/visjs/angular-visjs/wiki" class="btn btn-large btn-default">
-                <i class="fa fa-book"></i>
-                Read the Docs
-            </a>
-            <a href="https://github.com/visjs/angular-visjs" class="btn btn-large btn-success">
-                <i class="fa fa-download"></i>
-                Download
-            </a>
+<div class="col-sm-4" ng-init="showContainer='Summary'">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Overview</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li ng-class="{'list-group-item':true, 'active':showContainer=='Summary'}"
+                    ng-click="showContainer='Summary'">Summary
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Directives</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li ng-class="{'list-group-item':true, 'active':showContainer=='Graph2D'}"
+                    class="list-group-item" ng-click="showContainer='Graph2D'">vis-graph2d</li>
+                <li ng-class="{'list-group-item':true, 'active':showContainer=='Network'}"
+                    class="list-group-item" ng-click="showContainer='Network'">vis-network</li>
+                <li ng-class="{'list-group-item':true, 'active':showContainer=='Timeline'}"
+                    class="list-group-item" ng-click="showContainer='Timeline'">vis-timeline</li>
+            </ul>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Factory</h3>
+        </div>
+        <div class="panel-body">
+            <ul class="list-group">
+                <li ng-class="{'list-group-item':true, 'active':showContainer=='DataSet'}"
+                    ng-click="showContainer='DataSet'">VisDataSet
+                </li>
+            </ul>
         </div>
     </div>
 </div>
 
+<div class="col-sm-8">
+    <div ng-show="showContainer=='Summary'">
+        <h2>Summary</h2>
+        <p>
+            This project provides a set of AngularJS directives for the VisJS visualisation library.
+        </p>
+        <p>
+            Install with bower using
+        <div class="well">
+            <code>bower install angular-vis</code>.
+        </div>
+        </p>
+        <p>
+            Add <code>'ngVis'</code> to your module.
+        </p>
+        <p>
+            Set a directive in your template
+            <div class="well">
+                <code>&lt;vis-graph2d ng-show="graphLoaded" data="graphData" options="graphOptions"
+                                                                events="graphEvents"&gt;&lt;/vis-graph2d&gt;</code>
+            </div>
+        </p>
+        <p>
+            In your code, configure the options.
+        </p>
+        <p>
+        <div class="well">
+            <code>
+                var dataGroups = new VisDataSet();<br>
+                dataGroups.add({});<br>
+                var dataItems = new VisDataSet();<br>
+                dataItems.add([{}]);<br>
+                $scope.graphData = {<br>
+                &nbsp;&nbsp;items: dataItems,<br>
+                &nbsp;&nbsp;groups: dataGroups<br>
+                };
+            </code>
+        </div>
+        </p>
+    </div>
+
+    <table class="table table-hover" ng-show="showContainer=='Graph2D'">
+        <thead>
+        <tr class="active">
+            <td><b>Option</b></td>
+            <td>
+                <b>Description</b>
+                <a href="http://visjs.org/docs/dataset.html#Methods"><span
+                        class="pull-right fa fa-external-link"></span></a>
+            </td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>data</td>
+            <td>
+                An object containing two elements <code>items</code> and <code>groups</code>.
+                Each contains a VisDataSet with the items and groups.
+            </td>
+        </tr>
+        <tr>
+            <td>options</td>
+            <td>
+                An object containing the <b>vis</b> configuration.
+                Refer to the <a href="http://visjs.org/docs/graph2d.html">vis documentation</a> for configuration information.
+            </td>
+        </tr>
+        <tr>
+            <td>graph-events</td>
+            <td>
+                An object containing callbacks for vis events.
+                Refer to the <a href="http://visjs.org/docs/graph2d.html#Events">vis documentation</a> for events.
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="table table-hover" ng-show="showContainer=='DataSet'">
+        <thead>
+        <tr class="active">
+            <td><b>Method</b></td>
+            <td>
+                <b>Description</b>
+                <a href="http://visjs.org/docs/dataset.html#Methods"><span
+                        class="pull-right fa fa-external-link"></span></a>
+            </td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>add</td>
+            <td>
+                Add one or multiple items to the DataSet.
+            </td>
+        </tr>
+        <tr>
+            <td>update</td>
+            <td>
+                Update on ore multiple existing items.
+            </td>
+        </tr>
+        <tr>
+            <td>getDataSet</td>
+            <td>
+                Returns the dataset.
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    
+</div>
