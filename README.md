@@ -8,7 +8,14 @@ vis.DataSet such that the documentation for vis is fully (hopefully) applicable 
 
 Stay tuned, but expect changes!
 
+**UPDATE** The initial refactoring is complete, but documentation is slightly inconsistent. Generally, the standard
+visjs documentation should be used.  Take a look at the <a href="http://visjs.github.io/angular-visjs">example</a> where there is also the beginning of the updated documentation.
+
+
+
 ## Usage
+**Note that this is out of date and will be removed shortly** It's just retained for information while the directive is updated.
+
 ```
   <time-line data="data" options="options" events="events"></time-line>
 ```
