@@ -18,31 +18,10 @@ angular.module('vis.graph2d', [
 
     .controller('Graph2dCtrl',
     function Graph2dCtrl($scope, $timeout, VisDataSet) {
-        var itemsLoaded = 0;
-        var itemsLoading = 0;
-        var newChart;
-        var chartDef;
-
         var graph2d;
-
-        var roundingTime = 1000;
-
         var dataItems;
         var dataGroups;
 
-        var lineStyles = {
-            solid: [5, 0],
-            shortdash: [7, 3],
-            shortdot: [3, 3],
-            shortdashdot: [7, 3, 3, 3],
-            shortdashdotdot: [7, 3, 3, 3, 3, 3],
-            dot: [3, 7],
-            dash: [10, 7],
-            longdash: [20, 7],
-            dashdot: [10, 7, 3, 7],
-            longdashdot: [20, 7, 3, 7],
-            longdashdotdot: [20, 7, 3, 7, 3, 7]
-        };
 
         // ------------------------------------------------
         // Event Handlers
@@ -155,13 +134,13 @@ angular.module('vis.graph2d', [
             // A week, +/- 1 hour
             // A month is between 28 and 32 days
             var interval = period.end - period.start;
-            if(interval > 86340000 && interval < 86460000) {
+            if (interval > 86340000 && interval < 86460000) {
                 $scope.graphWindow = 'day';
             }
-            else if(interval > 601200000 && interval < 608400000) {
+            else if (interval > 601200000 && interval < 608400000) {
                 $scope.graphWindow = 'week';
             }
-            else if(interval > 2419200000 && interval < 2764800000) {
+            else if (interval > 2419200000 && interval < 2764800000) {
                 $scope.graphWindow = 'month';
             }
             else {
@@ -200,8 +179,10 @@ angular.module('vis.graph2d', [
             }
 
             // Call apply since this is updated in an event and angular may not know about the change!
-            if(!$scope.$$phase) {
-                $timeout(function(){$scope.$apply();}, 0);
+            if (!$scope.$$phase) {
+                $timeout(function () {
+                    $scope.$apply();
+                }, 0);
             }
         };
 
@@ -215,7 +196,6 @@ angular.module('vis.graph2d', [
         };
 
 
-
         var dataGroups = new VisDataSet();
         var names = ['centripetal', 'chordal', 'uniform', 'disabled'];
         dataGroups.add({
@@ -226,7 +206,8 @@ angular.module('vis.graph2d', [
                 catmullRom: {
                     parametrization: 'centripetal'
                 }
-            }});
+            }
+        });
 
         dataGroups.add({
             id: 1,
@@ -236,7 +217,8 @@ angular.module('vis.graph2d', [
                 catmullRom: {
                     parametrization: 'chordal'
                 }
-            }});
+            }
+        });
 
         dataGroups.add({
             id: 2,
@@ -253,16 +235,17 @@ angular.module('vis.graph2d', [
             id: 3,
             content: names[3],
             options: {
-                drawPoints: { style: 'circle' },
+                drawPoints: {style: 'circle'},
                 catmullRom: false
-            }});
+            }
+        });
 
 
         var dataItems = new VisDataSet();
 
         for (var i = 0; i < names.length; i++) {
-            dataItems.add( [
-                {x: '2014-06-12', y: 0 , group: i},
+            dataItems.add([
+                {x: '2014-06-12', y: 0, group: i},
                 {x: '2014-06-13', y: 40, group: i},
                 {x: '2014-06-14', y: 10, group: i},
                 {x: '2014-06-15', y: 15, group: i},
@@ -275,6 +258,14 @@ angular.module('vis.graph2d', [
             ]);
         }
 
+        $scope.toggleLegend = function () {
+            $scope.graphOptions.legend = !$scope.graphOptions.legend;
+        }
+
+        $scope.reset = function () {
+            graph2d.fit();
+        }
+
         $scope.graphEvents = {
             rangechange: $scope.onRangeChange,
             rangechanged: $scope.onRangeChanged,
@@ -285,6 +276,7 @@ angular.module('vis.graph2d', [
             items: dataItems,
             groups: dataGroups
         };
+
 
         $scope.graphOptions = {
             height: '100%',

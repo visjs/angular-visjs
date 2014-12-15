@@ -1,31 +1,53 @@
-<div class="panel panel-default" style="height:100%;" resize-page>
-    <div class="panel-heading" style="padding:3px;">
-        <div class="btn-group btn-group-sm">
-            <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
-                    ng-click="stepWindow(-1)">
-                <span class="fa fa-backward"></span>
-            </button>
-            <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
-                    ng-click="stepWindow(1)">
-                <span class="fa fa-forward"></span>
-            </button>
-            <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
-                    ng-click="zoomWindow(0.10)">
-                <span class="fa fa-search-minus"></span>
-            </button>
-            <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
-                    ng-click="zoomWindow(-0.10)">
-                <span class="fa fa-search-plus"></span>
+<div class="col-sm-4">
+    <div class="panel panel-default">
+        <div class="panel-heading" style="padding:3px;">
+            <button type="button" class="btn btn-default btn-sm" ng-disabled="!graphLoaded"
+                    ng-click="reset()">
+                <span class="fa fa-refresh"> Reset</span>
             </button>
         </div>
-
-        <div ng-show="graphLoaded" class="pull-right">
-            <h6>{{graphTimeline}}</h6>
+        <div class="panel-body" style="height:400px;padding:3px;">
+            <div class="list-group">
+                <a role="presentation" class="list-group-item" ng-click="toggleLegend()">
+                    <span>Toggle  Legend</span>
+                    <span class="pull-right">
+                        <span ng-if="graphOptions.legend" class="fa fa-check-square-o"></span>
+                    </span>
+                </a>
+            </div>
         </div>
-    </div>
-
-    <div class="panel-body" style="height:400px;padding:3px;">
-        <vis-graph2d ng-show="graphLoaded" data="graphData" options="graphOptions" events="graphEvents"></vis-graph2d>
     </div>
 </div>
+<div class="col-sm-8">
+    <div class="panel panel-default" style="height:100%;">
+        <div class="panel-heading" style="padding:3px;">
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
+                        ng-click="stepWindow(-1)">
+                    <span class="fa fa-backward"></span>
+                </button>
+                <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
+                        ng-click="stepWindow(1)">
+                    <span class="fa fa-forward"></span>
+                </button>
+                <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
+                        ng-click="zoomWindow(0.10)">
+                    <span class="fa fa-search-minus"></span>
+                </button>
+                <button type="button" class="btn btn-default" ng-disabled="!graphLoaded"
+                        ng-click="zoomWindow(-0.10)">
+                    <span class="fa fa-search-plus"></span>
+                </button>
+            </div>
 
+            <div ng-show="graphLoaded" class="pull-right">
+                <h6>{{graphTimeline}}</h6>
+            </div>
+        </div>
+
+        <div class="panel-body" style="height:400px;padding:3px;">
+            <vis-graph2d ng-show="graphLoaded" data="graphData" options="graphOptions"
+                         events="graphEvents"></vis-graph2d>
+        </div>
+    </div>
+</div>
