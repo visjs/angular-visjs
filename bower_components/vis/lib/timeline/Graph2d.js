@@ -16,12 +16,14 @@ var LineGraph = require('./component/LineGraph');
  * @param {vis.DataSet | Array | google.visualization.DataTable} [items]
  * @param {Object} [options]  See Graph2d.setOptions for the available options.
  * @constructor
+ * @extends Core
  */
-function Graph2d (container, items, options, groups) {
-  for (var coreProp in Core.prototype) {
-    if (Core.prototype.hasOwnProperty(coreProp) && !Graph2d.prototype.hasOwnProperty(coreProp)) {
-      Graph2d.prototype[coreProp] = Core.prototype[coreProp];
-    }
+function Graph2d (container, items, groups, options) {
+  // if the third element is options, the forth is groups (optionally);
+  if (!(Array.isArray(groups) || groups instanceof DataSet) && groups instanceof Object) {
+    var forthArgument = options;
+    options = groups;
+    groups = forthArgument;
   }
 
   var me = this;
@@ -53,6 +55,7 @@ function Graph2d (container, items, options, groups) {
       off: this.off.bind(this),
       emit: this.emit.bind(this)
     },
+    hiddenDates: [],
     util: {
       snap: null, // will be specified after TimeAxis is created
       toScreen: me._toScreen.bind(me),
@@ -107,55 +110,8 @@ function Graph2d (container, items, options, groups) {
   }
 }
 
-/**
- * Set options. Options will be passed to all components loaded in the Graph2d.
- * @param {Object} [options]
- *                           {String} orientation
- *                              Vertical orientation for the Graph2d,
- *                              can be 'bottom' (default) or 'top'.
- *                           {String | Number} width
- *                              Width for the timeline, a number in pixels or
- *                              a css string like '1000px' or '75%'. '100%' by default.
- *                           {String | Number} height
- *                              Fixed height for the Graph2d, a number in pixels or
- *                              a css string like '400px' or '75%'. If undefined,
- *                              The Graph2d will automatically size such that
- *                              its contents fit.
- *                           {String | Number} minHeight
- *                              Minimum height for the Graph2d, a number in pixels or
- *                              a css string like '400px' or '75%'.
- *                           {String | Number} maxHeight
- *                              Maximum height for the Graph2d, a number in pixels or
- *                              a css string like '400px' or '75%'.
- *                           {Number | Date | String} start
- *                              Start date for the visible window
- *                           {Number | Date | String} end
- *                              End date for the visible window
- */
-Graph2d.prototype.setOptions = function (options) {
-  if (options) {
-    // copy the known options
-    var fields = ['width', 'height', 'minHeight', 'maxHeight', 'autoResize', 'start', 'end', 'orientation'];
-    util.selectiveExtend(fields, this.options, options);
-
-    // enable/disable autoResize
-    this._initAutoResize();
-  }
-
-  // propagate options to all components
-  this.components.forEach(function (component) {
-    component.setOptions(options);
-  });
-
-  // TODO: remove deprecation error one day (deprecated since version 0.8.0)
-  if (options && options.order) {
-    throw new Error('Option order is deprecated. There is no replacement for this feature.');
-  }
-
-  // redraw everything
-  this.redraw();
-};
-
+// Extend the functionality from Core
+Graph2d.prototype = new Core();
 
 /**
  * Set items
@@ -186,13 +142,16 @@ Graph2d.prototype.setItems = function(items) {
   this.itemsData = newDataSet;
   this.linegraph && this.linegraph.setItems(newDataSet);
 
-  if (initialLoad && ('start' in this.options || 'end' in this.options)) {
-    this.fit();
+  if (initialLoad) {
+    if (this.options.start != undefined || this.options.end != undefined) {
+      var start = this.options.start != undefined ? this.options.start : null;
+      var end   = this.options.end != undefined   ? this.options.end : null;
 
-    var start = ('start' in this.options) ? util.convert(this.options.start, 'Date') : null;
-    var end   = ('end' in this.options)   ? util.convert(this.options.end, 'Date') : null;
-
-    this.setWindow(start, end);
+      this.setWindow(start, end, {animate: false});
+    }
+    else {
+      this.fit({animate: false});
+    }
   }
 };
 
@@ -242,7 +201,7 @@ Graph2d.prototype.getLegend = function(groupId, width, height) {
  */
 Graph2d.prototype.isGroupVisible = function(groupId) {
   if (this.linegraph.groups[groupId] !== undefined) {
-    return this.linegraph.groups[groupId].visible;
+    return (this.linegraph.groups[groupId].visible && (this.linegraph.options.groups.visibility[groupId] === undefined || this.linegraph.options.groups.visibility[groupId] == true));
   }
   else {
     return false;

@@ -1,3 +1,25 @@
+.vis .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* Must be displayed above for example selected Timeline items */
+  z-index: 10;
+}
+
+.vis-active {
+  box-shadow: 0 0 10px #86d5f8;
+}
+
+/* override some bootstrap styles screwing up the timelines css */
+
+.vis [class*="span"] {
+  min-height: 0;
+  width: auto;
+}
+
 .vis.timeline {
 }
 
@@ -75,7 +97,6 @@
 
 .vis.timeline .labelset {
   position: relative;
-  width: 100%;
 
   overflow: hidden;
 
@@ -123,13 +144,14 @@
   position: absolute;
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
 .vis.timeline .axis {
   position: absolute;
   width: 100%;
   height: 0;
-  left: 1px;
+  left: 0;
   z-index: 1;
 }
 
@@ -157,7 +179,9 @@
 .vis.timeline .item.selected {
   border-color: #FFC200;
   background-color: #FFF785;
-  z-index: 999;
+
+  /* z-index must be higher than the z-index of custom time bar and current time bar */
+  z-index: 2;
 }
 
 .vis.timeline .editable .item.selected {
@@ -192,14 +216,28 @@
   box-sizing: border-box;
 }
 
-.vis.timeline .item.range .content {
-  position: relative;
-  display: inline-block;
+.vis.timeline .item.background {
+  overflow: hidden;
+  border: none;
+  background-color: rgba(213, 221, 246, 0.4);
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 .vis.timeline .item.range .content {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.vis.timeline .item.background .content {
+  position: absolute;
+  display: inline-block;
   overflow: hidden;
   max-width: 100%;
+  margin: 5px;
 }
 
 .vis.timeline .item.line {
@@ -233,7 +271,6 @@
   left: -4px;
 
   cursor: w-resize;
-  z-index: 10000;
 }
 
 .vis.timeline .item.range .drag-right {
@@ -244,7 +281,6 @@
   right: -4px;
 
   cursor: e-resize;
-  z-index: 10001; /* a little higher z-index than .drag-left */
 }
 
 .vis.timeline .timeaxis {
@@ -367,6 +403,7 @@
 .vis.timeline .dataaxis .yAxis.major.measure{
     padding: 0px 0px 0px 0px;
     margin: 0px 0px 0px 0px;
+    border: 0px;
     visibility: hidden;
     width: auto;
 }
@@ -382,10 +419,53 @@
 .vis.timeline .dataaxis .yAxis.minor.measure{
     padding: 0px 0px 0px 0px;
     margin: 0px 0px 0px 0px;
+    border: 0px;
     visibility: hidden;
     width: auto;
 }
 
+.vis.timeline .dataaxis .yAxis.title{
+    position: absolute;
+    color: #4d4d4d;
+    white-space: nowrap;
+    bottom: 20px;
+    text-align: center;
+}
+
+.vis.timeline .dataaxis .yAxis.title.measure{
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+    visibility: hidden;
+    width: auto;
+}
+
+.vis.timeline .dataaxis .yAxis.title.left {
+    bottom: 0px;
+    -webkit-transform-origin: left top;
+    -moz-transform-origin: left top;
+    -ms-transform-origin: left top;
+    -o-transform-origin: left top;
+    transform-origin: left bottom;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+
+.vis.timeline .dataaxis .yAxis.title.right {
+    bottom: 0px;
+    -webkit-transform-origin: right bottom;
+    -moz-transform-origin: right bottom;
+    -ms-transform-origin: right bottom;
+    -o-transform-origin: right bottom;
+    transform-origin: right bottom;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
 
 .vis.timeline .legend {
     background-color: rgba(247, 252, 255, 0.65);
@@ -511,137 +591,150 @@
 
 
 div.network-manipulationDiv {
-    border-width:0px;
-    border-bottom: 1px;
-    border-style:solid;
-    border-color: #d6d9d8;
-    background: #ffffff; /* Old browsers */
-    background: -moz-linear-gradient(top,  #ffffff 0%, #fcfcfc 48%, #fafafa 50%, #fcfcfc 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(48%,#fcfcfc), color-stop(50%,#fafafa), color-stop(100%,#fcfcfc)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#fcfcfc',GradientType=0 ); /* IE6-9 */
+  border-width: 0;
+  border-bottom: 1px;
+  border-style:solid;
+  border-color: #d6d9d8;
+  background: #ffffff; /* Old browsers */
+  background: -moz-linear-gradient(top,  #ffffff 0%, #fcfcfc 48%, #fafafa 50%, #fcfcfc 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(48%,#fcfcfc), color-stop(50%,#fafafa), color-stop(100%,#fcfcfc)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* IE10+ */
+  background: linear-gradient(to bottom,  #ffffff 0%,#fcfcfc 48%,#fafafa 50%,#fcfcfc 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#fcfcfc',GradientType=0 ); /* IE6-9 */
 
-    width: 600px;
-    height:30px;
-    z-index:10;
-    position:absolute;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 30px;
 }
 
 div.network-manipulation-editMode {
-    height:30px;
-    z-index:10;
-    position:absolute;
-    margin-top:20px;
+  position:absolute;
+  left: 0;
+  top: 0;
+  height: 30px;
+  margin-top:20px;
 }
 
 div.network-manipulation-closeDiv {
-    height:30px;
-    width:30px;
-    z-index:11;
-    position:absolute;
-    margin-top:3px;
-    margin-left:590px;
-    background-position: 0px 0px;
-    background-repeat:no-repeat;
-    background-image: url("img/network/cross.png");
-    cursor: pointer;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  position:absolute;
+  right: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+
+  background-position: 20px 3px;
+  background-repeat: no-repeat;
+  background-image: url("img/network/cross.png");
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+div.network-manipulation-closeDiv:hover {
+  opacity: 0.6;
 }
 
 span.network-manipulationUI {
-    font-family: verdana;
-    font-size: 12px;
-    -moz-border-radius: 15px;
-    border-radius: 15px;
-    display:inline-block;
-    background-position: 0px 0px;
-    background-repeat:no-repeat;
-    height:24px;
-    margin: -14px 0px 0px 10px;
-    vertical-align:middle;
-    cursor: pointer;
-    padding: 0px 8px 0px 8px;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  font-family: verdana;
+  font-size: 12px;
+  -moz-border-radius: 15px;
+  border-radius: 15px;
+  display:inline-block;
+  background-position: 0px 0px;
+  background-repeat:no-repeat;
+  height:24px;
+  margin: -14px 0px 0px 10px;
+  vertical-align:middle;
+  cursor: pointer;
+  padding: 0px 8px 0px 8px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 span.network-manipulationUI:hover {
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.20);
+  box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.20);
 }
 
 span.network-manipulationUI:active {
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.50);
+  box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.50);
 }
 
 span.network-manipulationUI.back {
-    background-image: url("img/network/backIcon.png");
+  background-image: url("img/network/backIcon.png");
 }
 
 span.network-manipulationUI.none:hover {
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.0);
-    cursor: default;
+  box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.0);
+  cursor: default;
 }
 span.network-manipulationUI.none:active {
-    box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.0);
+  box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.0);
 }
 span.network-manipulationUI.none {
-    padding: 0px 0px 0px 0px;
+  padding: 0;
 }
 span.network-manipulationUI.notification{
-    margin: 2px;
-    font-weight: bold;
+  margin: 2px;
+  font-weight: bold;
 }
 
 span.network-manipulationUI.add {
-    background-image: url("img/network/addNodeIcon.png");
+  background-image: url("img/network/addNodeIcon.png");
 }
 
 span.network-manipulationUI.edit {
-    background-image: url("img/network/editIcon.png");
+  background-image: url("img/network/editIcon.png");
 }
 
 span.network-manipulationUI.edit.editmode {
-    background-color: #fcfcfc;
-    border-style:solid;
-    border-width:1px;
-    border-color: #cccccc;
+  background-color: #fcfcfc;
+  border-style:solid;
+  border-width:1px;
+  border-color: #cccccc;
 }
 
 span.network-manipulationUI.connect {
-    background-image: url("img/network/connectIcon.png");
+  background-image: url("img/network/connectIcon.png");
 }
 
 span.network-manipulationUI.delete {
-    background-image: url("img/network/deleteIcon.png");
+  background-image: url("img/network/deleteIcon.png");
 }
 /* top right bottom left */
 span.network-manipulationLabel {
-    margin: 0px 0px 0px 23px;
-    line-height: 25px;
+  margin: 0px 0px 0px 23px;
+  line-height: 25px;
 }
 div.network-seperatorLine {
-    display:inline-block;
-    width:1px;
-    height:20px;
-    background-color: #bdbdbd;
-    margin: 5px 7px 0px 15px;
+  display:inline-block;
+  width:1px;
+  height:20px;
+  background-color: #bdbdbd;
+  margin: 5px 7px 0px 15px;
+}
+
+div.network-navigation_wrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
 div.network-navigation {
     width:34px;
     height:34px;
-    z-index:10;
     -moz-border-radius: 17px;
     border-radius: 17px;
     position:absolute;

@@ -42,6 +42,8 @@ function Node(properties, imagelist, grouplist, networkConstants) {
   this.id = undefined;
   this.x = null;
   this.y = null;
+  this.allowedToMoveX = false;
+  this.allowedToMoveY = false;
   this.xFixed = false;
   this.yFixed = false;
   this.horizontalAlignLeft = true; // these are for the navigation controls
@@ -50,6 +52,8 @@ function Node(properties, imagelist, grouplist, networkConstants) {
   this.radiusFixed = false;
   this.level = -1;
   this.preassignedLevel = false;
+  this.hierarchyEnumerated = false;
+  this.labelDimensions = {top:0,left:0,width:0,height:0,yLine:0}; // could be cached
 
 
   this.imagelist = imagelist;
@@ -62,7 +66,6 @@ function Node(properties, imagelist, grouplist, networkConstants) {
   this.vy = 0.0;  // velocity y
   this.damping = networkConstants.physics.damping; // written every time gravity is calculated
   this.fixedData = {x:null,y:null};
-
 
   this.setProperties(properties, constants);
 
@@ -118,6 +121,9 @@ Node.prototype.detachEdge = function(edge) {
   var index = this.edges.indexOf(edge);
   if (index != -1) {
     this.edges.splice(index, 1);
+  }
+  index = this.dynamicEdges.indexOf(edge);
+  if (index != -1) {
     this.dynamicEdges.splice(index, 1);
   }
   this.dynamicEdgesLength = this.dynamicEdges.length;
@@ -134,12 +140,11 @@ Node.prototype.setProperties = function(properties, constants) {
     return;
   }
 
-  var fields = ['borderWidth','borderWidthSelected','shape','image','radius','fontColor',
-    'fontSize','fontFace','group','mass'
+  var fields = ['borderWidth','borderWidthSelected','shape','image','brokenImage','radius','fontColor',
+    'fontSize','fontFace','fontFill','group','mass'
   ];
   util.selectiveDeepExtend(fields, this.options, properties);
 
-  this.originalLabel = undefined;
   // basic properties
   if (properties.id !== undefined)        {this.id = properties.id;}
   if (properties.label !== undefined)     {this.label = properties.label; this.originalLabel = properties.label;}
@@ -157,9 +162,9 @@ Node.prototype.setProperties = function(properties, constants) {
   if (this.id === undefined) {
     throw "Node must have an id";
   }
-//  console.log(this.options);
+
   // copy group properties
-  if (this.options.group !== undefined && this.options.group != "") {
+  if (typeof this.options.group === 'number' || (typeof this.options.group === 'string' && this.options.group != '')) {
     var groupObj = this.grouplist.get(this.options.group);
     for (var prop in groupObj) {
       if (groupObj.hasOwnProperty(prop)) {
@@ -175,21 +180,37 @@ Node.prototype.setProperties = function(properties, constants) {
 
   if (this.options.image!== undefined && this.options.image!= "") {
     if (this.imagelist) {
-      this.imageObj = this.imagelist.load(this.options.image);
+      this.imageObj = this.imagelist.load(this.options.image, this.options.brokenImage);
     }
     else {
       throw "No imagelist provided";
     }
   }
 
-  this.xFixed = this.xFixed || (properties.x !== undefined && !properties.allowedToMoveX);
-  this.yFixed = this.yFixed || (properties.y !== undefined && !properties.allowedToMoveY);
+  if (properties.allowedToMoveX !== undefined) {
+    this.xFixed = !properties.allowedToMoveX;
+    this.allowedToMoveX = properties.allowedToMoveX;
+  }
+  else if (properties.x !== undefined && this.allowedToMoveX == false) {
+    this.xFixed = true;
+  }
+
+
+  if (properties.allowedToMoveY !== undefined) {
+    this.yFixed = !properties.allowedToMoveY;
+    this.allowedToMoveY = properties.allowedToMoveY;
+  }
+  else if (properties.y !== undefined && this.allowedToMoveY == false) {
+    this.yFixed = true;
+  }
+
   this.radiusFixed = this.radiusFixed || (properties.radius !== undefined);
 
   if (this.options.shape == 'image') {
     this.options.radiusMin = constants.nodes.widthMin;
     this.options.radiusMax = constants.nodes.widthMax;
   }
+
 
 
   // choose draw method depending on the shape
@@ -210,6 +231,7 @@ Node.prototype.setProperties = function(properties, constants) {
   }
   // reset the size of the node, this can be changed
   this._reset();
+
 };
 
 /**
@@ -333,12 +355,20 @@ Node.prototype.discreteStep = function(interval) {
     this.vx += ax * interval;               // velocity
     this.x  += this.vx * interval;          // position
   }
+  else {
+    this.fx = 0;
+    this.vx = 0;
+  }
 
   if (!this.yFixed) {
     var dy   = this.damping * this.vy;     // damping force
     var ay   = (this.fy - dy) / this.options.mass;  // acceleration
     this.vy += ay * interval;               // velocity
     this.y  += this.vy * interval;          // position
+  }
+  else {
+    this.fy = 0;
+    this.vy = 0;
   }
 };
 
@@ -359,6 +389,7 @@ Node.prototype.discreteStepLimited = function(interval, maxVelocity) {
   }
   else {
     this.fx = 0;
+    this.vx = 0;
   }
 
   if (!this.yFixed) {
@@ -370,6 +401,7 @@ Node.prototype.discreteStepLimited = function(interval, maxVelocity) {
   }
   else {
     this.fy = 0;
+    this.vy = 0;
   }
 };
 
@@ -386,9 +418,10 @@ Node.prototype.isFixed = function() {
  * @param {number} vmin   the minimum velocity considered as "moving"
  * @return {boolean}      true if moving, false if it has no velocity
  */
-// TODO: replace this method with calculating the kinetic energy
 Node.prototype.isMoving = function(vmin) {
-  return (Math.abs(this.vx) > vmin || Math.abs(this.vy) > vmin);
+  var velocity = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2));
+//  this.velocity = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2))
+  return (velocity > vmin);
 };
 
 /**
@@ -640,7 +673,7 @@ Node.prototype._resizeCircle = function (ctx) {
     var margin = 5;
     var textSize = this.getTextSize(ctx);
     var diameter = Math.max(textSize.width, textSize.height) + 2 * margin;
-    this.options.radius= diameter / 2;
+    this.options.radius = diameter / 2;
 
     this.width = diameter;
     this.height = diameter;
@@ -696,7 +729,7 @@ Node.prototype._resizeEllipse = function (ctx) {
     }
     var defaultSize = this.width;
 
-      // scaling used for clustering
+    // scaling used for clustering
     this.width  += Math.min(this.clusterSize - 1, this.maxNodeSizeIncrements) * this.clusterSizeWidthFactor;
     this.height += Math.min(this.clusterSize - 1, this.maxNodeSizeIncrements) * this.clusterSizeHeightFactor;
     this.options.radius += Math.min(this.clusterSize - 1, this.maxNodeSizeIncrements) * this.clusterSizeRadiusFactor;
@@ -842,18 +875,39 @@ Node.prototype._drawText = function (ctx) {
 Node.prototype._label = function (ctx, text, x, y, align, baseline, labelUnderNode) {
   if (text && Number(this.options.fontSize) * this.networkScale > this.fontDrawThreshold) {
     ctx.font = (this.selected ? "bold " : "") + this.options.fontSize + "px " + this.options.fontFace;
-    ctx.fillStyle = this.options.fontColor || "black";
-    ctx.textAlign = align || "center";
-    ctx.textBaseline = baseline || "middle";
 
     var lines = text.split('\n');
     var lineCount = lines.length;
-    var fontSize = (Number(this.options.fontSize) + 4);
+    var fontSize = (Number(this.options.fontSize) + 4); // TODO: why is this +4 ?
     var yLine = y + (1 - lineCount) / 2 * fontSize;
     if (labelUnderNode == true) {
       yLine = y + (1 - lineCount) / (2 * fontSize);
     }
 
+    // font fill from edges now for nodes!
+    var width = ctx.measureText(lines[0]).width;
+    for (var i = 1; i < lineCount; i++) {
+      var lineWidth = ctx.measureText(lines[i]).width;
+      width = lineWidth > width ? lineWidth : width;
+    }
+    var height = this.options.fontSize * lineCount;
+    var left = x - width / 2;
+    var top = y - height / 2;
+    if (baseline == "top") {
+      top += 0.5 * fontSize;
+    }
+    this.labelDimensions = {top:top,left:left,width:width,height:height,yLine:yLine};
+
+    // create the fontfill background
+    if (this.options.fontFill !== undefined && this.options.fontFill !== null && this.options.fontFill !== "none") {
+      ctx.fillStyle = this.options.fontFill;
+      ctx.fillRect(left, top, width, height);
+    }
+
+    // draw text
+    ctx.fillStyle = this.options.fontColor || "black";
+    ctx.textAlign = align || "center";
+    ctx.textBaseline = baseline || "middle";
     for (var i = 0; i < lineCount; i++) {
       ctx.fillText(lines[i], x, yLine);
       yLine += fontSize;

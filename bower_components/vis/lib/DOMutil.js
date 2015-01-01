@@ -82,7 +82,7 @@ exports.getSVGElement = function (elementType, JSONcontainer, svgContainer) {
  * @returns {*}
  * @private
  */
-exports.getDOMElement = function (elementType, JSONcontainer, DOMContainer) {
+exports.getDOMElement = function (elementType, JSONcontainer, DOMContainer, insertBefore) {
   var element;
   // allocate DOM element, if it doesnt yet exist, create one.
   if (JSONcontainer.hasOwnProperty(elementType)) { // this element has been created before
@@ -94,14 +94,24 @@ exports.getDOMElement = function (elementType, JSONcontainer, DOMContainer) {
     else {
       // create a new element and add it to the SVG
       element = document.createElement(elementType);
-      DOMContainer.appendChild(element);
+      if (insertBefore !== undefined) {
+        DOMContainer.insertBefore(element, insertBefore);
+      }
+      else {
+        DOMContainer.appendChild(element);
+      }
     }
   }
   else {
     // create a new element and add it to the SVG, also create a new object in the svgElements to keep track of it.
     element = document.createElement(elementType);
     JSONcontainer[elementType] = {used: [], redundant: []};
-    DOMContainer.appendChild(element);
+    if (insertBefore !== undefined) {
+      DOMContainer.insertBefore(element, insertBefore);
+    }
+    else {
+      DOMContainer.appendChild(element);
+    }
   }
   JSONcontainer[elementType].used.push(element);
   return element;
@@ -129,7 +139,6 @@ exports.drawPoint = function(x, y, group, JSONcontainer, svgContainer) {
     point.setAttributeNS(null, "cx", x);
     point.setAttributeNS(null, "cy", y);
     point.setAttributeNS(null, "r", 0.5 * group.options.drawPoints.size);
-    point.setAttributeNS(null, "class", group.className + " point");
   }
   else {
     point = exports.getSVGElement('rect',JSONcontainer,svgContainer);
@@ -137,8 +146,12 @@ exports.drawPoint = function(x, y, group, JSONcontainer, svgContainer) {
     point.setAttributeNS(null, "y", y - 0.5*group.options.drawPoints.size);
     point.setAttributeNS(null, "width", group.options.drawPoints.size);
     point.setAttributeNS(null, "height", group.options.drawPoints.size);
-    point.setAttributeNS(null, "class", group.className + " point");
   }
+
+  if(group.options.drawPoints.styles !== undefined) {
+    point.setAttributeNS(null, "style", group.group.options.drawPoints.styles);
+  }
+  point.setAttributeNS(null, "class", group.className + " point");
   return point;
 };
 
@@ -150,12 +163,16 @@ exports.drawPoint = function(x, y, group, JSONcontainer, svgContainer) {
  * @param className
  */
 exports.drawBar = function (x, y, width, height, className, JSONcontainer, svgContainer) {
-//  if (height != 0) {
+  if (height != 0) {
+    if (height < 0) {
+      height *= -1;
+      y -= height;
+    }
     var rect = exports.getSVGElement('rect',JSONcontainer, svgContainer);
     rect.setAttributeNS(null, "x", x - 0.5 * width);
     rect.setAttributeNS(null, "y", y);
     rect.setAttributeNS(null, "width", width);
     rect.setAttributeNS(null, "height", height);
     rect.setAttributeNS(null, "class", className);
-//  }
+  }
 };

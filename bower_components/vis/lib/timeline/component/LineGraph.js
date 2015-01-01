@@ -6,6 +6,7 @@ var Component = require('./Component');
 var DataAxis = require('./DataAxis');
 var GraphGroup = require('./GraphGroup');
 var Legend = require('./Legend');
+var BarGraphFunctions = require('./graph2d_types/bar');
 
 var UNGROUPED = '__ungrouped__'; // reserved group id for ungrouped items
 
@@ -33,6 +34,7 @@ function LineGraph(body, options) {
     style: 'line', // line, bar
     barChart: {
       width: 50,
+      handleOverlap: 'overlap',
       align: 'center' // left, center, right
     },
     catmullRom: {
@@ -50,7 +52,27 @@ function LineGraph(body, options) {
       showMajorLabels: true,
       icons: false,
       width: '40px',
-      visible: true
+      visible: true,
+      alignZeros: true,
+      customRange: {
+        left: {min:undefined, max:undefined},
+        right: {min:undefined, max:undefined}
+      }
+      //, these options are not set by default, but this shows the format they will be in
+      //format: {
+      //  left: {decimals: 2},
+      //  right: {decimals: 2}
+      //},
+      //title: {
+      //  left: {
+      //    text: 'left',
+      //    style: 'color:black;'
+      //  },
+      //  right: {
+      //    text: 'right',
+      //    style: 'color:black;'
+      //  }
+      //}
     },
     legend: {
       enabled: false,
@@ -63,6 +85,9 @@ function LineGraph(body, options) {
         visible: true,
         position: 'top-right' // top/bottom - left,right
       }
+    },
+    groups: {
+      visibility: {}
     }
   };
 
@@ -72,6 +97,8 @@ function LineGraph(body, options) {
   this.props = {};
   this.hammer = null;
   this.groups = {};
+  this.abortedGraphUpdate = false;
+  this.autoSizeSVG = false;
 
   var me = this;
   this.itemsData = null;    // DataSet
@@ -111,27 +138,18 @@ function LineGraph(body, options) {
   this.svgElements = {};
   this.setOptions(options);
   this.groupsUsingDefaultStyles = [0];
-
-  this.body.emitter.on("rangechange",function() {
-      if (me.lastStart != 0) {
-        var offset = me.body.range.start - me.lastStart;
-        var range = me.body.range.end - me.body.range.start;
-        if (me.width != 0) {
-          var rangePerPixelInv = me.width/range;
-          var xOffset = offset * rangePerPixelInv;
-          me.svg.style.left = (-me.width - xOffset) + "px";
-        }
-      }
-    });
-  this.body.emitter.on("rangechanged", function() {
+  this.COUNTER = 0;
+  this.body.emitter.on('rangechanged', function() {
     me.lastStart = me.body.range.start;
     me.svg.style.left = util.option.asSize(-me.width);
-    me._updateGraph.apply(me);
+    me.redraw.call(me,true);
   });
 
   // create the HTML DOM
   this._create();
-  this.body.emitter.emit("change");
+  this.framework = {svg: this.svg, svgElements: this.svgElements, options: this.options, groups: this.groups};
+  this.body.emitter.emit('change');
+
 }
 
 LineGraph.prototype = new Component();
@@ -145,34 +163,42 @@ LineGraph.prototype._create = function(){
   this.dom.frame = frame;
 
   // create svg element for graph drawing.
-  this.svg = document.createElementNS('http://www.w3.org/2000/svg',"svg");
-  this.svg.style.position = "relative";
-  this.svg.style.height = ('' + this.options.graphHeight).replace("px",'') + 'px';
-  this.svg.style.display = "block";
+  this.svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  this.svg.style.position = 'relative';
+  this.svg.style.height = ('' + this.options.graphHeight).replace('px','') + 'px';
+  this.svg.style.display = 'block';
   frame.appendChild(this.svg);
 
   // data axis
   this.options.dataAxis.orientation = 'left';
-  this.yAxisLeft = new DataAxis(this.body, this.options.dataAxis, this.svg);
+  this.yAxisLeft = new DataAxis(this.body, this.options.dataAxis, this.svg, this.options.groups);
 
   this.options.dataAxis.orientation = 'right';
-  this.yAxisRight = new DataAxis(this.body, this.options.dataAxis, this.svg);
+  this.yAxisRight = new DataAxis(this.body, this.options.dataAxis, this.svg, this.options.groups);
   delete this.options.dataAxis.orientation;
 
   // legends
-  this.legendLeft = new Legend(this.body, this.options.legend, 'left');
-  this.legendRight = new Legend(this.body, this.options.legend, 'right');
+  this.legendLeft = new Legend(this.body, this.options.legend, 'left', this.options.groups);
+  this.legendRight = new Legend(this.body, this.options.legend, 'right', this.options.groups);
 
   this.show();
 };
 
 /**
  * set the options of the LineGraph. the mergeOptions is used for subObjects that have an enabled element.
- * @param options
+ * @param {object} options
  */
 LineGraph.prototype.setOptions = function(options) {
   if (options) {
-    var fields = ['sampling','defaultGroup','graphHeight','yAxisOrientation','style','barChart','dataAxis','sort'];
+    var fields = ['sampling','defaultGroup','graphHeight','yAxisOrientation','style','barChart','dataAxis','sort','groups'];
+    if (options.graphHeight === undefined && options.height !== undefined && this.body.domProps.centerContainer.height !== undefined) {
+      this.autoSizeSVG = true;
+    }
+    else if (this.body.domProps.centerContainer.height !== undefined && options.graphHeight !== undefined) {
+      if (parseInt((options.graphHeight + '').replace("px",'')) < this.body.domProps.centerContainer.height) {
+        this.autoSizeSVG = true;
+      }
+    }
     util.selectiveDeepExtend(fields, this.options, options);
     util.mergeOptions(this.options, options,'catmullRom');
     util.mergeOptions(this.options, options,'drawPoints');
@@ -214,8 +240,10 @@ LineGraph.prototype.setOptions = function(options) {
       this.groups[UNGROUPED].setOptions(options);
     }
   }
+
+  // this is used to redraw the graph if the visibility of the groups is changed.
   if (this.dom.frame) {
-    this._updateGraph();
+    this.redraw(true);
   }
 };
 
@@ -228,6 +256,7 @@ LineGraph.prototype.hide = function() {
     this.dom.frame.parentNode.removeChild(this.dom.frame);
   }
 };
+
 
 /**
  * Show the component in the DOM (when not already visible).
@@ -284,17 +313,18 @@ LineGraph.prototype.setItems = function(items) {
     this._onAdd(ids);
   }
   this._updateUngrouped();
-  this._updateGraph();
-  this.redraw();
+  //this._updateGraph();
+  this.redraw(true);
 };
+
 
 /**
  * Set groups
  * @param {vis.DataSet} groups
  */
 LineGraph.prototype.setGroups = function(groups) {
-  var me = this,
-    ids;
+  var me = this;
+  var ids;
 
   // unsubscribe from current dataset
   if (this.groupsData) {
@@ -334,12 +364,16 @@ LineGraph.prototype.setGroups = function(groups) {
 };
 
 
-
+/**
+ * Update the data
+ * @param [ids]
+ * @private
+ */
 LineGraph.prototype._onUpdate = function(ids) {
   this._updateUngrouped();
   this._updateAllGroupData();
-  this._updateGraph();
-  this.redraw();
+  //this._updateGraph();
+  this.redraw(true);
 };
 LineGraph.prototype._onAdd          = function (ids) {this._onUpdate(ids);};
 LineGraph.prototype._onRemove       = function (ids) {this._onUpdate(ids);};
@@ -349,14 +383,20 @@ LineGraph.prototype._onUpdateGroups  = function (groupIds) {
     this._updateGroup(group, groupIds[i]);
   }
 
-  this._updateGraph();
-  this.redraw();
+  //this._updateGraph();
+  this.redraw(true);
 };
 LineGraph.prototype._onAddGroups = function (groupIds) {this._onUpdateGroups(groupIds);};
 
+
+/**
+ * this cleans the group out off the legends and the dataaxis, updates the ungrouped and updates the graph
+ * @param {Array} groupIds
+ * @private
+ */
 LineGraph.prototype._onRemoveGroups = function (groupIds) {
   for (var i = 0; i < groupIds.length; i++) {
-    if (!this.groups.hasOwnProperty(groupIds[i])) {
+    if (this.groups.hasOwnProperty(groupIds[i])) {
       if (this.groups[groupIds[i]].options.yAxisOrientation == 'right') {
         this.yAxisRight.removeGroup(groupIds[i]);
         this.legendRight.removeGroup(groupIds[i]);
@@ -371,12 +411,13 @@ LineGraph.prototype._onRemoveGroups = function (groupIds) {
     }
   }
   this._updateUngrouped();
-  this._updateGraph();
-  this.redraw();
+  //this._updateGraph();
+  this.redraw(true);
 };
 
+
 /**
- * update a group object
+ * update a group object with the group dataset entree
  *
  * @param group
  * @param groupId
@@ -409,10 +450,17 @@ LineGraph.prototype._updateGroup = function (group, groupId) {
   this.legendRight.redraw();
 };
 
+
+/**
+ * this updates all groups, it is used when there is an update the the itemset.
+ *
+ * @private
+ */
 LineGraph.prototype._updateAllGroupData = function () {
   if (this.itemsData != null) {
     var groupsContent = {};
-    for (var groupId in this.groups) {
+    var groupId;
+    for (groupId in this.groups) {
       if (this.groups.hasOwnProperty(groupId)) {
         groupsContent[groupId] = [];
       }
@@ -420,11 +468,14 @@ LineGraph.prototype._updateAllGroupData = function () {
     for (var itemId in this.itemsData._data) {
       if (this.itemsData._data.hasOwnProperty(itemId)) {
         var item = this.itemsData._data[itemId];
-        item.x = util.convert(item.x,"Date");
+        if (groupsContent[item.group] === undefined) {
+          throw new Error('Cannot find referenced group. Possible reason: items added before groups? Groups need to be added before items, as items refer to groups.')
+        }
+        item.x = util.convert(item.x,'Date');
         groupsContent[item.group].push(item);
       }
     }
-    for (var groupId in this.groups) {
+    for (groupId in this.groups) {
       if (this.groups.hasOwnProperty(groupId)) {
         this.groups[groupId].setItems(groupsContent[groupId]);
       }
@@ -432,50 +483,32 @@ LineGraph.prototype._updateAllGroupData = function () {
   }
 };
 
+
 /**
  * Create or delete the group holding all ungrouped items. This group is used when
  * there are no groups specified. This anonymous group is called 'graph'.
  * @protected
  */
 LineGraph.prototype._updateUngrouped = function() {
-  if (this.itemsData != null) {
-//    var t0 = new Date();
-    var group = {id: UNGROUPED, content: this.options.defaultGroup};
-    this._updateGroup(group, UNGROUPED);
+  if (this.itemsData && this.itemsData != null) {
     var ungroupedCounter = 0;
-    if (this.itemsData) {
-      for (var itemId in this.itemsData._data) {
-        if (this.itemsData._data.hasOwnProperty(itemId)) {
-          var item = this.itemsData._data[itemId];
-          if (item != undefined) {
-            if (item.hasOwnProperty('group')) {
-              if (item.group === undefined) {
-                item.group = UNGROUPED;
-              }
-            }
-            else {
+    for (var itemId in this.itemsData._data) {
+      if (this.itemsData._data.hasOwnProperty(itemId)) {
+        var item = this.itemsData._data[itemId];
+        if (item != undefined) {
+          if (item.hasOwnProperty('group')) {
+            if (item.group === undefined) {
               item.group = UNGROUPED;
             }
-            ungroupedCounter = item.group == UNGROUPED ? ungroupedCounter + 1 : ungroupedCounter;
           }
+          else {
+            item.group = UNGROUPED;
+          }
+          ungroupedCounter = item.group == UNGROUPED ? ungroupedCounter + 1 : ungroupedCounter;
         }
       }
     }
 
-    // much much slower
-//    var datapoints = this.itemsData.get({
-//      filter: function (item) {return item.group === undefined;},
-//      showInternalIds:true
-//    });
-//    if (datapoints.length > 0) {
-//      var updateQuery = [];
-//      for (var i = 0; i < datapoints.length; i++) {
-//        updateQuery.push({id:datapoints[i].id, group: UNGROUPED});
-//      }
-//      this.itemsData.update(updateQuery, true);
-//    }
-//    var t1 = new Date();
-//    var pointInUNGROUPED = this.itemsData.get({filter: function (item) {return item.group == UNGROUPED;}});
     if (ungroupedCounter == 0) {
       delete this.groups[UNGROUPED];
       this.legendLeft.removeGroup(UNGROUPED);
@@ -483,8 +516,10 @@ LineGraph.prototype._updateUngrouped = function() {
       this.yAxisLeft.removeGroup(UNGROUPED);
       this.yAxisRight.removeGroup(UNGROUPED);
     }
-//    console.log("getting amount ungrouped",new Date() - t1);
-//    console.log("putting in ungrouped",new Date() - t0);
+    else {
+      var group = {id: UNGROUPED, content: this.options.defaultGroup};
+      this._updateGroup(group, UNGROUPED);
+    }
   }
   else {
     delete this.groups[UNGROUPED];
@@ -503,7 +538,7 @@ LineGraph.prototype._updateUngrouped = function() {
  * Redraw the component, mandatory function
  * @return {boolean} Returns true if the component is resized
  */
-LineGraph.prototype.redraw = function() {
+LineGraph.prototype.redraw = function(forceGraphUpdate) {
   var resized = false;
 
   this.svg.style.height = ('' + this.options.graphHeight).replace('px','') + 'px';
@@ -514,7 +549,7 @@ LineGraph.prototype.redraw = function() {
   resized = this._isResized() || resized;
   // check whether zoomed (in that case we need to re-stack everything)
   var visibleInterval = this.body.range.end - this.body.range.start;
-  var zoomed = (visibleInterval != this.lastVisibleInterval) || (this.width != this.lastWidth);
+  //var zoomed = (visibleInterval != this.lastVisibleInterval) || (this.width != this.lastWidth); // we get this from the range changed event
   this.lastVisibleInterval = visibleInterval;
   this.lastWidth = this.width;
 
@@ -527,8 +562,22 @@ LineGraph.prototype.redraw = function() {
     this.svg.style.width = util.option.asSize(3*this.width);
     this.svg.style.left = util.option.asSize(-this.width);
   }
-  if (zoomed == true) {
-    this._updateGraph();
+
+  if (this.abortedGraphUpdate == true || forceGraphUpdate == true) {
+    resized = resized || this._updateGraph();
+  }
+  else {
+    // move the whole svg while dragging
+    if (this.lastStart != 0) {
+      var offset = this.body.range.start - this.lastStart;
+      var range = this.body.range.end - this.body.range.start;
+      if (this.width != 0) {
+        var rangePerPixelInv = this.width/range;
+        var xOffset = offset * rangePerPixelInv;
+        this.svg.style.left = (-this.width - xOffset) + 'px';
+      }
+    }
+
   }
 
   this.legendLeft.redraw();
@@ -537,6 +586,7 @@ LineGraph.prototype.redraw = function() {
   return resized;
 };
 
+
 /**
  * Update and redraw the graph.
  *
@@ -544,117 +594,221 @@ LineGraph.prototype.redraw = function() {
 LineGraph.prototype._updateGraph = function () {
   // reset the svg elements
   DOMutil.prepareElements(this.svgElements);
-
   if (this.width != 0 && this.itemsData != null) {
-    var group, groupData, preprocessedGroup, i;
-    var preprocessedGroupData = [];
-    var processedGroupData = [];
-    var groupRanges = [];
+    var group, i;
+    var preprocessedGroupData = {};
+    var processedGroupData = {};
+    var groupRanges = {};
     var changeCalled = false;
+
+    // update the height of the graph on each redraw of the graph.
+    if (this.autoSizeSVG == true) {
+      if (this.options.graphHeight != this.body.domProps.centerContainer.height + 'px') {
+        this.options.graphHeight = this.body.domProps.centerContainer.height + 'px';
+        this.svg.style.height = this.body.domProps.centerContainer.height + 'px';
+      }
+      this.autoSizeSVG = false;
+    }
 
     // getting group Ids
     var groupIds = [];
     for (var groupId in this.groups) {
       if (this.groups.hasOwnProperty(groupId)) {
-        groupIds.push(groupId);
+        group = this.groups[groupId];
+        if (group.visible == true && (this.options.groups.visibility[groupId] === undefined || this.options.groups.visibility[groupId] == true)) {
+          groupIds.push(groupId);
+        }
       }
     }
-
-    // this is the range of the SVG canvas
-    var minDate = this.body.util.toGlobalTime(- this.body.domProps.root.width);
-    var maxDate = this.body.util.toGlobalTime(2 * this.body.domProps.root.width);
-
-    // first select and preprocess the data from the datasets.
-    // the groups have their preselection of data, we now loop over this data to see
-    // what data we need to draw. Sorted data is much faster.
-    // more optimization is possible by doing the sampling before and using the binary search
-    // to find the end date to determine the increment.
     if (groupIds.length > 0) {
-      for (i = 0; i < groupIds.length; i++) {
-        group = this.groups[groupIds[i]];
-        if (group.visible == true) {
-          groupData = [];
-          // optimization for sorted data
-          if (group.options.sort == true) {
-            var guess = Math.max(0,util.binarySearchGeneric(group.itemsData, minDate, 'x', 'before'));
+      // this is the range of the SVG canvas
+      var minDate = this.body.util.toGlobalTime(-this.body.domProps.root.width);
+      var maxDate = this.body.util.toGlobalTime(2 * this.body.domProps.root.width);
+      var groupsData = {};
+      // fill groups data, this only loads the data we require based on the timewindow
+      this._getRelevantData(groupIds, groupsData, minDate, maxDate);
 
-            for (var j = guess; j < group.itemsData.length; j++) {
-              var item = group.itemsData[j];
-              if (item !== undefined) {
-                if (item.x > maxDate) {
-                 groupData.push(item);
-                 break;
-                }
-                else {
-                  groupData.push(item);
-                }
-              }
-            }
-          }
-          else {
-            for (var j = 0; j < group.itemsData.length; j++) {
-              var item = group.itemsData[j];
-              if (item !== undefined) {
-                if (item.x > minDate && item.x < maxDate) {
-                  groupData.push(item);
-                }
-              }
-            }
-          }
-          // preprocess, split into ranges and data
-          if (groupData.length > 0) {
-            preprocessedGroup = this._preprocessData(groupData, group);
-            groupRanges.push({min: preprocessedGroup.min, max: preprocessedGroup.max});
-            preprocessedGroupData.push(preprocessedGroup.data);
-          }
-          else {
-            groupRanges.push({});
-            preprocessedGroupData.push([]);
-          }
-        }
-        else {
-          groupRanges.push({});
-          preprocessedGroupData.push([]);
-        }
+      // apply sampling, if disabled, it will pass through this function.
+      this._applySampling(groupIds, groupsData);
+
+      // we transform the X coordinates to detect collisions
+      for (i = 0; i < groupIds.length; i++) {
+        preprocessedGroupData[groupIds[i]] = this._convertXcoordinates(groupsData[groupIds[i]]);
       }
+
+      // now all needed data has been collected we start the processing.
+      this._getYRanges(groupIds, preprocessedGroupData, groupRanges);
 
       // update the Y axis first, we use this data to draw at the correct Y points
       // changeCalled is required to clean the SVG on a change emit.
       changeCalled = this._updateYAxis(groupIds, groupRanges);
-      if (changeCalled == true) {
+      var MAX_CYCLES = 5;
+      if (changeCalled == true && this.COUNTER < MAX_CYCLES) {
         DOMutil.cleanupElements(this.svgElements);
-        this.body.emitter.emit("change");
-        return;
+        this.abortedGraphUpdate = true;
+        this.COUNTER++;
+        this.body.emitter.emit('change');
+        return true;
       }
+      else {
+        if (this.COUNTER > MAX_CYCLES) {
+          console.log("WARNING: there may be an infinite loop in the _updateGraph emitter cycle.")
+        }
+        this.COUNTER = 0;
+        this.abortedGraphUpdate = false;
 
-      // with the yAxis scaled correctly, use this to get the Y values of the points.
-      for (i = 0; i < groupIds.length; i++) {
-        group = this.groups[groupIds[i]];
-        processedGroupData.push(this._convertYvalues(preprocessedGroupData[i],group))
-      }
+        // With the yAxis scaled correctly, use this to get the Y values of the points.
+        for (i = 0; i < groupIds.length; i++) {
+          group = this.groups[groupIds[i]];
+          processedGroupData[groupIds[i]] = this._convertYcoordinates(groupsData[groupIds[i]], group);
+        }
 
-      // draw the groups
-      for (i = 0; i < groupIds.length; i++) {
-        group = this.groups[groupIds[i]];
-        if (group.visible == true) {
-          if (group.options.style == 'line') {
-            this._drawLineGraph(processedGroupData[i], group);
-          }
-          else {
-            this._drawBarGraph (processedGroupData[i], group);
+        // draw the groups
+        for (i = 0; i < groupIds.length; i++) {
+          group = this.groups[groupIds[i]];
+          if (group.options.style != 'bar') { // bar needs to be drawn enmasse
+            group.draw(processedGroupData[groupIds[i]], group, this.framework);
           }
         }
+        BarGraphFunctions.draw(groupIds, processedGroupData, this.framework);
       }
     }
   }
 
   // cleanup unused svg elements
   DOMutil.cleanupElements(this.svgElements);
+  return false;
 };
+
+
+/**
+ * first select and preprocess the data from the datasets.
+ * the groups have their preselection of data, we now loop over this data to see
+ * what data we need to draw. Sorted data is much faster.
+ * more optimization is possible by doing the sampling before and using the binary search
+ * to find the end date to determine the increment.
+ *
+ * @param {array}  groupIds
+ * @param {object} groupsData
+ * @param {date}   minDate
+ * @param {date}   maxDate
+ * @private
+ */
+LineGraph.prototype._getRelevantData = function (groupIds, groupsData, minDate, maxDate) {
+  var group, i, j, item;
+  if (groupIds.length > 0) {
+    for (i = 0; i < groupIds.length; i++) {
+      group = this.groups[groupIds[i]];
+      groupsData[groupIds[i]] = [];
+      var dataContainer = groupsData[groupIds[i]];
+      // optimization for sorted data
+      if (group.options.sort == true) {
+        var guess = Math.max(0, util.binarySearchValue(group.itemsData, minDate, 'x', 'before'));
+        for (j = guess; j < group.itemsData.length; j++) {
+          item = group.itemsData[j];
+          if (item !== undefined) {
+            if (item.x > maxDate) {
+              dataContainer.push(item);
+              break;
+            }
+            else {
+              dataContainer.push(item);
+            }
+          }
+        }
+      }
+      else {
+        for (j = 0; j < group.itemsData.length; j++) {
+          item = group.itemsData[j];
+          if (item !== undefined) {
+            if (item.x > minDate && item.x < maxDate) {
+              dataContainer.push(item);
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
+
+/**
+ *
+ * @param groupIds
+ * @param groupsData
+ * @private
+ */
+LineGraph.prototype._applySampling = function (groupIds, groupsData) {
+  var group;
+  if (groupIds.length > 0) {
+    for (var i = 0; i < groupIds.length; i++) {
+      group = this.groups[groupIds[i]];
+      if (group.options.sampling == true) {
+        var dataContainer = groupsData[groupIds[i]];
+        if (dataContainer.length > 0) {
+          var increment = 1;
+          var amountOfPoints = dataContainer.length;
+
+          // the global screen is used because changing the width of the yAxis may affect the increment, resulting in an endless loop
+          // of width changing of the yAxis.
+          var xDistance = this.body.util.toGlobalScreen(dataContainer[dataContainer.length - 1].x) - this.body.util.toGlobalScreen(dataContainer[0].x);
+          var pointsPerPixel = amountOfPoints / xDistance;
+          increment = Math.min(Math.ceil(0.2 * amountOfPoints), Math.max(1, Math.round(pointsPerPixel)));
+
+          var sampledData = [];
+          for (var j = 0; j < amountOfPoints; j += increment) {
+            sampledData.push(dataContainer[j]);
+
+          }
+          groupsData[groupIds[i]] = sampledData;
+        }
+      }
+    }
+  }
+};
+
+
+/**
+ *
+ *
+ * @param {array}  groupIds
+ * @param {object} groupsData
+ * @param {object} groupRanges  | this is being filled here
+ * @private
+ */
+LineGraph.prototype._getYRanges = function (groupIds, groupsData, groupRanges) {
+  var groupData, group, i;
+  var barCombinedDataLeft = [];
+  var barCombinedDataRight = [];
+  var options;
+  if (groupIds.length > 0) {
+    for (i = 0; i < groupIds.length; i++) {
+      groupData = groupsData[groupIds[i]];
+      options = this.groups[groupIds[i]].options;
+      if (groupData.length > 0) {
+        group = this.groups[groupIds[i]];
+        // if bar graphs are stacked, their range need to be handled differently and accumulated over all groups.
+        if (options.barChart.handleOverlap == 'stack' && options.style == 'bar') {
+          if (options.yAxisOrientation == 'left') {barCombinedDataLeft  = barCombinedDataLeft.concat(group.getYRange(groupData)) ;}
+          else                                    {barCombinedDataRight = barCombinedDataRight.concat(group.getYRange(groupData));}
+        }
+        else {
+          groupRanges[groupIds[i]] = group.getYRange(groupData,groupIds[i]);
+        }
+      }
+    }
+
+    // if bar graphs are stacked, their range need to be handled differently and accumulated over all groups.
+    BarGraphFunctions.getStackedBarYRange(barCombinedDataLeft , groupRanges, groupIds, '__barchartLeft' , 'left' );
+    BarGraphFunctions.getStackedBarYRange(barCombinedDataRight, groupRanges, groupIds, '__barchartRight', 'right');
+  }
+};
+
 
 /**
  * this sets the Y ranges for the Y axis. It also determines which of the axis should be shown or hidden.
- * @param {array} groupIds
+ * @param {Array} groupIds
+ * @param {Object} groupRanges
  * @private
  */
 LineGraph.prototype._updateYAxis = function (groupIds, groupRanges) {
@@ -662,33 +816,44 @@ LineGraph.prototype._updateYAxis = function (groupIds, groupRanges) {
   var yAxisLeftUsed = false;
   var yAxisRightUsed = false;
   var minLeft = 1e9, minRight = 1e9, maxLeft = -1e9, maxRight = -1e9, minVal, maxVal;
-  var orientation = 'left';
-
   // if groups are present
   if (groupIds.length > 0) {
+    // this is here to make sure that if there are no items in the axis but there are groups, that there is no infinite draw/redraw loop.
     for (var i = 0; i < groupIds.length; i++) {
-      orientation = 'left';
       var group = this.groups[groupIds[i]];
-      if (group.visible == true) {
-        if (group.options.yAxisOrientation == 'right') {
-          orientation = 'right';
-        }
+      if (group && group.options.yAxisOrientation == 'left') {
+        yAxisLeftUsed = true;
+        minLeft = 0;
+        maxLeft = 0;
+      }
+      else {
+        yAxisRightUsed = true;
+        minRight = 0;
+        maxRight = 0;
+      }
+    }
 
-        minVal = groupRanges[i].min;
-        maxVal = groupRanges[i].max;
+    // if there are items:
+    for (var i = 0; i < groupIds.length; i++) {
+      if (groupRanges.hasOwnProperty(groupIds[i])) {
+        if (groupRanges[groupIds[i]].ignore !== true) {
+          minVal = groupRanges[groupIds[i]].min;
+          maxVal = groupRanges[groupIds[i]].max;
 
-        if (orientation == 'left') {
-          yAxisLeftUsed = true;
-          minLeft = minLeft > minVal ? minVal : minLeft;
-          maxLeft = maxLeft < maxVal ? maxVal : maxLeft;
-        }
-        else {
-          yAxisRightUsed = true;
-          minRight = minRight > minVal ? minVal : minRight;
-          maxRight = maxRight < maxVal ? maxVal : maxRight;
+          if (groupRanges[groupIds[i]].yAxisOrientation == 'left') {
+            yAxisLeftUsed = true;
+            minLeft = minLeft > minVal ? minVal : minLeft;
+            maxLeft = maxLeft < maxVal ? maxVal : maxLeft;
+          }
+          else {
+            yAxisRightUsed = true;
+            minRight = minRight > minVal ? minVal : minRight;
+            maxRight = maxRight < maxVal ? maxVal : maxRight;
+          }
         }
       }
     }
+
     if (yAxisLeftUsed == true) {
       this.yAxisLeft.setRange(minLeft, maxLeft);
     }
@@ -696,7 +861,6 @@ LineGraph.prototype._updateYAxis = function (groupIds, groupRanges) {
       this.yAxisRight.setRange(minRight, maxRight);
     }
   }
-
   changeCalled = this._toggleAxisVisiblity(yAxisLeftUsed , this.yAxisLeft)  || changeCalled;
   changeCalled = this._toggleAxisVisiblity(yAxisRightUsed, this.yAxisRight) || changeCalled;
 
@@ -717,13 +881,24 @@ LineGraph.prototype._updateYAxis = function (groupIds, groupRanges) {
 
     changeCalled = this.yAxisLeft.redraw() || changeCalled;
     this.yAxisRight.stepPixelsForced = this.yAxisLeft.stepPixels;
+    this.yAxisRight.zeroCrossing = this.yAxisLeft.zeroCrossing;
     changeCalled = this.yAxisRight.redraw() || changeCalled;
   }
   else {
     changeCalled = this.yAxisRight.redraw() || changeCalled;
   }
+
+  // clean the accumulated lists
+  if (groupIds.indexOf('__barchartLeft') != -1) {
+    groupIds.splice(groupIds.indexOf('__barchartLeft'),1);
+  }
+  if (groupIds.indexOf('__barchartRight') != -1) {
+    groupIds.splice(groupIds.indexOf('__barchartRight'),1);
+  }
+
   return changeCalled;
 };
+
 
 /**
  * This shows or hides the Y axis if needed. If there is a change, the changed event is emitted by the updateYAxis function
@@ -736,116 +911,19 @@ LineGraph.prototype._updateYAxis = function (groupIds, groupRanges) {
 LineGraph.prototype._toggleAxisVisiblity = function (axisUsed, axis) {
   var changed = false;
   if (axisUsed == false) {
-    if (axis.dom.frame.parentNode) {
-      axis.hide();
+    if (axis.dom.frame.parentNode && axis.hidden == false) {
+      axis.hide()
       changed = true;
     }
   }
   else {
-    if (!axis.dom.frame.parentNode) {
+    if (!axis.dom.frame.parentNode && axis.hidden == true) {
       axis.show();
       changed = true;
     }
   }
   return changed;
 };
-
-
-/**
- * draw a bar graph
- * @param datapoints
- * @param group
- */
-LineGraph.prototype._drawBarGraph = function (dataset, group) {
-  if (dataset != null) {
-    if (dataset.length > 0) {
-      var coreDistance;
-      var minWidth = 0.1 * group.options.barChart.width;
-      var offset = 0;
-      var width = group.options.barChart.width;
-
-      if (group.options.barChart.align == 'left')       {offset -= 0.5*width;}
-      else if (group.options.barChart.align == 'right') {offset += 0.5*width;}
-
-      for (var i = 0; i < dataset.length; i++) {
-        // dynammically downscale the width so there is no overlap up to 1/10th the original width
-        if (i+1 < dataset.length) {coreDistance = Math.abs(dataset[i+1].x - dataset[i].x);}
-        if (i > 0)                {coreDistance = Math.min(coreDistance,Math.abs(dataset[i-1].x - dataset[i].x));}
-        if (coreDistance < width) {width = coreDistance < minWidth ? minWidth : coreDistance;}
-
-        DOMutil.drawBar(dataset[i].x + offset, dataset[i].y, width, group.zeroPosition - dataset[i].y, group.className + ' bar', this.svgElements, this.svg);
-      }
-
-      // draw points
-      if (group.options.drawPoints.enabled == true) {
-        this._drawPoints(dataset, group, this.svgElements, this.svg, offset);
-      }
-    }
-  }
-};
-
-
-/**
- * draw a line graph
- *
- * @param datapoints
- * @param group
- */
-LineGraph.prototype._drawLineGraph = function (dataset, group) {
-  if (dataset != null) {
-    if (dataset.length > 0) {
-      var path, d;
-      var svgHeight = Number(this.svg.style.height.replace("px",""));
-      path = DOMutil.getSVGElement('path', this.svgElements, this.svg);
-      path.setAttributeNS(null, "class", group.className);
-
-      // construct path from dataset
-      if (group.options.catmullRom.enabled == true) {
-        d = this._catmullRom(dataset, group);
-      }
-      else {
-        d = this._linear(dataset);
-      }
-
-      // append with points for fill and finalize the path
-      if (group.options.shaded.enabled == true) {
-        var fillPath = DOMutil.getSVGElement('path',this.svgElements, this.svg);
-        var dFill;
-        if (group.options.shaded.orientation == 'top') {
-          dFill = "M" + dataset[0].x + "," + 0 + " " + d + "L" + dataset[dataset.length - 1].x + "," + 0;
-        }
-        else {
-          dFill = "M" + dataset[0].x + "," + svgHeight + " " + d + "L" + dataset[dataset.length - 1].x + "," + svgHeight;
-        }
-        fillPath.setAttributeNS(null, "class", group.className + " fill");
-        fillPath.setAttributeNS(null, "d", dFill);
-      }
-      // copy properties to path for drawing.
-      path.setAttributeNS(null, "d", "M" + d);
-
-      // draw points
-      if (group.options.drawPoints.enabled == true) {
-        this._drawPoints(dataset, group, this.svgElements, this.svg);
-      }
-    }
-  }
-};
-
-/**
- * draw the data points
- *
- * @param dataset
- * @param JSONcontainer
- * @param svg
- * @param group
- */
-LineGraph.prototype._drawPoints = function (dataset, group, JSONcontainer, svg, offset) {
-  if (offset === undefined) {offset = 0;}
-  for (var i = 0; i < dataset.length; i++) {
-    DOMutil.drawPoint(dataset[i].x + offset, dataset[i].y, group, JSONcontainer, svg);
-  }
-};
-
 
 
 /**
@@ -857,212 +935,51 @@ LineGraph.prototype._drawPoints = function (dataset, group, JSONcontainer, svg, 
  * @returns {Array}
  * @private
  */
-LineGraph.prototype._preprocessData = function (datapoints, group) {
+LineGraph.prototype._convertXcoordinates = function (datapoints) {
   var extractedData = [];
   var xValue, yValue;
   var toScreen = this.body.util.toScreen;
 
-  var increment = 1;
-  var amountOfPoints = datapoints.length;
-
-  var yMin = datapoints[0].y;
-  var yMax = datapoints[0].y;
-
-  // the global screen is used because changing the width of the yAxis may affect the increment, resulting in an endless loop
-  // of width changing of the yAxis.
-  if (group.options.sampling == true) {
-    var xDistance = this.body.util.toGlobalScreen(datapoints[datapoints.length-1].x) - this.body.util.toGlobalScreen(datapoints[0].x);
-    var pointsPerPixel = amountOfPoints/xDistance;
-    increment = Math.min(Math.ceil(0.2 * amountOfPoints), Math.max(1,Math.round(pointsPerPixel)));
-  }
-
-  for (var i = 0; i < amountOfPoints; i += increment) {
-    xValue = toScreen(datapoints[i].x) + this.width - 1;
+  for (var i = 0; i < datapoints.length; i++) {
+    xValue = toScreen(datapoints[i].x) + this.width;
     yValue = datapoints[i].y;
     extractedData.push({x: xValue, y: yValue});
-    yMin = yMin > yValue ? yValue : yMin;
-    yMax = yMax < yValue ? yValue : yMax;
   }
 
-  // extractedData.sort(function (a,b) {return a.x - b.x;});
-  return {min: yMin, max: yMax, data: extractedData};
+  return extractedData;
 };
 
+
 /**
- * This uses the DataAxis object to generate the correct Y coordinate on the SVG window. It uses the
- * util function toScreen to get the x coordinate from the timestamp.
+ * This uses the DataAxis object to generate the correct X coordinate on the SVG window. It uses the
+ * util function toScreen to get the x coordinate from the timestamp. It also pre-filters the data and get the minMax ranges for
+ * the yAxis.
  *
  * @param datapoints
- * @param options
+ * @param group
  * @returns {Array}
  * @private
  */
-LineGraph.prototype._convertYvalues = function (datapoints, group) {
+LineGraph.prototype._convertYcoordinates = function (datapoints, group) {
   var extractedData = [];
   var xValue, yValue;
+  var toScreen = this.body.util.toScreen;
   var axis = this.yAxisLeft;
-  var svgHeight = Number(this.svg.style.height.replace("px",""));
-
+  var svgHeight = Number(this.svg.style.height.replace('px',''));
   if (group.options.yAxisOrientation == 'right') {
     axis = this.yAxisRight;
   }
 
   for (var i = 0; i < datapoints.length; i++) {
-    xValue = datapoints[i].x;
+    xValue = toScreen(datapoints[i].x) + this.width;
     yValue = Math.round(axis.convertValue(datapoints[i].y));
     extractedData.push({x: xValue, y: yValue});
   }
 
   group.setZeroPosition(Math.min(svgHeight, axis.convertValue(0)));
 
-  // extractedData.sort(function (a,b) {return a.x - b.x;});
   return extractedData;
 };
 
-
-/**
- * This uses an uniform parametrization of the CatmullRom algorithm:
- * "On the Parameterization of Catmull-Rom Curves" by Cem Yuksel et al.
- * @param data
- * @returns {string}
- * @private
- */
-LineGraph.prototype._catmullRomUniform = function(data) {
-  // catmull rom
-  var p0, p1, p2, p3, bp1, bp2;
-  var d = Math.round(data[0].x) + "," + Math.round(data[0].y) + " ";
-  var normalization = 1/6;
-  var length = data.length;
-  for (var i = 0; i < length - 1; i++) {
-
-    p0 = (i == 0) ? data[0] : data[i-1];
-    p1 = data[i];
-    p2 = data[i+1];
-    p3 = (i + 2 < length) ? data[i+2] : p2;
-
-
-    // Catmull-Rom to Cubic Bezier conversion matrix
-    //    0       1       0       0
-    //  -1/6      1      1/6      0
-    //    0      1/6      1     -1/6
-    //    0       0       1       0
-
-    //    bp0 = { x: p1.x,                               y: p1.y };
-    bp1 = { x: ((-p0.x + 6*p1.x + p2.x) *normalization), y: ((-p0.y + 6*p1.y + p2.y) *normalization)};
-    bp2 = { x: (( p1.x + 6*p2.x - p3.x) *normalization), y: (( p1.y + 6*p2.y - p3.y) *normalization)};
-    //    bp0 = { x: p2.x,                               y: p2.y };
-
-    d += "C" +
-      bp1.x + "," +
-      bp1.y + " " +
-      bp2.x + "," +
-      bp2.y + " " +
-      p2.x + "," +
-      p2.y + " ";
-  }
-
-  return d;
-};
-
-/**
- * This uses either the chordal or centripetal parameterization of the catmull-rom algorithm.
- * By default, the centripetal parameterization is used because this gives the nicest results.
- * These parameterizations are relatively heavy because the distance between 4 points have to be calculated.
- *
- * One optimization can be used to reuse distances since this is a sliding window approach.
- * @param data
- * @returns {string}
- * @private
- */
-LineGraph.prototype._catmullRom = function(data, group) {
-  var alpha = group.options.catmullRom.alpha;
-  if (alpha == 0 || alpha === undefined) {
-    return this._catmullRomUniform(data);
-  }
-  else {
-    var p0, p1, p2, p3, bp1, bp2, d1,d2,d3, A, B, N, M;
-    var d3powA, d2powA, d3pow2A, d2pow2A, d1pow2A, d1powA;
-    var d = Math.round(data[0].x) + "," + Math.round(data[0].y) + " ";
-    var length = data.length;
-    for (var i = 0; i < length - 1; i++) {
-
-      p0 = (i == 0) ? data[0] : data[i-1];
-      p1 = data[i];
-      p2 = data[i+1];
-      p3 = (i + 2 < length) ? data[i+2] : p2;
-
-      d1 = Math.sqrt(Math.pow(p0.x - p1.x,2) + Math.pow(p0.y - p1.y,2));
-      d2 = Math.sqrt(Math.pow(p1.x - p2.x,2) + Math.pow(p1.y - p2.y,2));
-      d3 = Math.sqrt(Math.pow(p2.x - p3.x,2) + Math.pow(p2.y - p3.y,2));
-
-      // Catmull-Rom to Cubic Bezier conversion matrix
-      //
-      // A = 2d1^2a + 3d1^a * d2^a + d3^2a
-      // B = 2d3^2a + 3d3^a * d2^a + d2^2a
-      //
-      // [   0             1            0          0          ]
-      // [   -d2^2a/N      A/N          d1^2a/N    0          ]
-      // [   0             d3^2a/M      B/M        -d2^2a/M   ]
-      // [   0             0            1          0          ]
-
-      // [   0             1            0          0          ]
-      // [   -d2pow2a/N    A/N          d1pow2a/N  0          ]
-      // [   0             d3pow2a/M    B/M        -d2pow2a/M ]
-      // [   0             0            1          0          ]
-
-      d3powA  = Math.pow(d3,  alpha);
-      d3pow2A = Math.pow(d3,2*alpha);
-      d2powA  = Math.pow(d2,  alpha);
-      d2pow2A = Math.pow(d2,2*alpha);
-      d1powA  = Math.pow(d1,  alpha);
-      d1pow2A = Math.pow(d1,2*alpha);
-
-      A = 2*d1pow2A + 3*d1powA * d2powA + d2pow2A;
-      B = 2*d3pow2A + 3*d3powA * d2powA + d2pow2A;
-      N = 3*d1powA * (d1powA + d2powA);
-      if (N > 0) {N = 1 / N;}
-      M = 3*d3powA * (d3powA + d2powA);
-      if (M > 0) {M = 1 / M;}
-
-      bp1 = { x: ((-d2pow2A * p0.x + A*p1.x + d1pow2A * p2.x) * N),
-        y: ((-d2pow2A * p0.y + A*p1.y + d1pow2A * p2.y) * N)};
-
-      bp2 = { x: (( d3pow2A * p1.x + B*p2.x - d2pow2A * p3.x) * M),
-        y: (( d3pow2A * p1.y + B*p2.y - d2pow2A * p3.y) * M)};
-
-      if (bp1.x == 0 && bp1.y == 0) {bp1 = p1;}
-      if (bp2.x == 0 && bp2.y == 0) {bp2 = p2;}
-      d += "C" +
-        bp1.x + "," +
-        bp1.y + " " +
-        bp2.x + "," +
-        bp2.y + " " +
-        p2.x + "," +
-        p2.y + " ";
-    }
-
-    return d;
-  }
-};
-
-/**
- * this generates the SVG path for a linear drawing between datapoints.
- * @param data
- * @returns {string}
- * @private
- */
-LineGraph.prototype._linear = function(data) {
-  // linear
-  var d = "";
-  for (var i = 0; i < data.length; i++) {
-    if (i == 0) {
-      d += data[i].x + "," + data[i].y;
-    }
-    else {
-      d += " " + data[i].x + "," + data[i].y;
-    }
-  }
-  return d;
-};
 
 module.exports = LineGraph;

@@ -4,10 +4,9 @@ var util = require('../util');
 var DataSet = require('../DataSet');
 var DataView = require('../DataView');
 var Range = require('./Range');
-var TimeAxis = require('./component/TimeAxis');
-var CurrentTime = require('./component/CurrentTime');
-var CustomTime = require('./component/CustomTime');
 var ItemSet = require('./component/ItemSet');
+var Activator = require('../shared/Activator');
+var DateUtil = require('./DateUtil');
 
 /**
  * Create a timeline visualization
@@ -50,6 +49,7 @@ Core.prototype._create = function (container) {
   this.dom.shadowTopRight       = document.createElement('div');
   this.dom.shadowBottomRight    = document.createElement('div');
 
+  this.dom.root.className                 = 'vis timeline root';
   this.dom.background.className           = 'vispanel background';
   this.dom.backgroundVertical.className   = 'vispanel background vertical';
   this.dom.backgroundHorizontal.className = 'vispanel background horizontal';
@@ -89,20 +89,35 @@ Core.prototype._create = function (container) {
   this.dom.rightContainer.appendChild(this.dom.shadowBottomRight);
 
   this.on('rangechange', this.redraw.bind(this));
-  this.on('change', this.redraw.bind(this));
   this.on('touch', this._onTouch.bind(this));
   this.on('pinch', this._onPinch.bind(this));
   this.on('dragstart', this._onDragStart.bind(this));
   this.on('drag', this._onDrag.bind(this));
 
+  var me = this;
+  this.on('change', function (properties) {
+    if (properties && properties.queue == true) {
+      // redraw once on next tick
+      if (!me._redrawTimer) {
+        me._redrawTimer = setTimeout(function () {
+          me._redrawTimer = null;
+          me.redraw();
+        }, 0)
+      }
+    }
+    else {
+      // redraw immediately
+      me.redraw();
+    }
+  });
+
   // create event listeners for all interesting events, these events will be
   // emitted via emitter
   this.hammer = Hammer(this.dom.root, {
-    prevent_default: true
+    preventDefault: true
   });
   this.listeners = {};
 
-  var me = this;
   var events = [
     'touch', 'pinch',
     'tap', 'doubletap', 'hold',
@@ -112,7 +127,9 @@ Core.prototype._create = function (container) {
   events.forEach(function (event) {
     var listener = function () {
       var args = [event].concat(Array.prototype.slice.call(arguments, 0));
-      me.emit.apply(me, args);
+      if (me.isActive()) {
+        me.emit.apply(me, args);
+      }
     };
     me.hammer.on(event, listener);
     me.listeners[event] = listener;
@@ -136,9 +153,84 @@ Core.prototype._create = function (container) {
   };
   this.touch = {}; // store state information needed for touch events
 
+  this.redrawCount = 0;
+
   // attach the root panel to the provided container
   if (!container) throw new Error('No container provided');
   container.appendChild(this.dom.root);
+};
+
+/**
+ * Set options. Options will be passed to all components loaded in the Timeline.
+ * @param {Object} [options]
+ *                           {String} orientation
+ *                              Vertical orientation for the Timeline,
+ *                              can be 'bottom' (default) or 'top'.
+ *                           {String | Number} width
+ *                              Width for the timeline, a number in pixels or
+ *                              a css string like '1000px' or '75%'. '100%' by default.
+ *                           {String | Number} height
+ *                              Fixed height for the Timeline, a number in pixels or
+ *                              a css string like '400px' or '75%'. If undefined,
+ *                              The Timeline will automatically size such that
+ *                              its contents fit.
+ *                           {String | Number} minHeight
+ *                              Minimum height for the Timeline, a number in pixels or
+ *                              a css string like '400px' or '75%'.
+ *                           {String | Number} maxHeight
+ *                              Maximum height for the Timeline, a number in pixels or
+ *                              a css string like '400px' or '75%'.
+ *                           {Number | Date | String} start
+ *                              Start date for the visible window
+ *                           {Number | Date | String} end
+ *                              End date for the visible window
+ */
+Core.prototype.setOptions = function (options) {
+  if (options) {
+    // copy the known options
+    var fields = ['width', 'height', 'minHeight', 'maxHeight', 'autoResize', 'start', 'end', 'orientation', 'clickToUse', 'dataAttributes', 'hiddenDates'];
+    util.selectiveExtend(fields, this.options, options);
+
+    if ('hiddenDates' in this.options) {
+      DateUtil.convertHiddenOptions(this.body, this.options.hiddenDates);
+    }
+
+    if ('clickToUse' in options) {
+      if (options.clickToUse) {
+        this.activator = new Activator(this.dom.root);
+      }
+      else {
+        if (this.activator) {
+          this.activator.destroy();
+          delete this.activator;
+        }
+      }
+    }
+
+    // enable/disable autoResize
+    this._initAutoResize();
+  }
+
+  // propagate options to all components
+  this.components.forEach(function (component) {
+    component.setOptions(options);
+  });
+
+  // TODO: remove deprecation error one day (deprecated since version 0.8.0)
+  if (options && options.order) {
+    throw new Error('Option order is deprecated. There is no replacement for this feature.');
+  }
+
+  // redraw everything
+  this.redraw();
+};
+
+/**
+ * Returns true when the Timeline is active.
+ * @returns {boolean}
+ */
+Core.prototype.isActive = function () {
+  return !this.activator || this.activator.active;
 };
 
 /**
@@ -159,6 +251,12 @@ Core.prototype.destroy = function () {
     this.dom.root.parentNode.removeChild(this.dom.root);
   }
   this.dom = null;
+
+  // remove Activator
+  if (this.activator) {
+    this.activator.destroy();
+    delete this.activator;
+  }
 
   // cleanup hammer touch events
   for (var event in this.listeners) {
@@ -246,8 +344,31 @@ Core.prototype.clear = function(what) {
 
 /**
  * Set Core window such that it fits all items
+ * @param {Object} [options]  Available options:
+ *                            `animate: boolean | number`
+ *                                 If true (default), the range is animated
+ *                                 smoothly to the new window.
+ *                                 If a number, the number is taken as duration
+ *                                 for the animation. Default duration is 500 ms.
  */
-Core.prototype.fit = function() {
+Core.prototype.fit = function(options) {
+  var range = this._getDataRange();
+
+  // skip range set if there is no start and end date
+  if (range.start === null && range.end === null) {
+    return;
+  }
+
+  var animate = (options && options.animate !== undefined) ? options.animate : true;
+  this.range.setRange(range.start, range.end, animate);
+};
+
+/**
+ * Calculate the data range of the items and applies a 5% window around it.
+ * @returns {{start: Date | null, end: Date | null}}
+ * @protected
+ */
+Core.prototype._getDataRange = function() {
   // apply the data range as range
   var dataRange = this.getItemRange();
 
@@ -264,14 +385,11 @@ Core.prototype.fit = function() {
     end = new Date(end.valueOf() + interval * 0.05);
   }
 
-  // skip range set if there is no start and end date
-  if (start === null && end === null) {
-    return;
+  return {
+    start: start,
+    end: end
   }
-
-  this.range.setRange(start, end);
 };
-
 
 /**
  * Set the visible window. Both parameters are optional, you can change only
@@ -284,16 +402,44 @@ Core.prototype.fit = function() {
  * object with properties start and end.
  *
  * @param {Date | Number | String | Object} [start] Start date of visible window
- * @param {Date | Number | String} [end]   End date of visible window
+ * @param {Date | Number | String} [end]            End date of visible window
+ * @param {Object} [options]  Available options:
+ *                            `animate: boolean | number`
+ *                                 If true (default), the range is animated
+ *                                 smoothly to the new window.
+ *                                 If a number, the number is taken as duration
+ *                                 for the animation. Default duration is 500 ms.
  */
-Core.prototype.setWindow = function(start, end) {
+Core.prototype.setWindow = function(start, end, options) {
+  var animate = (options && options.animate !== undefined) ? options.animate : true;
   if (arguments.length == 1) {
     var range = arguments[0];
-    this.range.setRange(range.start, range.end);
+    this.range.setRange(range.start, range.end, animate);
   }
   else {
-    this.range.setRange(start, end);
+    this.range.setRange(start, end, animate);
   }
+};
+
+/**
+ * Move the window such that given time is centered on screen.
+ * @param {Date | Number | String} time
+ * @param {Object} [options]  Available options:
+ *                            `animate: boolean | number`
+ *                                 If true (default), the range is animated
+ *                                 smoothly to the new window.
+ *                                 If a number, the number is taken as duration
+ *                                 for the animation. Default duration is 500 ms.
+ */
+Core.prototype.moveTo = function(time, options) {
+  var interval = this.range.end - this.range.start;
+  var t = util.convert(time, 'Date').valueOf();
+
+  var start = t - interval / 2;
+  var end = t + interval / 2;
+  var animate = (options && options.animate !== undefined) ? options.animate : true;
+
+  this.range.setRange(start, end, animate);
 };
 
 /**
@@ -313,15 +459,24 @@ Core.prototype.getWindow = function() {
  * option autoResize=false
  */
 Core.prototype.redraw = function() {
-  var resized = false,
-    options = this.options,
-    props = this.props,
-    dom = this.dom;
+  var resized = false;
+  var options = this.options;
+  var props = this.props;
+  var dom = this.dom;
 
   if (!dom) return; // when destroyed
 
+  DateUtil.updateHiddenDates(this.body, this.options.hiddenDates);
+
   // update class names
-  dom.root.className = 'vis timeline root ' + options.orientation;
+  if (options.orientation == 'top') {
+    util.addClassName(dom.root, 'top');
+    util.removeClassName(dom.root, 'bottom');
+  }
+  else {
+    util.removeClassName(dom.root, 'top');
+    util.addClassName(dom.root, 'bottom');
+  }
 
   // update root width and height options
   dom.root.style.maxHeight = util.option.asSize(options.maxHeight, '');
@@ -335,6 +490,16 @@ Core.prototype.redraw = function() {
   props.border.bottom = props.border.top;
   var borderRootHeight= dom.root.offsetHeight - dom.root.clientHeight;
   var borderRootWidth = dom.root.offsetWidth - dom.root.clientWidth;
+
+  // workaround for a bug in IE: the clientWidth of an element with
+  // a height:0px and overflow:hidden is not calculated and always has value 0
+  if (dom.centerContainer.clientHeight === 0) {
+    props.border.left = props.border.top;
+    props.border.right  = props.border.left;
+  }
+  if (dom.root.clientHeight === 0) {
+    borderRootWidth = borderRootHeight;
+  }
 
   // calculate the heights. If any of the side panels is empty, we set the height to
   // minus the border width, such that the border will be invisible
@@ -393,7 +558,7 @@ Core.prototype.redraw = function() {
   // reposition the panels
   dom.background.style.left           = '0';
   dom.background.style.top            = '0';
-  dom.backgroundVertical.style.left   = props.left.width + 'px';
+  dom.backgroundVertical.style.left   = (props.left.width + props.border.left) + 'px';
   dom.backgroundVertical.style.top    = '0';
   dom.backgroundHorizontal.style.left = '0';
   dom.backgroundHorizontal.style.top  = props.top.height + 'px';
@@ -441,13 +606,51 @@ Core.prototype.redraw = function() {
   });
   if (resized) {
     // keep repainting until all sizes are settled
-    this.redraw();
+    var MAX_REDRAWS = 3; // maximum number of consecutive redraws
+    if (this.redrawCount < MAX_REDRAWS) {
+      this.redrawCount++;
+      this.redraw();
+    }
+    else {
+      console.log('WARNING: infinite loop in redraw?')
+    }
+    this.redrawCount = 0;
   }
+
+  this.emit("finishedRedraw");
 };
 
 // TODO: deprecated since version 1.1.0, remove some day
 Core.prototype.repaint = function () {
   throw new Error('Function repaint is deprecated. Use redraw instead.');
+};
+
+/**
+ * Set a current time. This can be used for example to ensure that a client's
+ * time is synchronized with a shared server time.
+ * Only applicable when option `showCurrentTime` is true.
+ * @param {Date | String | Number} time     A Date, unix timestamp, or
+ *                                          ISO date string.
+ */
+Core.prototype.setCurrentTime = function(time) {
+  if (!this.currentTime) {
+    throw new Error('Option showCurrentTime must be true');
+  }
+
+  this.currentTime.setCurrentTime(time);
+};
+
+/**
+ * Get the current time.
+ * Only applicable when option `showCurrentTime` is true.
+ * @return {Date} Returns the current time.
+ */
+Core.prototype.getCurrentTime = function() {
+  if (!this.currentTime) {
+    throw new Error('Option showCurrentTime must be true');
+  }
+
+  return this.currentTime.getCurrentTime();
 };
 
 /**
@@ -458,10 +661,8 @@ Core.prototype.repaint = function () {
  */
 // TODO: move this function to Range
 Core.prototype._toTime = function(x) {
-  var conversion = this.range.conversion(this.props.center.width);
-  return new Date(x / conversion.scale + conversion.offset);
+  return DateUtil.toTime(this, x, this.props.center.width);
 };
-
 
 /**
  * Convert a position on the global screen (pixels) to a datetime
@@ -471,8 +672,9 @@ Core.prototype._toTime = function(x) {
  */
 // TODO: move this function to Range
 Core.prototype._toGlobalTime = function(x) {
-  var conversion = this.range.conversion(this.props.root.width);
-  return new Date(x / conversion.scale + conversion.offset);
+  return DateUtil.toTime(this, x, this.props.root.width);
+  //var conversion = this.range.conversion(this.props.root.width);
+  //return new Date(x / conversion.scale + conversion.offset);
 };
 
 /**
@@ -484,9 +686,9 @@ Core.prototype._toGlobalTime = function(x) {
  */
 // TODO: move this function to Range
 Core.prototype._toScreen = function(time) {
-  var conversion = this.range.conversion(this.props.center.width);
-  return (time.valueOf() - conversion.offset) * conversion.scale;
+  return DateUtil.toScreen(this, time, this.props.center.width);
 };
+
 
 
 /**
@@ -499,8 +701,9 @@ Core.prototype._toScreen = function(time) {
  */
 // TODO: move this function to Range
 Core.prototype._toGlobalScreen = function(time) {
-  var conversion = this.range.conversion(this.props.root.width);
-  return (time.valueOf() - conversion.offset) * conversion.scale;
+  return DateUtil.toScreen(this, time, this.props.root.width);
+  //var conversion = this.range.conversion(this.props.root.width);
+  //return (time.valueOf() - conversion.offset) * conversion.scale;
 };
 
 
@@ -536,10 +739,13 @@ Core.prototype._startAutoResize = function () {
 
     if (me.dom.root) {
       // check whether the frame is resized
-      if ((me.dom.root.clientWidth != me.props.lastWidth) ||
-        (me.dom.root.clientHeight != me.props.lastHeight)) {
-        me.props.lastWidth = me.dom.root.clientWidth;
-        me.props.lastHeight = me.dom.root.clientHeight;
+      // Note: we compare offsetWidth here, not clientWidth. For some reason,
+      // IE does not restore the clientWidth from 0 to the actual width after
+      // changing the timeline's container display style from none to visible
+      if ((me.dom.root.offsetWidth != me.props.lastWidth) ||
+        (me.dom.root.offsetHeight != me.props.lastHeight)) {
+        me.props.lastWidth = me.dom.root.offsetWidth;
+        me.props.lastHeight = me.dom.root.offsetHeight;
 
         me.emit('change');
       }
@@ -609,8 +815,10 @@ Core.prototype._onDrag = function (event) {
   var oldScrollTop = this._getScrollTop();
   var newScrollTop = this._setScrollTop(this.touch.initialScrollTop + delta);
 
+
   if (newScrollTop != oldScrollTop) {
     this.redraw(); // TODO: this causes two redraws when dragging, the other is triggered by rangechange already
+    this.emit("verticalDrag");
   }
 };
 

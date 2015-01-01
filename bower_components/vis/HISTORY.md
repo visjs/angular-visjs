@@ -2,13 +2,304 @@
 http://visjs.org
 
 
+## 2014-12-09, version 3.7.2
+
+### Timeline
+
+- Fixed zooming issue on mobile devices.
+
+### Graph2D
+
+- Fixed infinite loop when clearing DataSet
+
+### Network
+
+- Sidestepped double touch event from hammer (ugly.. but functional) causing
+  strange behaviour in manipulation mode
+- Better cleanup after reconnecting edges in manipulation mode
+
+
+## 2014-11-28, version 3.7.1
+
+### Timeline
+
+- Implemented selection of a range of items using Shift+Click.
+- Fixed content in range items may overflow range after zoom.
+- Fixed onAdd/onUpdate callbacks when using a DataView (thanks @motzel).
+- Fixed configuring either `start` or `end`.
+- Fixed Timeline and Graph2d getting stuck in an infinite loop in some
+  circumstances.
+- Fixed background items being selectable and editable when a height is set.
+
+### Graph2D
+
+- Added `alignZeros` option to dataAxis with default value true.
+- Fixed bug with points drawn on bargraphs
+- Fixed docs
+- Fixed height increase on scrolling if only `graphHeight` is defined.
+
+### Network
+
+- dragEnd event now does not give the selected nodes if only the viewport has been dragged #453
+- merged high DPI fix by @crubier, thanks!
+
+
+## 2014-11-14, version 3.7.0
+
+### Graph2D
+
+- Added points style for scatterplots and pointclouds.
+- Modularized the Graph2D draw styles.
+- Added a finishedRedraw event.
+
+### Network
+
+- Added pointer properties to the click and the doubleClick events containing the XY coordinates in DOM and canvas space.
+- Removed IDs from navigation so multiple networks can be shown on the same page. (#438)
+
+
+### Timeline
+
+- Added a finishedRedraw event.
+- Fixed the disappearing item bug.
+- Fixed keycharm issue.
+
+## 2014-11-07, version 3.6.4
+
+### General
+
+- Removed mousetrap due to Apache license, created keycharm and implemented it with vis.
+
+### Timeline
+
+- Fixed height of background items when having a fixed or max height defined.
+- Fixed only one item being dragged when multiple items are selected.
+- Optimised a serious slowdown on performance since hidden dates.
+
+### Network
+
+- Fixed onRelease with navigation option.
+- Fixed arrow heads not being colored.
+
+### Graph2D
+
+- Fixed cleaning up of groups.
+- Throw error message when items are added before groups.
+- Made graphHeight automatic if height is defined AND if graphHeight is smaller than the center panel when height is defined as well.
+- Added new verticalDrag event for internal use, allowing the vertical scrolling of the grid lines on drag.
+- Fixed moving legend when postioned on the bottom and vertical dragging.
+- Optimised a serious slowdown on performance since hidden dates.
+
+- Accepted a large pull request from @cdjackson adding the following features (thank you!): 
+- Titles on the DataAxis to explain what units you are using.
+- A style field for groups and datapoints so you can dynamically change styles.
+- A precision option to manually set the amount of decimals.
+- Two new examples showing the new features.
+
+
+## 2014-10-28, version 3.6.3
+
+### Timeline
+
+- Fixed background items not always be cleared when removing them.
+- Fixed visible items not always be displayed.
+- Performance improvements when doing a lot of changes at once in a DataSet.
+
+### Network
+
+- Fixed dashed and arrow lines not using inheritColor.
+
+### DataSet
+
+- Support for queueing of changes, and flushing them at once.
+- Implemented `DataSet.setOptions`. Only applicable for the `queue` options.
+
+
+## 2014-10-24, version 3.6.2
+
+- Vis.js is now dual licensed under both Apache 2.0 and MIT.
+
+
+## 2014-10-22, version 3.6.1
+
+### Timeline
+
+- Fixed uneven stepsized with hidden dates.
+- Fixed multiple bugs with regards to hidden dates.
+- Fixed subgroups and added subgroup sorting. Subgroup labels will be in future releases.
+
+
+## 2014-10-21, version 3.6.0
+
+### Network
+
+- Title of nodes and edges can now be an HTML element too.
+- Renamed storePosition to storePositions. Added deprication message and old name still works.
+- Worked around hammer.js bug with multiple release listeners.
+- Improved cleaning up after manipulation toolbar.
+- Added getPositions() method to get the position of all nodes or some of them if specific Ids are supplied.
+- Added getCenterCoordinates() method to get the x and y position in canvas space of the center of the view.
+- Fixed node label becoming undefined.
+- Fixed cluster fontsize scaling.
+- Fixed cluster sector scaling.
+- Added oldHeight and oldWidth to resize event.
+
+### Timeline
+
+- Implemented field `style` for both items and groups, to set a custom style for
+  individual items.
+- Fixed height of BackgroundItems not being 100% when timeline has a fixed height.
+- Fixed width of BackgroundItems not being reduced to 0 when zooming out.
+- Fixed onclick events in items not working.
+- Added hiddenDates to hide specific times and/or days in the timeline.
+
+### DataSet
+
+- Event listeners of `update` now receive an extra property `data`, 
+  containing the changed fields of the changed items.
+
+### Graph2d
+
+- Fixed height of legend when there are many items showing.
+
+### Graph3d
+
+- Implemented options `xValueLabel`, `yValueLabel` and `zValueLabel` for custom labels along
+  the x, y, z axis. Thanks @fabriziofortino.
+
+
+## 2014-09-16, version 3.5.0
+
+### Network
+
+- Fixed nodes not always being unfixed when using allowedToMove.
+- Added dragStart and dragEnd events.
+- Added edge selection on edge labels.
+
+### Graph2d
+
+- Fixed dataAxis not showing large numbers correctly.
+
+
+## 2014-09-12, version 3.4.2
+
+### Network
+
+- Changed timings for zoomExtent animation.
+- Fixed possible cause of freezing graph when animating.
+- Added locked to focusOnNode and releaseNode().
+- Fixed minor bug in positioning of fontFill of nodes with certain shapes.
+- Added startStabilization event.
+
+
+## 2014-09-11, version 3.4.1
+
+### Network
+
+- Fix for introduced bug on zoomExtent navigation button.
+- Added animation to zoomExtent navigation button.
+- Improved cleaning of Hammer.js bindings.
+
+### Timeline
+
+- Fixed a bug in IE freezing when margin.item and margin.axis where both 0.
+
+
+## 2014-09-10, version 3.4.0
+
+### Graph2d
+
+- Fixed moment.js url in localization example.
+
+### Network
+
+- Fixed some positioning issues with the close button of the manipulation menu.
+- Added fontFill to Nodes as it is in Edges.
+- Implemented support for broken image fallback. Thanks @sfairgrieve.
+- Added multiline labels to edges as they are implemented in nodes. Updated 
+  multiline example to show this.
+- Added animation and camera controls by the method .moveTo()
+- Added new event that fires when the animation is finished.
+- Added new example showing the new features of animation.
+- Added getScale() method.
+
+### Timeline
+
+- Implemented support for templates.
+- Implemented a new item type: `'background'`. This can be used to mark periods
+  with a background color and label.
+- Implemented support for attaching HTML attributes to items. Thanks @dturkenk.
+- Fixed moment.js url in localization example.
+- Fixed `className` of groups not being updated when changed.
+- Fixed the `id` field of a new item not correctly generated.
+- Fixed newly added item ignored when returning an other object instance.
+- Fixed option `autoResize` not working on IE in case of changing visibility
+  of the Timeline container element.
+- Fixed an overflow issue with the dots of BoxItems when using groups.
+- Fixed a horizontal 1-pixel offset in the items (border width wasn't taken into 
+  account).
+- Renamed internal items from `ItemBox`, `ItemRange`, and `ItemPoint` to
+  respectively `BoxItem`, `RangeItem`, and `PointItem`.
+- Fixed an error thrown when calling `destroy()`.
+
+
+## 2014-08-29, version 3.3.0
+
+### Timeline
+
+- Added localization support.
+- Implemented option `clickToUse`.
+- Implemented function `focus(id)` to center a specific item (or multiple items)
+  on screen.
+- Implemented an option `focus` for `setSelection(ids, options)`, to immediately
+  focus selected nodes.
+- Implemented function `moveTo(time, options)`.
+- Implemented animated range change for functions `fit`, `focus`, `setSelection`,
+  and `setWindow`.
+- Implemented functions `setCurrentTime(date)` and `getCurrentTime()`.
+- Implemented a new callback function `onMoving(item, callback)`.
+- Implemented support for option `align` for range items.
+- Fixed the `change` event sometimes being fired twice on IE10.
+- Fixed canceling moving an item to another group did not move the item
+  back to the original group.
+- Fixed the `change` event sometimes being fired twice on IE10.
+- Fixed canceling moving an item to another group did not move the item
+  back to the original group.
+
+### Network
+
+- A fix in reading group properties for a node.
+- Fixed physics solving stopping when a support node was not moving.
+- Implemented localization support.
+- Implemented option `clickToUse`.
+- Improved the `stabilized` event, it's now firing after every stabilization
+  with iteration count as parameter.
+- Fixed page scroll event not being blocked when moving around in Network
+  using arrow keys.
+- Fixed an initial rendering before the graph has been stabilized.
+- Fixed bug where loading hierarchical data after initialization crashed network.
+- Added different layout method to the hierarchical system based on the direction of the edges.
+
+### Graph2d
+
+- Implemented option `handleOverlap` to support overlap, sideBySide and stack.
+- Implemented two examples showing the `handleOverlap` functionality.
+- Implemented `customRange` for the Y axis and an example showing how it works.
+- Implemented localization support.
+- Implemented option `clickToUse`.
+- Implemented functions `setCurrentTime(date)` and `getCurrentTime()`.
+- Implemented function `moveTo(time, options)`.
+- Fixed bugs.
+- Added groups.visibility functionality and an example showing how it works.
+
+
 ## 2014-08-14, version 3.2.0
 
 ### General
 
 - Refactored Timeline and Graph2d to use the same core.
 
-### Graph2D
+### Graph2d
 
 - Added `visible` property to the groups.
 - Added `getLegend()` method.

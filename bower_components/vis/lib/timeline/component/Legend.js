@@ -5,7 +5,7 @@ var Component = require('./Component');
 /**
  * Legend for Graph2d
  */
-function Legend(body, options, side) {
+function Legend(body, options, side, linegraphOptions) {
   this.body = body;
   this.defaultOptions = {
     enabled: true,
@@ -23,6 +23,7 @@ function Legend(body, options, side) {
   }
   this.side = side;
   this.options = util.extend({},this.defaultOptions);
+  this.linegraphOptions = linegraphOptions;
 
   this.svgElements = {};
   this.dom = {};
@@ -35,8 +36,13 @@ function Legend(body, options, side) {
 
 Legend.prototype = new Component();
 
+Legend.prototype.clear = function() {
+  this.groups = {};
+  this.amountOfGroups = 0;
+}
 
 Legend.prototype.addGroup = function(label, graphOptions) {
+
   if (!this.groups.hasOwnProperty(label)) {
     this.groups[label] = graphOptions;
   }
@@ -70,6 +76,7 @@ Legend.prototype._create = function() {
   this.svg.style.position = 'absolute';
   this.svg.style.top = 0 +'px';
   this.svg.style.width = this.options.iconSize + 5 + 'px';
+  this.svg.style.height = '100%';
 
   this.dom.frame.appendChild(this.svg);
   this.dom.frame.appendChild(this.dom.textArea);
@@ -105,7 +112,7 @@ Legend.prototype.redraw = function() {
   var activeGroups = 0;
   for (var groupId in this.groups) {
     if (this.groups.hasOwnProperty(groupId)) {
-      if (this.groups[groupId].visible == true) {
+      if (this.groups[groupId].visible == true && (this.linegraphOptions.visibility[groupId] === undefined || this.linegraphOptions.visibility[groupId] == true)) {
         activeGroups++;
       }
     }
@@ -140,7 +147,8 @@ Legend.prototype.redraw = function() {
       this.dom.frame.style.bottom = '';
     }
     else {
-      this.dom.frame.style.bottom = 4 - Number(this.body.dom.center.style.top.replace("px","")) + 'px';
+      var scrollableHeight = this.body.domProps.center.height - this.body.domProps.centerContainer.height;
+      this.dom.frame.style.bottom = 4 + scrollableHeight + Number(this.body.dom.center.style.top.replace("px","")) + 'px';
       this.dom.frame.style.top = '';
     }
 
@@ -158,7 +166,7 @@ Legend.prototype.redraw = function() {
     var content = '';
     for (var groupId in this.groups) {
       if (this.groups.hasOwnProperty(groupId)) {
-        if (this.groups[groupId].visible == true) {
+        if (this.groups[groupId].visible == true && (this.linegraphOptions.visibility[groupId] === undefined || this.linegraphOptions.visibility[groupId] == true)) {
           content += this.groups[groupId].content + '<br />';
         }
       }
@@ -182,7 +190,7 @@ Legend.prototype.drawLegendIcons = function() {
 
     for (var groupId in this.groups) {
       if (this.groups.hasOwnProperty(groupId)) {
-        if (this.groups[groupId].visible == true) {
+        if (this.groups[groupId].visible == true && (this.linegraphOptions.visibility[groupId] === undefined || this.linegraphOptions.visibility[groupId] == true)) {
           this.groups[groupId].drawIcon(x, y, this.svgElements, this.svg, iconWidth, iconHeight);
           y += iconHeight + this.options.iconSpacing;
         }

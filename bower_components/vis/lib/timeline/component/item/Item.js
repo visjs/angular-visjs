@@ -1,4 +1,5 @@
 var Hammer = require('../../../module/hammer');
+var util = require('../../../util');
 
 /**
  * @constructor Item
@@ -27,11 +28,14 @@ function Item (data, conversion, options) {
   this.height = null;
 }
 
+Item.prototype.stack = true;
+
 /**
  * Select current item
  */
 Item.prototype.select = function() {
   this.selected = true;
+  this.dirty = true;
   if (this.displayed) this.redraw();
 };
 
@@ -40,6 +44,18 @@ Item.prototype.select = function() {
  */
 Item.prototype.unselect = function() {
   this.selected = false;
+  this.dirty = true;
+  if (this.displayed) this.redraw();
+};
+
+/**
+ * Set data for the item. Existing data will be updated. The id should not
+ * be changed. When the item is displayed, it will be redrawn immediately.
+ * @param {Object} data
+ */
+Item.prototype.setData = function(data) {
+  this.data = data;
+  this.dirty = true;
   if (this.displayed) this.redraw();
 };
 
@@ -137,6 +153,106 @@ Item.prototype._repaintDeleteButton = function (anchor) {
       this.dom.deleteButton.parentNode.removeChild(this.dom.deleteButton);
     }
     this.dom.deleteButton = null;
+  }
+};
+
+/**
+ * Set HTML contents for the item
+ * @param {Element} element   HTML element to fill with the contents
+ * @private
+ */
+Item.prototype._updateContents = function (element) {
+  var content;
+  if (this.options.template) {
+    var itemData = this.parent.itemSet.itemsData.get(this.id); // get a clone of the data from the dataset
+    content = this.options.template(itemData);
+  }
+  else {
+    content = this.data.content;
+  }
+
+  if(content !== this.content) {
+    // only replace the content when changed
+    if (content instanceof Element) {
+      element.innerHTML = '';
+      element.appendChild(content);
+    }
+    else if (content != undefined) {
+      element.innerHTML = content;
+    }
+    else {
+      if (!(this.data.type == 'background' && this.data.content === undefined)) {
+        throw new Error('Property "content" missing in item ' + this.id);
+      }
+    }
+
+    this.content = content;
+  }
+};
+
+/**
+ * Set HTML contents for the item
+ * @param {Element} element   HTML element to fill with the contents
+ * @private
+ */
+Item.prototype._updateTitle = function (element) {
+  if (this.data.title != null) {
+    element.title = this.data.title || '';
+  }
+  else {
+    element.removeAttribute('title');
+  }
+};
+
+/**
+ * Process dataAttributes timeline option and set as data- attributes on dom.content
+ * @param {Element} element   HTML element to which the attributes will be attached
+ * @private
+ */
+ Item.prototype._updateDataAttributes = function(element) {
+  if (this.options.dataAttributes && this.options.dataAttributes.length > 0) {
+    var attributes = [];
+
+    if (Array.isArray(this.options.dataAttributes)) {
+      attributes = this.options.dataAttributes;
+    }
+    else if (this.options.dataAttributes == 'all') {
+      attributes = Object.keys(this.data);
+    }
+    else {
+      return;
+    }
+
+    for (var i = 0; i < attributes.length; i++) {
+      var name = attributes[i];
+      var value = this.data[name];
+
+      if (value != null) {
+        element.setAttribute('data-' + name, value);
+      }
+      else {
+        element.removeAttribute('data-' + name);
+      }
+    }
+  }
+};
+
+/**
+ * Update custom styles of the element
+ * @param element
+ * @private
+ */
+Item.prototype._updateStyle = function(element) {
+  // remove old styles
+  if (this.style) {
+    util.removeCssText(element, this.style);
+    this.style = null;
+  }
+
+  // append new styles
+  if (this.data.style) {
+    util.addCssText(element, this.data.style);
+    this.style = this.data.style;
   }
 };
 
