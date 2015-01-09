@@ -46,8 +46,7 @@ angular.module('ngVis', [])
                 ];
 
                 // Declare the timeline
-                var timeline = new vis.Timeline(element[0]);
-//                var timeline = null;
+                var timeline = null;
 
                 scope.$watch('data', function () {
                     // Sanity check
