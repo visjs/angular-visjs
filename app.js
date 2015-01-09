@@ -1,7 +1,8 @@
 angular.module('App', [
     'ui.router',
     'vis.home',
-    'vis.graph2d'
+    'vis.graph2d',
+    'vis.timeline'
 //    'ui.bootstrap'
 ])
     .run(function run() {

@@ -1,23 +1,23 @@
-angular.module('vis.graph2d', [
+angular.module('vis.timeline', [
     'ui.router',
     'ngVis'
 ])
 
     .config(function config($stateProvider) {
-        $stateProvider.state('graph2d', {
-            url: '/graph2d',
+        $stateProvider.state('timeline', {
+            url: '/timeline',
             views: {
                 "main": {
-                    controller: 'Graph2dCtrl',
-                    templateUrl: 'graph2d.tpl.html'
+                    controller: 'TimelineCtrl',
+                    templateUrl: 'timeline.tpl.html'
                 }
             },
             data: {pageTitle: 'Graph2D'}
         });
     })
 
-    .controller('Graph2dCtrl',
-    function Graph2dCtrl($scope, $timeout, VisDataSet) {
+    .controller('TimelineCtrl',
+    function TimelineCtrl($scope, $timeout, VisDataSet) {
         var graph2d;
 
 
@@ -25,7 +25,7 @@ angular.module('vis.graph2d', [
         // Event Handlers
 
         $scope.onLoaded = function (graphRef) {
-            console.log("graph loaded callback", graphRef);
+            console.log("timeline loaded callback", graphRef);
             graph2d = graphRef;
             graph2d.setWindow($scope.startTime, $scope.stopTime);
         };
@@ -193,75 +193,37 @@ angular.module('vis.graph2d', [
             console.log("Range changed", period);
         };
 
+        var now = moment().minutes(0).seconds(0).milliseconds(0);
+        var groupCount = 3;
+        var itemCount = 20;
 
-        var dataGroups = new VisDataSet();
-        var names = ['centripetal', 'chordal', 'uniform', 'disabled'];
-        dataGroups.add({
-            id: 0,
-            content: names[0],
-            options: {
-                drawPoints: false,
-                catmullRom: {
-                    parametrization: 'centripetal'
-                }
-            }
-        });
-
-        dataGroups.add({
-            id: 1,
-            content: names[1],
-            options: {
-                drawPoints: false,
-                catmullRom: {
-                    parametrization: 'chordal'
-                }
-            }
-        });
-
-        dataGroups.add({
-            id: 2,
-            content: names[2],
-            options: {
-                drawPoints: false,
-                catmullRom: {
-                    parametrization: 'uniform'
-                }
-            }
-        });
-
-        dataGroups.add({
-            id: 3,
-            content: names[3],
-            options: {
-                drawPoints: {style: 'circle'},
-                catmullRom: false
-            }
-        });
-
-
-        var dataItems = new VisDataSet();
-        for (var i = 0; i < names.length; i++) {
-            dataItems.add([
-                {x: '2014-06-12', y: 0, group: i},
-                {x: '2014-06-13', y: 40, group: i},
-                {x: '2014-06-14', y: 10, group: i},
-                {x: '2014-06-15', y: 15, group: i},
-                {x: '2014-06-15', y: 30, group: i},
-                {x: '2014-06-17', y: 10, group: i},
-                {x: '2014-06-18', y: 15, group: i},
-                {x: '2014-06-19', y: 52, group: i},
-                {x: '2014-06-20', y: 10, group: i},
-                {x: '2014-06-21', y: 20, group: i}
-            ]);
+        // create a data set with groups
+        var names = ['John', 'Alston', 'Lee', 'Grant'];
+        var groups = new VisDataSet();
+        for (var g = 0; g < groupCount; g++) {
+            groups.add({id: g, content: names[g]});
         }
 
-        $scope.toggleLegend = function () {
-            $scope.graphOptions.legend = !$scope.graphOptions.legend;
+        // create a dataset with items
+        var items = new VisDataSet();
+        for (var i = 0; i < itemCount; i++) {
+            var start = now.clone().add(Math.random() * 200, 'hours');
+            var group = Math.floor(Math.random() * groupCount);
+            items.add({
+                id: i,
+                group: group,
+                content: 'item ' + i +
+                ' <span style="color:#97B0F8;">(' + names[group] + ')</span>',
+                start: start,
+                type: 'box'
+            });
         }
 
-        $scope.reset = function () {
-            graph2d.fit();
-        }
+        // create visualization
+        $scope.timelineOptions = {
+            height:"100%",
+            groupOrder: 'content'  // groupOrder can be a property name or a sorting function
+        };
 
         $scope.graphEvents = {
             rangechange: $scope.onRangeChange,
@@ -269,25 +231,13 @@ angular.module('vis.graph2d', [
             onload: $scope.onLoaded
         };
 
-        $scope.graphData = {
-            items: dataItems,
-            groups: dataGroups
+        $scope.timelineData = {
+            items: items,
+            groups: groups
         };
 
 
-        $scope.graphOptions = {
-            height: '100%',
-            width: '100%',
-            dataAxis: {
-                icons: true,
-                showMajorLabels: true,
-                showMinorLabels: false
-            },
-            showCurrentTime: false,
-            legend: true
-        };
-
-        $scope.graphLoaded = true;
+        $scope.timelineLoaded = true;
     })
 
 ;

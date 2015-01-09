@@ -1,0 +1,30 @@
+<div class="col-sm-4">
+    <div class="panel panel-default">
+        <div class="panel-heading" style="padding:3px;">
+            <button type="button" class="btn btn-default btn-sm" ng-disabled="!timelineLoaded"
+                    ng-click="reset()">
+                <span class="fa fa-refresh"> Reset</span>
+            </button>
+        </div>
+        <div class="panel-body" style="height:400px;padding:3px;">
+            <div class="list-group">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-sm-8">
+    <div class="panel panel-default" style="height:100%;">
+        <div class="panel-heading" style="padding:3px;">
+
+            <div ng-showx="timelineLoaded"
+                    >
+                <h6>{{timelineTimeline}}</h6>
+            </div>
+        </div>
+
+        <div class="panel-body" style="height:400px;padding:3px;">
+            <vis-timeline ng-show="timelineLoaded" data="timelineData" options="timelineOptions"
+                         events="graphEvents"></vis-timeline>
+        </div>
+    </div>
+</div>
