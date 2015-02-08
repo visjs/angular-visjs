@@ -33,7 +33,8 @@ angular.module('ngVis', [])
             transclude: false,
             scope: {
                 data: '=',
-                options: '='
+                options: '=',
+                events: '='
             },
             link: function (scope, element, attr) {
                 var timeline = new vis.Timeline(element[0]);
@@ -79,7 +80,8 @@ angular.module('ngVis', [])
             transclude: false,
             scope: {
                 data: '=',
-                options: '='
+                options: '=',
+                events: '='
             },
             link: function (scope, element, attr, visCtrl) {
                 var network = new vis.Network(element[0], scope.data, scope.options);
