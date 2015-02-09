@@ -59,10 +59,10 @@ angular.module('ngVis', [])
 
                     // Add groups and items
                     if (scope.data.groups != null) {
-                        timeline.setGroups(scope.data.groups.getDataSet());
+                        timeline.setGroups(scope.data.groups);
                     }
                     if (scope.data.items != null) {
-                        timeline.setItems(scope.data.items.getDataSet());
+                        timeline.setItems(scope.data.items);
                     }
 
                     // onLoad callback
@@ -206,10 +206,10 @@ angular.module('ngVis', [])
 
                     // Add groups and items
                     if (scope.data.groups != null) {
-                        graph.setGroups(scope.data.groups.getDataSet());
+                        graph.setGroups(scope.data.groups);
                     }
                     if (scope.data.items != null) {
-                        graph.setItems(scope.data.items.getDataSet());
+                        graph.setItems(scope.data.items);
                     }
 
                     // onLoad callback
