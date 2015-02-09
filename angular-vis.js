@@ -107,7 +107,8 @@ angular.module('ngVis', [])
             transclude: false,
             scope: {
                 data: '=',
-                options: '='
+                options: '=',
+                events: '='
             },
             link: function (scope, element, attr) {
                 var networkEvents = [
