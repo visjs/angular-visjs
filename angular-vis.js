@@ -22,7 +22,7 @@ angular.module('ngVis', [])
                 events: '='
             },
             link: function (scope, element, attr) {
-                var graphEvents = [
+                var timelineEvents = [
                     'rangechange',
                     'rangechanged',
                     'timechange',
@@ -49,7 +49,7 @@ angular.module('ngVis', [])
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
-                        if (graphEvents.indexOf(String(event)) >= 0) {
+                        if (timelineEvents.indexOf(String(event)) >= 0) {
                             timeline.on(event, callback);
                         }
                     });
