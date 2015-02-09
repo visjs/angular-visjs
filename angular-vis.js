@@ -4,23 +4,7 @@ angular.module('ngVis', [])
         'use strict';
         return function (data, options) {
             // Create the new dataSets
-            var dataSet = new vis.DataSet(data, options);
-
-            this.add = function (data, senderId) {
-                var response = dataSet.add(data, senderId);
-
-                return response;
-            };
-
-            this.update = function (data, senderId) {
-                var response = dataSet.update(data, senderId);
-
-                return response;
-            };
-
-            this.getDataSet = function () {
-                return dataSet;
-            };
+            return new vis.DataSet(data, options);
         };
     })
 
@@ -46,7 +30,6 @@ angular.module('ngVis', [])
                 ];
 
                 // Declare the timeline
-//                var timeline = new vis.Timeline(element[0]);
                 var timeline = null;
 
                 scope.$watch('data', function () {
@@ -108,7 +91,8 @@ angular.module('ngVis', [])
             transclude: false,
             scope: {
                 data: '=',
-                options: '='
+                options: '=',
+                events: '='
             },
             link: function (scope, element, attr) {
                 var networkEvents = [
