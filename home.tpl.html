@@ -65,7 +65,13 @@
         </div>
         </p>
         <p>
-            Add <code>'ngVis'</code> to your module.
+            Inject <code>'ngVis'</code> to your module.
+            <div class="well">
+                <code>
+                    angular.module('myApp',['ngVis'])
+                      .controller('MainCtrl', function (VisDataSet) {});
+                </code>
+            </div>
         </p>
         <p>
             Set a directive in your template
