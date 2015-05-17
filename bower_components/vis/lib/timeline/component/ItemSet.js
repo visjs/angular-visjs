@@ -2,6 +2,7 @@ var Hammer = require('../../module/hammer');
 var util = require('../../util');
 var DataSet = require('../../DataSet');
 var DataView = require('../../DataView');
+var TimeStep = require('../TimeStep');
 var Component = require('./Component');
 var Group = require('./Group');
 var BackgroundGroup = require('./BackgroundGroup');
@@ -28,7 +29,7 @@ function ItemSet(body, options) {
 
   this.defaultOptions = {
     type: null,  // 'box', 'point', 'range', 'background'
-    orientation: 'bottom',  // 'top' or 'bottom'
+    orientation: 'bottom',  // item orientation: 'top' or 'bottom'
     align: 'auto', // alignment of box items
     stack: true,
     groupOrder: null,
@@ -40,6 +41,8 @@ function ItemSet(body, options) {
       add: false,
       remove: false
     },
+
+    snap:  TimeStep.snap,
 
     onAdd: function (item, callback) {
       callback(item);
@@ -271,8 +274,17 @@ ItemSet.prototype._create = function(){
 ItemSet.prototype.setOptions = function(options) {
   if (options) {
     // copy all options that we know
-    var fields = ['type', 'align', 'orientation', 'padding', 'stack', 'selectable', 'groupOrder', 'dataAttributes', 'template','hide'];
+    var fields = ['type', 'align', 'order', 'padding', 'stack', 'selectable', 'groupOrder', 'dataAttributes', 'template','hide', 'snap'];
     util.selectiveExtend(fields, this.options, options);
+
+    if ('orientation' in options) {
+      if (typeof options.orientation === 'string') {
+        this.options.orientation = options.orientation;
+      }
+      else if (typeof options.orientation === 'object' && 'item' in options.orientation) {
+        this.options.orientation = options.orientation.item;
+      }
+    }
 
     if ('margin' in options) {
       if (typeof options.margin === 'number') {
@@ -324,11 +336,20 @@ ItemSet.prototype.setOptions = function(options) {
 };
 
 /**
- * Mark the ItemSet dirty so it will refresh everything with next redraw
+ * Mark the ItemSet dirty so it will refresh everything with next redraw.
+ * Optionally, all items can be marked as dirty and be refreshed.
+ * @param {{refreshItems: boolean}} [options]
  */
-ItemSet.prototype.markDirty = function() {
+ItemSet.prototype.markDirty = function(options) {
   this.groupIds = [];
   this.stackDirty = true;
+
+  if (options && options.refreshItems) {
+    util.forEach(this.items, function (item) {
+      item.dirty = true;
+      if (item.displayed) item.redraw();
+    });
+  }
 };
 
 /**
@@ -1070,7 +1091,7 @@ ItemSet.prototype._constructByEndArray = function(array) {
  */
 ItemSet.prototype._onTouch = function (event) {
   // store the touched item, used in _onDragStart
-  this.touchParams.item = ItemSet.itemFromTarget(event);
+  this.touchParams.item = this.itemFromTarget(event);
 };
 
 /**
@@ -1094,30 +1115,20 @@ ItemSet.prototype._onDragStart = function (event) {
     if (dragLeftItem) {
       props = {
         item: dragLeftItem,
-        initialX: event.gesture.center.clientX
+        initialX: event.gesture.center.pageX,
+        dragLeft:  true,
+        data: util.extend({}, item.data) // clone the items data
       };
-
-      if (me.options.editable.updateTime) {
-        props.start = item.data.start.valueOf();
-      }
-      if (me.options.editable.updateGroup) {
-        if ('group' in item.data) props.group = item.data.group;
-      }
 
       this.touchParams.itemProps = [props];
     }
     else if (dragRightItem) {
       props = {
         item: dragRightItem,
-        initialX: event.gesture.center.clientX
+        initialX: event.gesture.center.pageX,
+        dragRight: true,
+        data: util.extend({}, item.data) // clone the items data
       };
-
-      if (me.options.editable.updateTime) {
-        props.end = item.data.end.valueOf();
-      }
-      if (me.options.editable.updateGroup) {
-        if ('group' in item.data) props.group = item.data.group;
-      }
 
       this.touchParams.itemProps = [props];
     }
@@ -1126,16 +1137,9 @@ ItemSet.prototype._onDragStart = function (event) {
         var item = me.items[id];
         var props = {
           item: item,
-          initialX: event.gesture.center.clientX
+          initialX: event.gesture.center.pageX,
+          data: util.extend({}, item.data) // clone the items data
         };
-
-        if (me.options.editable.updateTime) {
-          if ('start' in item.data) props.start = item.data.start.valueOf();
-          if ('end' in item.data)   props.end = item.data.end.valueOf();
-        }
-        if (me.options.editable.updateGroup) {
-          if ('group' in item.data) props.group = item.data.group;
-        }
 
         return props;
       });
@@ -1143,6 +1147,56 @@ ItemSet.prototype._onDragStart = function (event) {
 
     event.stopPropagation();
   }
+  else if (this.options.editable.add && event.gesture.srcEvent.ctrlKey) {
+    // create a new range item when dragging with ctrl key down
+    this._onDragStartAddItem(event);
+  }
+};
+
+/**
+ * Start creating a new range item by dragging.
+ * @param {Event} event
+ * @private
+ */
+ItemSet.prototype._onDragStartAddItem = function (event) {
+  var snap = this.options.snap || null;
+  var xAbs = util.getAbsoluteLeft(this.dom.frame);
+  var x = event.gesture.center.pageX - xAbs - 10;  // minus 10 to compensate for the drag starting as soon as you've moved 10px
+  var time = this.body.util.toTime(x);
+  var scale = this.body.util.getScale();
+  var step = this.body.util.getStep();
+  var start = snap ? snap(time, scale, step) : start;
+  var end = start;
+
+  var itemData = {
+    type: 'range',
+    start: start,
+    end: end,
+    content: 'new item'
+  };
+
+  var id = util.randomUUID();
+  itemData[this.itemsData._fieldId] = id;
+
+  var group = this.groupFromTarget(event);
+  if (group) {
+    itemData.group = group.groupId;
+  }
+
+  var newItem = new RangeItem(itemData, this.conversion, this.options);
+  newItem.id = id; // TODO: not so nice setting id afterwards
+  newItem.data = itemData;
+  this._addItem(newItem);
+
+  var props = {
+    item: newItem,
+    dragRight: true,
+    initialX: event.gesture.center.pageX,
+    data: util.extend({}, itemData)
+  };
+  this.touchParams.itemProps = [props];
+
+  event.stopPropagation();
 };
 
 /**
@@ -1151,64 +1205,82 @@ ItemSet.prototype._onDragStart = function (event) {
  * @private
  */
 ItemSet.prototype._onDrag = function (event) {
-  event.preventDefault()
+  event.preventDefault();
 
   if (this.touchParams.itemProps) {
+    event.stopPropagation();
+
     var me = this;
-    var snap = this.body.util.snap || null;
+    var snap = this.options.snap || null;
     var xOffset = this.body.dom.root.offsetLeft + this.body.domProps.left.width;
+    var scale = this.body.util.getScale();
+    var step = this.body.util.getStep();
 
     // move
     this.touchParams.itemProps.forEach(function (props) {
-      var newProps = {};
-      var current = me.body.util.toTime(event.gesture.center.clientX - xOffset);
+      var current = me.body.util.toTime(event.gesture.center.pageX - xOffset);
       var initial = me.body.util.toTime(props.initialX - xOffset);
       var offset = current - initial;
 
-      if ('start' in props) {
-        var start = new Date(props.start + offset);
-        newProps.start = snap ? snap(start) : start;
+      var itemData = util.extend({}, props.item.data); // clone the data
+
+      if (me.options.editable.updateTime) {
+        if (props.dragLeft) {
+          // drag left side of a range item
+          if (itemData.start != undefined) {
+            var initialStart = util.convert(props.data.start, 'Date');
+            var start = new Date(initialStart.valueOf() + offset);
+            itemData.start = snap ? snap(start, scale, step) : start;
+          }
+        }
+        else if (props.dragRight) {
+          // drag right side of a range item
+          if (itemData.end != undefined) {
+            var initialEnd = util.convert(props.data.end, 'Date');
+            var end = new Date(initialEnd.valueOf() + offset);
+            itemData.end = snap ? snap(end, scale, step) : end;
+          }
+        }
+        else {
+          // drag both start and end
+          if (itemData.start != undefined) {
+            var initialStart = util.convert(props.data.start, 'Date').valueOf();
+            var start = new Date(initialStart + offset);
+
+            if (itemData.end != undefined) {
+              var initialEnd = util.convert(props.data.end, 'Date');
+              var duration  = initialEnd.valueOf() - initialStart.valueOf();
+
+              itemData.start = snap ? snap(start, scale, step) : start;
+              itemData.end   = new Date(itemData.start.valueOf() + duration);
+            }
+            else {
+              itemData.start = snap ? snap(start, scale, step) : start;
+            }
+          }
+        }
       }
 
-      if ('end' in props) {
-        var end = new Date(props.end + offset);
-        newProps.end = snap ? snap(end) : end;
-      }
-
-      if ('group' in props) {
-        // drag from one group to another
-        var group = ItemSet.groupFromTarget(event);
-        newProps.group = group && group.groupId;
+      if (me.options.editable.updateGroup && (!props.dragLeft && !props.dragRight)) {
+        if (itemData.group != undefined) {
+          // drag from one group to another
+          var group = me.groupFromTarget(event);
+          if (group) {
+            itemData.group = group.groupId;
+          }
+        }
       }
 
       // confirm moving the item
-      var itemData = util.extend({}, props.item.data, newProps);
       me.options.onMoving(itemData, function (itemData) {
         if (itemData) {
-          me._updateItemProps(props.item, itemData);
+          props.item.setData(itemData);
         }
       });
     });
 
     this.stackDirty = true; // force re-stacking of all items next redraw
     this.body.emitter.emit('change');
-
-    event.stopPropagation();
-  }
-};
-
-/**
- * Update an items properties
- * @param {Item} item
- * @param {Object} props  Can contain properties start, end, and group.
- * @private
- */
-ItemSet.prototype._updateItemProps = function(item, props) {
-  // TODO: copy all properties from props to item? (also new ones)
-  if ('start' in props) item.data.start = props.start;
-  if ('end' in props)   item.data.end   = props.end;
-  if ('group' in props && item.data.group != props.group) {
-    this._moveToGroup(item, props.group)
   }
 };
 
@@ -1237,38 +1309,38 @@ ItemSet.prototype._moveToGroup = function(item, groupId) {
  * @private
  */
 ItemSet.prototype._onDragEnd = function (event) {
-  event.preventDefault()
+  event.preventDefault();
 
   if (this.touchParams.itemProps) {
+    event.stopPropagation();
+
     // prepare a change set for the changed items
-    var changes = [],
-        me = this,
-        dataset = this.itemsData.getDataSet();
+    var changes = [];
+    var me = this;
+    var dataset = this.itemsData.getDataSet();
 
     var itemProps = this.touchParams.itemProps ;
     this.touchParams.itemProps = null;
     itemProps.forEach(function (props) {
-      var id = props.item.id,
-          itemData = me.itemsData.get(id, me.itemOptions);
+      var id = props.item.id;
+      var exists = me.itemsData.get(id, me.itemOptions) != null;
 
-      var changed = false;
-      if ('start' in props.item.data) {
-        changed = (props.start != props.item.data.start.valueOf());
-        itemData.start = util.convert(props.item.data.start,
-                dataset._options.type && dataset._options.type.start || 'Date');
-      }
-      if ('end' in props.item.data) {
-        changed = changed  || (props.end != props.item.data.end.valueOf());
-        itemData.end = util.convert(props.item.data.end,
-                dataset._options.type && dataset._options.type.end || 'Date');
-      }
-      if ('group' in props.item.data) {
-        changed = changed  || (props.group != props.item.data.group);
-        itemData.group = props.item.data.group;
-      }
+      if (!exists) {
+        // add a new item
+        me.options.onAdd(props.item.data, function (itemData) {
+          me._removeItem(props.item); // remove temporary item
+          if (itemData) {
+            me.itemsData.getDataSet().add(itemData);
+          }
 
-      // only apply changes when start or end is actually changed
-      if (changed) {
+          // force re-stacking of all items next redraw
+          me.stackDirty = true;
+          me.body.emitter.emit('change');
+        });
+      }
+      else {
+        // update existing item
+        var itemData = util.extend({}, props.item.data); // clone the data
         me.options.onMove(itemData, function (itemData) {
           if (itemData) {
             // apply changes
@@ -1277,7 +1349,7 @@ ItemSet.prototype._onDragEnd = function (event) {
           }
           else {
             // restore original values
-            me._updateItemProps(props.item, props);
+            props.item.setData(props.data);
 
             me.stackDirty = true; // force re-stacking of all items next redraw
             me.body.emitter.emit('change');
@@ -1290,8 +1362,6 @@ ItemSet.prototype._onDragEnd = function (event) {
     if (changes.length) {
       dataset.update(changes);
     }
-
-    event.stopPropagation();
   }
 };
 
@@ -1312,7 +1382,7 @@ ItemSet.prototype._onSelectItem = function (event) {
 
   var oldSelection = this.getSelection();
 
-  var item = ItemSet.itemFromTarget(event);
+  var item = this.itemFromTarget(event);
   var selection = item ? [item.id] : [];
   this.setSelection(selection);
 
@@ -1337,8 +1407,8 @@ ItemSet.prototype._onAddItem = function (event) {
   if (!this.options.editable.add) return;
 
   var me = this,
-      snap = this.body.util.snap || null,
-      item = ItemSet.itemFromTarget(event);
+      snap = this.options.snap || null,
+      item = this.itemFromTarget(event);
 
   if (item) {
     // update item
@@ -1356,20 +1426,23 @@ ItemSet.prototype._onAddItem = function (event) {
     var xAbs = util.getAbsoluteLeft(this.dom.frame);
     var x = event.gesture.center.pageX - xAbs;
     var start = this.body.util.toTime(x);
+    var scale = this.body.util.getScale();
+    var step = this.body.util.getStep();
+
     var newItem = {
-      start: snap ? snap(start) : start,
+      start: snap ? snap(start, scale, step) : start,
       content: 'new item'
     };
 
     // when default type is a range, add a default end date to the new item
     if (this.options.type === 'range') {
       var end = this.body.util.toTime(x + this.props.width / 5);
-      newItem.end = snap ? snap(end) : end;
+      newItem.end = snap ? snap(end, scale, step) : end;
     }
 
     newItem[this.itemsData._fieldId] = util.randomUUID();
 
-    var group = ItemSet.groupFromTarget(event);
+    var group = this.groupFromTarget(event);
     if (group) {
       newItem.group = group.groupId;
     }
@@ -1393,7 +1466,7 @@ ItemSet.prototype._onMultiSelectItem = function (event) {
   if (!this.options.selectable) return;
 
   var selection,
-      item = ItemSet.itemFromTarget(event);
+      item = this.itemFromTarget(event);
 
   if (item) {
     // multi select items
@@ -1415,7 +1488,9 @@ ItemSet.prototype._onMultiSelectItem = function (event) {
           var start = _item.data.start;
           var end = (_item.data.end !== undefined) ? _item.data.end : start;
 
-          if (start >= range.min && end <= range.max) {
+          if (start >= range.min &&
+              end <= range.max &&
+              !(_item instanceof BackgroundItem)) {
             selection.push(_item.id); // do not use id but item.id, id itself is stringified
           }
         }
@@ -1481,7 +1556,7 @@ ItemSet._getItemRange = function(itemsData) {
  * @param {Event} event
  * @return {Item | null} item
  */
-ItemSet.itemFromTarget = function(event) {
+ItemSet.prototype.itemFromTarget = function(event) {
   var target = event.target;
   while (target) {
     if (target.hasOwnProperty('timeline-item')) {
@@ -1499,13 +1574,27 @@ ItemSet.itemFromTarget = function(event) {
  * @param {Event} event
  * @return {Group | null} group
  */
-ItemSet.groupFromTarget = function(event) {
-  var target = event.target;
-  while (target) {
-    if (target.hasOwnProperty('timeline-group')) {
-      return target['timeline-group'];
+ItemSet.prototype.groupFromTarget = function(event) {
+  var pageY = event.gesture ? event.gesture.center.pageY : event.pageY;
+  for (var i = 0; i < this.groupIds.length; i++) {
+    var groupId = this.groupIds[i];
+    var group = this.groups[groupId];
+    var foreground = group.dom.foreground;
+    var top = util.getAbsoluteTop(foreground);
+    if (pageY > top && pageY < top + foreground.offsetHeight) {
+      return group;
     }
-    target = target.parentNode;
+
+    if (this.options.orientation === 'top') {
+      if (i === this.groupIds.length - 1 && pageY > top) {
+        return group;
+      }
+    }
+    else {
+      if (i === 0 && pageY < top + foreground.offset) {
+        return group;
+      }
+    }
   }
 
   return null;
