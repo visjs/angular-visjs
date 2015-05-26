@@ -19,8 +19,7 @@ angular.module('ngVis', [])
             scope: {
                 data: '=',
                 options: '=',
-                events: '=',
-                component: '=?'
+                events: '='
             },
             link: function (scope, element, attr) {
                 var timelineEvents = [
@@ -51,7 +50,6 @@ angular.module('ngVis', [])
 
                     // Create the timeline object
                     timeline = new vis.Timeline(element[0]);
-                    scope.component = timeline;
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -72,13 +70,14 @@ angular.module('ngVis', [])
                     }
 
                     // onLoad callback
-                    if (scope.events != null && scope.events.onload != null && angular.isFunction(scope.events.onload)) {
+                    if (scope.events != null && scope.events.onload != null &&
+                        angular.isFunction(scope.events.onload)) {
                         scope.events.onload(timeline);
                     }
                 });
 
                 scope.$watchCollection('options', function (options) {
-                    if(timeline == null) {
+                    if (timeline == null) {
                         return;
                     }
                     timeline.setOptions(options);
@@ -98,8 +97,7 @@ angular.module('ngVis', [])
             scope: {
                 data: '=',
                 options: '=',
-                events: '=',
-                component: '=?'
+                events: '='
             },
             link: function (scope, element, attr) {
                 var networkEvents = [
@@ -120,13 +118,12 @@ angular.module('ngVis', [])
 
                     // If we've actually changed the data set, then recreate the graph
                     // We can always update the data by adding more data to the existing data set
-//                    if (network !== undefined) {
-//                        network.destroy();
-                    //                   }
+                    if (network != null) {
+                        network.destroy();
+                    }
 
                     // Create the graph2d object
                     network = new vis.Network(element[0]);
-                    scope.component = network;
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -139,15 +136,15 @@ angular.module('ngVis', [])
                     network.setOptions(scope.options);
                     network.setData(scope.data);
 
-
                     // onLoad callback
-//                    if (scope.events != null && scope.events.onload != null && angular.isFunction(scope.events.onload)) {
-//                        scope.events.onload(graph);
-//                    }
+                    if (scope.events != null && scope.events.onload != null &&
+                        angular.isFunction(scope.events.onload)) {
+                        scope.events.onload(graph);
+                    }
                 });
 
                 scope.$watchCollection('options', function (options) {
-                    if(network == null) {
+                    if (network == null) {
                         return;
                     }
                     network.setOptions(options);
@@ -175,8 +172,7 @@ angular.module('ngVis', [])
             scope: {
                 data: '=',
                 options: '=',
-                events: '=',
-                component: '=?'
+                events: '='
             },
             link: function (scope, element, attr) {
                 var graphEvents = [
@@ -204,7 +200,6 @@ angular.module('ngVis', [])
 
                     // Create the graph2d object
                     graph = new vis.Graph2d(element[0]);
-                    scope.component = graph;
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -225,13 +220,14 @@ angular.module('ngVis', [])
                     }
 
                     // onLoad callback
-                    if (scope.events != null && scope.events.onload != null && angular.isFunction(scope.events.onload)) {
+                    if (scope.events != null && scope.events.onload != null &&
+                        angular.isFunction(scope.events.onload)) {
                         scope.events.onload(graph);
                     }
                 });
 
                 scope.$watchCollection('options', function (options) {
-                    if(graph == null) {
+                    if (graph == null) {
                         return;
                     }
                     graph.setOptions(options);
