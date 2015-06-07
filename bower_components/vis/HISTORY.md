@@ -1,6 +1,335 @@
 # vis.js history
 http://visjs.org
 
+## 2015-06-05, version 4.2.0
+
+### General
+
+- Fixed #893, #911: the `clickToUse` option of Network, Graph2d, and Network 
+  was blocking click events in the web page.
+
+### Timeline
+
+- Added axis orientation option `'none'`.
+- Added a property `event` to the properties emitted with the `select` event (see #923).
+- Improved function `fit()` to take into account the actual width of items.
+- Fixed #897: Timeline option `{snap: null}` did give a validation error.
+- Fixed #925: Event `timechanged` did not fire when mouse has been moved outside
+  the timeline.
+
+### Graph2D
+
+- Fixed #892, addressed any case in validator.
+- Fixed #898, lines are not taken into account for stacking.
+
+### Network
+
+- Improved robustness against people molesting the Function.prototype.bind()
+- Fixed few functions including storePositions().
+- Added beginnings of unit testing for network.
+- Fixed #904, correctly parsing global font options now.
+- Fixed dataView support for storePositions.
+- Second click on node is no longer unselect.
+- Added releaseFunction to openCluster.
+- Fixed bug where the network could flicker when the pixelRatio is not integer.
+- Added enabled property to physics.
+- Fixed #927, dragStart event didnt contain node that was being dragged
+
+## 2015-05-28, version 4.1.0
+
+### Network
+
+- Fixed #866, manipulation can now be set to false without crashing.
+- Fixed #860, edit node mode now works as it should.
+- Fixed #859, images now resize again when they are loaded.
+- Fixed dynamic edges not correctly handling non-existent nodes.
+- Accepted pull from @killerDJO for fixing selected and hover colors for edges.
+- Fixed bug with right mouse button, scroll center and popup positions using the wrong coordinates.
+- Fixed click to use.
+- Fixed getConnectedEdges method.
+- Fixed clustering bug.
+- Added getNodesInCluster method.
+- Renamed editNodeMode to editNode, editNodeMode now give a deprecation log message.
+- Added multiselect to the docs.
+- Removed deprecated dynamic entree, allow any smooth curve style for hierarchical layout.
+- Fixed bug with the moveTo and getViewPosition methods.
+- Fixed #861, brokenImage only working for one node if nodes have the same image.
+- Fixed hoverNode and blurNode events and added them to the docs.
+- Fixed #884, selectNode event.
+- Fixed dynamic setting hidden and physics.
+- Fixed edit node mode's fallback.
+
+### Graph2d & Timeline
+
+- Fixed #858, #872, fixed usage of deprecated `unsubscribe` from DataSet.
+- Fixed #869: Add className with id to custom time bars
+- Fixed #877: Added support for metaKey to select multiple items.
+
+
+## 2015-05-22, version 4.0.0
+
+### General
+
+- Changed the build scripts to include a transpilation of ES6 to ES5
+  (using http://babel.org), so we can use ES6 features in the vis.js code.
+  When creating a custom bundle using browserify, one now needs to add a
+  transform step using `babelify`, this is described in README.md.
+
+### Timeline
+
+- Integrated an option configurator and validator.
+- Implemented option `multiselect`, which is false by default.
+- Added method `setData({groups: groups, items: items})`.
+- Fixed range items not being displayed smaller than 10 pixels (twice the
+  padding). In order to have overflowing text, one should now apply css style
+  `.vis.timeline .item.range { overflow: visible; }` instead of
+  `.vis.timeline .item.range .content { overflow: visible; }`.
+  See example 18_range_overflow.html.
+- Fixed invalid css names for time axis grid, renamed hours class names from
+  `4-8h` to `h4-h8`.
+- Deprecated option `showCustomTime`. Use method `addCustomTime()` instead.
+- Deprecated event `finishedRedraw` as it's redundant.
+- Renamed option `animate` to `animation`, and changed it to be either a boolean
+  or an object `{duration: number, easingFunction: string}`.
+- Fixed #831: items losing selection when their type changed.
+
+### Graph2d
+
+- New option structure.
+- Cleaned up docs.
+- Fixed #628: stacking order.
+- Fixed #624: sorting order.
+- Fixed #616: stacking with negative bars.
+- Fixed #728: alignment issues.
+- Fixed #716: Height of graph `2px` too large when configuring a fixed height.
+
+### Network
+
+The network has been completely rewritten. The new modular setup using ES6 classes makes
+it future proof for maintainability, extendability and clarity. A summary of new features:
+- New examples, categorized by topic.
+- New docs.
+- New option structure, adhering to the modular setup on the backend.
+- New events for user interaction.
+- New render events for drawing custom elements on the canvas.
+- New physics events for making a loading bar during stabilization.
+- A lot of new methods that make extending easier.
+- Manipulation system now works without the UI neccesarily.
+- Nodes and edges can cast shadows.
+- Configurator system to dynamically change almost all options.
+- Validator has been created for the network's options, warning you about typo's and suggesting alternatives.
+- Diamond shape for nodes.
+- Unified the label code so edges and nodes have the same label settings.
+- InheritColors for edges can be set to both, making a gradient fade between two node colors.
+- Redesigned the clustering system giving full control over it.
+- Random seed can be saved so the network will be the same every time you start it.
+- New physics solver based on ForceAtlas2 as implemented in gephi.]
+- New avoidOverlap option for physics.
+- Many, many bugfixes.
+
+
+### DataSet
+
+- Dropped support for Google visualization DataTable.
+- Dropped support for appending data returned by `DataSet.get()` to an existing
+  Array or DataTable.
+
+
+## 2015-04-07, version 3.12.0
+
+### Network
+
+- Fixed support for DataSet with custom id fields (option `fieldId`).
+
+### Timeline
+
+- Orientation can now be configured separately for axis and items.
+- The event handlers `onMove` and `onMoving` are now invoked with all item
+  properties as argument, and can be used to update all properties (like
+  content, className, etc) and add new properties as well.
+- Fixed #654: removed unnecessary minimum height for groups, takes the
+  height of the group label as minimum height now.
+- Fixed #708: detecting wrong group when page is scrolled.
+- Fixed #733: background items being selected on shift+click.
+
+
+## 2015-03-05, version 3.11.0
+
+### Network
+
+- (added gradient coloring for lines, but set for release in 4.0 due to required refactoring of options)
+- Fixed bug where a network that has frozen physics would resume redrawing after setData, setOptions etc.
+- Added option to bypass default groups. If more groups are specified in the nodes than there are in the groups, loop over supplied groups instead of default.
+- Added two new static smooth curves modes: curveCW and curve CCW.
+- Added request redraw for certain internal processes to reduce number of draw calls (performance improvements!).
+- Added pull request for usage of Icons. Thanks @Dude9177!
+- Allow hierarchical view to be set in setOptions.
+- Fixed manipulation bar for mobile.
+- Fixed #670: Bug when updating data in a DataSet, when Network is connected to the DataSet via a DataView.
+- Fixed #688: Added a css class to be able to distinguish buttons "Edit node"
+  and "Edit edge".
+
+### Timeline
+
+- Implemented orientation option `'both'`, displaying a time axis both on top
+  and bottom (#665).
+- Implemented creating new range items by dragging in an empty space with the
+  ctrl key down.
+- Implemented configuration option `order: function` to define a custom ordering
+  for the items (see #538, #234).
+- Implemented events `click`, `doubleClick`, and `contextMenu`.
+- Implemented method `getEventProperties(event)`.
+- Fixed not property initializing with a DataView for groups.
+- Merged add custom timebar functionality, thanks @aytech!
+- Fixed #664: end of item not restored when canceling a move event.
+- Fixed #609: reduce the left/right dragarea when an item range is very small,
+  so you can still move it as a whole.
+- Fixed #676: misalignment of background items when using subgroups and the
+  group label's height is larger than the contents.
+
+### Graph2d
+
+- Implemented events `click`, `doubleClick`, and `contextMenu`.
+- Implemented method `getEventProperties(event)`.
+
+### DataSet/DataView
+
+- Implemented support for mapping field names. Thanks @spatialillusions.
+- Fixed #670: DataView not passing a data property on update events (see #670)
+
+
+
+## 2015-02-11, version 3.10.0
+
+### Network
+
+- Added option bindToWindow (default true) to choose whether the keyboard binds are global or to the network div.
+- Improved images handling so broken images are shown on all references of images that are broken.
+- Added getConnectedNodes method.
+- Added fontSizeMin, fontSizeMax, fontSizeMaxVisible, scaleFontWithValue, fontDrawThreshold to Nodes.
+- Added fade in of labels (on nodes) near the fontDrawThreshold.
+- Added nodes option to zoomExtent to zoom in on specific set of nodes.
+- Added stabilizationIterationsDone event which fires at the end of the internal stabilization run. Does not imply that the network is stabilized.
+- Added freezeSimulation method.
+- Added clusterByZoom option.
+- Added class name 'network-tooltip' to the tooltip, allowing custom styling.
+- Fixed bug when redrawing was not right on zoomed-out browsers.
+- Added opacity option to edges. Opacity is only used for the unselected state.
+- Fixed bug where selections from removed data elements persisted.
+
+### Timeline
+
+- `Timeline.redraw()` now also recalculates the size of items.
+- Implemented option `snap: function` to customize snapping to nice dates
+  when dragging items.
+- Implemented option `timeAxis: {scale: string, step: number}` to set a
+  fixed scale.
+- Fixed width of range items not always being maintained when moving due to
+  snapping to nice dates.
+- Fixed not being able to drag items to an other group on mobile devices.
+- Fixed `setWindow` not working when applying an interval larger than the
+  configured `zoomMax`.
+
+### DataSet/DataView
+
+- Added property `length` holding the total number of items to the `DataSet`
+  and `DataView`.
+- Added a method `refresh()` to the `DataView`, to update filter results.
+- Fixed a bug in the `DataSet` returning an empty object instead of `null` when
+  no item was found when using both a filter and specifying fields.
+
+
+## 2015-01-16, version 3.9.1
+
+### General
+
+- Fixed wrong distribution file deployed on the website and the downloadable
+  zip file.
+
+### Network
+
+- Fixed bug where opening a cluster with smoothCurves off caused one child to go crazy.
+- Fixed bug where zoomExtent does not work as expected.
+- Fixed nodes color data being overridden when having a group and a dataset update query.
+- Decoupled animation from physics simulation.
+- Fixed scroll being blocked if zoomable is false.
+
+
+## 2015-01-16, version 3.9.0
+
+### Network
+
+- Reverted change in image class, fixed bug #552
+- Improved (not neccesarily fixed) the fontFill offset between different browsers. #365
+- Fixed dashed lines on firefox on Unix systems
+- Altered the Manipulation Mixin to be succesfully destroyed from memory when calling destroy();
+- Improved drawing of arrowheads on smooth curves. #349
+- Caught case where click originated on external DOM element and drag progressed to vis.
+- Added label stroke support to Nodes, Edges & Groups as per-object or global settings. Thank you @klmdb!
+- Reverted patch that made nodes return to 'default' setting if no group was assigned to fix issue #561. The correct way to 'remove' a group from a node is to assign it a different one.
+- Made the node/edge selected by the popup system the same as selected by the click-to-select system. Thank you @pavlos256!
+- Improved edit edge control nodes positions, altered style a little.
+- Fixed issue #564 by resetting state to initial when no callback is performed in the return function.
+- Added condition to Repulsion similar to BarnesHut to ensure nodes do not overlap.
+- Added labelAlignment option to edges. Thanks @T-rav!
+- Close active sessions in dataManipulation when calling setData().
+- Fixed alignment issue with edgelabels
+
+### Timeline
+
+- Added byUser flag to options of the rangechange and rangechanged event.
+
+
+## 2015-01-09, version 3.8.0
+
+### General
+
+- Updated to moment.js v2.9.0
+
+### Network
+
+- Fixed flipping of hierarchical network on update when using RL and DU.
+- Added zoomExtentOnStabilize option to network.
+- Improved destroy function, added them to the examples.
+- Nodes now have bounding boxes that are used for zoomExtent.
+- Made physics more stable (albeit a little slower).
+- Added a check so only one 'activator' overlay is created on clickToUse.
+- Made global color options for edges overrule the inheritColors.
+- Improved cleaning up of the physics configuration on destroy and in options.
+- Made nodes who lost their group revert back to default color.
+- Changed group behaviour, groups now extend the options, not replace. This allows partial defines of color.
+- Fixed bug where box shaped nodes did not use hover color.
+- Fixed Locales docs.
+- When hovering over a node that does not have a title, the title of one of the connected edges that HAS a title is no longer shown.
+- Fixed error in repulsion physics model.
+- Improved physics handling for smoother network simulation.
+- Fixed infinite loop when an image can not be found and no brokenImage is provided.
+- Added getBoundingBox method.
+- Community fix for SVG images in IE11, thanks @dponch!
+- Fixed repeating stabilized event when the network is already stabilized.
+- Added circularImages, thanks for the contribution @brendon1982!
+- Stopped infinite loop when brokenImage is also not available.
+- Changed util color functions so they don't need eval. Thanks @naskooskov!
+
+### Graph2d
+
+- Fixed round-off errors of zero on the y-axis.
+- added show major/minor lines options to dataAxis.
+- Fixed adapting to width and height changes.
+- Added a check so only one 'activator' overlay is created on clickToUse.
+- DataAxis width option now draws correctly.
+
+### Timeline
+
+- Implemented support for styling of the vertical grid.
+- Support for custom date formatting of the labels on the time axis.
+- added show major/minor lines options to timeline.
+- Added a check so only one 'activator' overlay is created on clickToUse.
+
+### Graph3d
+
+- Fixed mouse coordinates for tooltips.
+
 
 ## 2014-12-09, version 3.7.2
 
@@ -17,7 +346,8 @@ http://visjs.org
 - Sidestepped double touch event from hammer (ugly.. but functional) causing
   strange behaviour in manipulation mode
 - Better cleanup after reconnecting edges in manipulation mode
-
+- Fixed recursion error with smooth edges that are connected to non-existent nodes
+- Added destroy method. 
 
 ## 2014-11-28, version 3.7.1
 
