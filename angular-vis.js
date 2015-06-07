@@ -49,7 +49,7 @@ angular.module('ngVis', [])
                     }
 
                     // Create the timeline object
-                    timeline = new vis.Timeline(element[0]);
+                    timeline = new vis.Timeline(element[0], scope.data.items, scope.data.groups, scope.options);
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -57,17 +57,6 @@ angular.module('ngVis', [])
                             timeline.on(event, callback);
                         }
                     });
-
-                    // Set the options first
-                    timeline.setOptions(scope.options);
-
-                    // Add groups and items
-                    if (scope.data.groups != null) {
-                        timeline.setGroups(scope.data.groups);
-                    }
-                    if (scope.data.items != null) {
-                        timeline.setItems(scope.data.items);
-                    }
 
                     // onLoad callback
                     if (scope.events != null && scope.events.onload != null &&
@@ -85,7 +74,6 @@ angular.module('ngVis', [])
             }
         };
     })
-
 
 /**
  * Directive for network chart.
@@ -107,8 +95,7 @@ angular.module('ngVis', [])
                     'timechanged'
                 ];
 
-                var network = new vis.Network(element[0], scope.data, scope.options);
-                scope.component = network;
+                var network = null;
 
                 scope.$watch('data', function () {
                     // Sanity check
@@ -123,7 +110,7 @@ angular.module('ngVis', [])
                     }
 
                     // Create the graph2d object
-                    network = new vis.Network(element[0]);
+                    network = new vis.Network(element[0], scope.data, scope.options);
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -131,10 +118,6 @@ angular.module('ngVis', [])
                             network.on(event, callback);
                         }
                     });
-
-                    // Set the options first
-                    network.setOptions(scope.options);
-                    network.setData(scope.data);
 
                     // onLoad callback
                     if (scope.events != null && scope.events.onload != null &&
@@ -183,8 +166,7 @@ angular.module('ngVis', [])
                 ];
 
                 // Create the chart
-                var graph = new vis.Graph2d(element[0]);
-                scope.component = graph;
+                var graph = null;
 
                 scope.$watch('data', function () {
                     // Sanity check
@@ -199,7 +181,7 @@ angular.module('ngVis', [])
                     }
 
                     // Create the graph2d object
-                    graph = new vis.Graph2d(element[0]);
+                    graph = new vis.Graph2d(element[0], scope.data.items, scope.data.groups, scope.options);
 
                     // Attach an event handler if defined
                     angular.forEach(scope.events, function (callback, event) {
@@ -207,17 +189,6 @@ angular.module('ngVis', [])
                             graph.on(event, callback);
                         }
                     });
-
-                    // Set the options first
-                    graph.setOptions(scope.options);
-
-                    // Add groups and items
-                    if (scope.data.groups != null) {
-                        graph.setGroups(scope.data.groups);
-                    }
-                    if (scope.data.items != null) {
-                        graph.setItems(scope.data.items);
-                    }
 
                     // onLoad callback
                     if (scope.events != null && scope.events.onload != null &&
