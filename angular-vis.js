@@ -89,10 +89,33 @@ angular.module('ngVis', [])
             },
             link: function (scope, element, attr) {
                 var networkEvents = [
-                    'rangechange',
-                    'rangechanged',
-                    'timechange',
-                    'timechanged'
+                    'click',
+                    'doubleclick',
+                    'oncontext',
+                    'hold',
+                    'release',
+                    'selectNode',
+                    'selectEdge',
+                    'deselectNode',
+                    'deselectEdge',
+                    'dragStart',
+                    'dragging',
+                    'dragEnd',
+                    'hoverNode',
+                    'blurNode',
+                    'zoom',
+                    'showPopup',
+                    'hidePopup',
+                    'startStabilizing',
+                    'stabilizationProgress',
+                    'stabilizationIterationsDone',
+                    'stabilized',
+                    'resize',
+                    'initRedraw',
+                    'beforeDrawing',
+                    'afterDrawing',
+                    'animationFinished'
+
                 ];
 
                 var network = null;
@@ -162,7 +185,8 @@ angular.module('ngVis', [])
                     'rangechange',
                     'rangechanged',
                     'timechange',
-                    'timechanged'
+                    'timechanged',
+                    'finishedRedraw'
                 ];
 
                 // Create the chart
