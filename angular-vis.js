@@ -155,14 +155,6 @@ angular.module('ngVis', [])
                     }
                     network.setOptions(options);
                 });
-
-                scope.$watch('events', function (events) {
-                    angular.forEach(events, function (callback, event) {
-                        if (['select', 'click', 'hoverNode', 'doubleClick'].indexOf(String(event)) >= 0) {
-                            network.on(event, callback);
-                        }
-                    });
-                });
             }
         };
     })
