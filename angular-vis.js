@@ -145,7 +145,7 @@ angular.module('ngVis', [])
                     // onLoad callback
                     if (scope.events != null && scope.events.onload != null &&
                         angular.isFunction(scope.events.onload)) {
-                        scope.events.onload(graph);
+                        scope.events.onload(network);
                     }
                 });
 
