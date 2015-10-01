@@ -90,7 +90,7 @@ angular.module('ngVis', [])
             link: function (scope, element, attr) {
                 var networkEvents = [
                     'click',
-                    'doubleclick',
+                    'doubleClick',
                     'oncontext',
                     'hold',
                     'release',
