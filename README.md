@@ -22,7 +22,7 @@ visjs documentation should be used.  Take a look at the <a href="http://visjs.gi
 
 ### Data:
 ```
-  $scope.data = visDataSet({
+  $scope.data = vis.DataSet({
      "1": {
        "id": 1,
        "content": "<i class=\"fi-flag\"></i> item 1",
