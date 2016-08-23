@@ -1,0 +1,23 @@
+{
+  "name": "angular-visjs",
+  "version": "4.16.0",
+  "description": "AngularJS directive module for vis.js components",
+  "main": "angular-vis.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visjs/angular-visjs.git"
+  },
+  "keywords": [
+    "angular",
+    "vis"
+  ],
+  "author": "https://github.com/cdjackson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/visjs/angular-visjs/issues"
+  },
+  "homepage": "https://github.com/visjs/angular-visjs#readme"
+}
