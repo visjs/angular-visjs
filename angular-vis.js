@@ -248,7 +248,6 @@ angular.module('ngVis', [])
 
                 scope.$on('$destroy', function () {
                     // clear angular $watchers
-                    alert('destroy!!!!!');
                     watchData();
                     watchOptions();
                     if (graph != null) {
@@ -329,11 +328,10 @@ angular.module('ngVis', [])
                     // clear angular $watchers
                     watchData();
                     watchOptions();
-                    if (graph != null) {
-                        console.log(graph.destroy);
-                        graph.destroy();
-                        alert('vis 3d destroy!');
-                    }
+                    // NOTE: graph3d does NOT have a "destroy" function.
+                    //if (graph != null) {
+                    //  graph.destroy();
+                    //}
                 });
             }
         };
