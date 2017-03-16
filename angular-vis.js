@@ -1,17 +1,24 @@
 angular.module('ngVis', [])
+    
+    .factory('vis', ['$window', function ($window) {        
+        // Create the global vis object
+        if (!$window.vis) {
+            return {};
+        }
+        return $window.vis;
+    }])
 
-    .factory('VisDataSet', function () {
-        'use strict';
+    .factory('VisDataSet', ['vis', function (vis) {
         return function (data, options) {
             // Create the new dataSets
             return new vis.DataSet(data, options);
         };
-    })
+    }])
 
 /**
  * TimeLine directive
  */
-    .directive('visTimeline', function () {
+    .directive('visTimeline', ['vis', function (vis) {
         'use strict';
         return {
             restrict: 'EA',
@@ -73,12 +80,12 @@ angular.module('ngVis', [])
                 });
             }
         };
-    })
+    }])
 
 /**
  * Directive for network chart.
  */
-    .directive('visNetwork', function () {
+    .directive('visNetwork', ['vis', function (vis) {
         return {
             restrict: 'EA',
             transclude: false,
@@ -159,12 +166,12 @@ angular.module('ngVis', [])
                 });
             }
         };
-    })
+    }])
 
 /**
  * Directive for graph2d.
  */
-    .directive('visGraph2d', function () {
+    .directive('visGraph2d', ['vis', function (vis) {
         'use strict';
         return {
             restrict: 'EA',
@@ -223,5 +230,5 @@ angular.module('ngVis', [])
                 });
             }
         };
-    })
+    }])
 ;
