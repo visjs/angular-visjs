@@ -8,9 +8,9 @@ angular.module('ngVis', [])
         };
     })
 
-/**
- * TimeLine directive
- */
+    /**
+     * TimeLine directive
+     */
     .directive('visTimeline', function () {
         'use strict';
         return {
@@ -36,7 +36,9 @@ angular.module('ngVis', [])
                 // Declare the timeline
                 var timeline = null;
 
-                scope.$watch('data', function () {
+                var watchData, watchOptions;
+
+                watchData = scope.$watch('data', function () {
                     // Sanity check
                     if (scope.data == null) {
                         return;
@@ -65,19 +67,28 @@ angular.module('ngVis', [])
                     }
                 });
 
-                scope.$watchCollection('options', function (options) {
+                watchOptions = scope.$watchCollection('options', function (options) {
                     if (timeline == null) {
                         return;
                     }
                     timeline.setOptions(options);
                 });
+
+                scope.$on('$destroy', function () {
+                    // clear angular $watchers
+                    watchData();
+                    watchOptions();
+                    if (timeline != null) {
+                        timeline.destroy();
+                    }
+                });
             }
         };
     })
 
-/**
- * Directive for network chart.
- */
+    /**
+     * Directive for network chart.
+     */
     .directive('visNetwork', function () {
         return {
             restrict: 'EA',
@@ -122,7 +133,9 @@ angular.module('ngVis', [])
 
                 var network = null;
 
-                scope.$watch('data', function () {
+                var watchData, watchOptions;
+
+                watchData = scope.$watch('data', function () {
                     // Sanity check
                     if (scope.data == null) {
                         return;
@@ -151,19 +164,28 @@ angular.module('ngVis', [])
                     }
                 });
 
-                scope.$watchCollection('options', function (options) {
+                watchOptions = scope.$watchCollection('options', function (options) {
                     if (network == null) {
                         return;
                     }
                     network.setOptions(options);
                 });
+
+                scope.$on('$destroy', function () {
+                    // clear angular $watchers
+                    watchData();
+                    watchOptions();
+                    if (network != null) {
+                        network.destroy();
+                    }
+                });
             }
         };
     })
 
-/**
- * Directive for graph2d.
- */
+    /**
+     * Directive for graph2d.
+     */
     .directive('visGraph2d', function () {
         'use strict';
         return {
@@ -186,7 +208,9 @@ angular.module('ngVis', [])
                 // Create the chart
                 var graph = null;
 
-                scope.$watch('data', function () {
+                var watchData, watchOptions;
+
+                watchData = scope.$watch('data', function () {
                     // Sanity check
                     if (scope.data == null) {
                         return;
@@ -215,11 +239,99 @@ angular.module('ngVis', [])
                     }
                 });
 
-                scope.$watchCollection('options', function (options) {
+                watchOptions = scope.$watchCollection('options', function (options) {
                     if (graph == null) {
                         return;
                     }
                     graph.setOptions(options);
+                });
+
+                scope.$on('$destroy', function () {
+                    // clear angular $watchers
+                    watchData();
+                    watchOptions();
+                    if (graph != null) {
+                        graph.destroy();
+                    }
+                });
+            }
+        };
+    })
+
+    /**
+     * Directive for graph3d.
+     */
+    .directive('visGraph3d', function () {
+        'use strict';
+        return {
+            restrict: 'EA',
+            transclude: false,
+            scope: {
+                data: '=',
+                options: '=',
+                events: '='
+            },
+            link: function (scope, element, attr) {
+                var graphEvents = [
+                    'cameraPositionChange'
+                ];
+
+                // Create the chart
+                var graph = null;
+
+                var watchData, watchOptions;
+
+                watchData = scope.$watch('data', function () {
+                    // Sanity check
+                    if (scope.data == null) {
+                        return;
+                    }
+
+                    // If we've actually changed the data set, then recreate the graph
+                    // We can always update the data by adding more data to the existing data set
+                    // NOTE: graph3d does NOT have a "destroy" function.
+                    //if (graph != null) {
+                    //graph.destroy();
+                    //}
+
+                    // Create the graph3d object
+                    if (graph === null) {
+                        graph = new vis.Graph3d(element[0], scope.data, scope.options);
+                        // ...but if the graph already exists, just add the data,
+                        // rather than a complete re-draw.
+                    } else {
+                        graph.setData(scope.data);
+                    }
+
+                    // Attach an event handler if defined
+                    angular.forEach(scope.events, function (callback, event) {
+                        if (graphEvents.indexOf(String(event)) >= 0) {
+                            graph.on(event, callback);
+                        }
+                    });
+
+                    // onLoad callback
+                    if (scope.events != null && scope.events.onload != null &&
+                        angular.isFunction(scope.events.onload)) {
+                        scope.events.onload(graph);
+                    }
+                });
+
+                watchOptions = scope.$watchCollection('options', function (options) {
+                    if (graph == null) {
+                        return;
+                    }
+                    graph.setOptions(options);
+                });
+
+                scope.$on('$destroy', function () {
+                    // clear angular $watchers
+                    watchData();
+                    watchOptions();
+                    // NOTE: graph3d does NOT have a "destroy" function.
+                    //if (graph != null) {
+                    //  graph.destroy();
+                    //}
                 });
             }
         };
