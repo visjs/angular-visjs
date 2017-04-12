@@ -19,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/visjs/angular-visjs/issues"
   },
-  "homepage": "https://github.com/visjs/angular-visjs#readme"
+  "homepage": "https://github.com/visjs/angular-visjs#readme",
+  "dependencies": {
+    "angular": "^1.6.2",
+    "vis": "^4.18.1"
+  },
+  "devDependencies": {
+    "moment": "^2.17.1",
+    "requirejs": "^2.3.2"
+  }
 }

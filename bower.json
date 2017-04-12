@@ -23,5 +23,8 @@
     "angular": "~1.5.0",
     "vis": "~4.16.0",
     "moment": "^2.15.1"
+  },
+  "devDependencies": {
+    "requirejs": "^2.3.2"
   }
 }

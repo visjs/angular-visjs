@@ -1,1 +1,11 @@
+.idea
 bower_components
+node_modules
+/yarn.lock
+/bower.json
+/index-graph2d.html
+/app-graph2d.js
+/index.html
+/app.js
+/app_requirejs.js
+/index_requirejs.html

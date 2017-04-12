@@ -1,7 +1,21 @@
+require.config({
+    paths: {
+        angular: 'node_modules/angular/angular',
+        'angular-visjs': 'angular-vis',
+        vis: 'node_modules/vis/dist/vis',
+        moment: 'node_modules/moment/moment'
+    },
+    shim: {
+        angular: {exports: 'angular'}
+    }
+});
+
+require(['angular', 'angular-visjs', 'moment'], (angular, ngVis, moment) => {
+
 'use strict';
 
 
-var ngVisApp = angular.module('ngVisApp', ['ngVis']);
+var ngVisApp = angular.module('ngVisApp', [ngVis]);
 
 ngVisApp.controller('appController', function ($scope, $location, $timeout, VisDataSet) {
 
@@ -160,5 +174,9 @@ ngVisApp.controller('appController', function ($scope, $location, $timeout, VisD
         doubleClick: $scope.onDoubleClick,
         contextmenu: $scope.rightClick
     };
+
+});
+
+angular.bootstrap(document, [ngVisApp.name]);
 
 });
