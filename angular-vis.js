@@ -215,12 +215,12 @@ angular.module('ngVis', [])
                     }
                 });
 
-                scope.$watchCollection('options', function (options) {
+                scope.$watch('options', function (options) {
                     if (graph == null) {
                         return;
                     }
                     graph.setOptions(options);
-                });
+                }, true);
             }
         };
     })
