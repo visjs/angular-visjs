@@ -1,5 +1,7 @@
 # AngularJS - VisJS
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/visjs/angular-visjs.svg)](https://greenkeeper.io/)
+
 Development and documentation is in progress.
 
 **NOTE:** This library is currently being refactored. The intention is make the directives simpler, removing the additional
